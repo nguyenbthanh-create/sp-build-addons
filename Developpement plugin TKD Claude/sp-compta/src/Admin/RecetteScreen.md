@@ -14,6 +14,10 @@ Même mécanisme que [DepenseScreen.md](DepenseScreen.md#recherche-ajouté-le-08
 
 Même mécanisme que [DepenseScreen.md](DepenseScreen.md#justificatif--upload-réel-vers-la-médiathèque-depuis-le-08092026) — `enctype="multipart/form-data"`, [AttachmentUploader](../Media/AttachmentUploader.md) avec conservation du fichier existant si aucun nouveau n'est choisi.
 
+## `modesPaiement()` : liste exposée publiquement (ajouté le 11/09/2026)
+
+Même mécanisme que [DepenseScreen::modesPaiement()](DepenseScreen.md#modespaiement--liste-exposée-publiquement-ajouté-le-11092026) — utilisé par [SaisieRapideRecetteShortcode](../Front/SaisieRapideRecetteShortcode.md) pour proposer le même champ mode de paiement en saisie rapide qu'en admin.
+
 ## En cas de bug
 
 Voir [DepenseScreen.md](DepenseScreen.md#en-cas-de-bug).

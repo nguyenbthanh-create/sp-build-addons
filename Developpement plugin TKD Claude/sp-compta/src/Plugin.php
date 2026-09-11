@@ -9,11 +9,14 @@ use SpCompta\Admin\DepenseScreen;
 use SpCompta\Admin\FournisseurScreen;
 use SpCompta\Admin\Menu;
 use SpCompta\Admin\ParametresScreen;
+use SpCompta\Admin\RapportExerciceScreen;
 use SpCompta\Admin\RecetteScreen;
 use SpCompta\Admin\SoldeScreen;
 use SpCompta\Admin\SponsorScreen;
 use SpCompta\Billing\ExerciceDeletionGuard;
 use SpCompta\Billing\SponsorPaiementSync;
+use SpCompta\Front\SaisieRapideCombineeShortcode;
+use SpCompta\Front\SaisieRapideRecetteShortcode;
 use SpCompta\Front\SaisieRapideShortcode;
 use SpCompta\Front\ServiceWorker;
 use SpCompta\Media\AttachmentUploader;
@@ -78,18 +81,29 @@ final class Plugin
     private function bootFront(): void
     {
         $depenseRepository = new DepenseRepository($this->database->tableDepense());
+        $recetteRepository = new RecetteRepository($this->database->tableRecette());
         $exerciceRepository = new ExerciceRepository($this->database->tableExercice());
         $fournisseurRepository = new FournisseurRepository($this->database->tableFournisseur());
+        $clientRepository = new ClientRepository($this->database->tableClient());
+        $attachmentUploader = new AttachmentUploader();
 
         $depenseScreen = new DepenseScreen(
             $depenseRepository,
             $exerciceRepository,
             $fournisseurRepository,
-            new AttachmentUploader()
+            $attachmentUploader
         );
 
         $saisieRapide = new SaisieRapideShortcode($depenseScreen, $exerciceRepository, $fournisseurRepository);
         $saisieRapide->registerHooks();
+
+        $recetteScreen = new RecetteScreen($recetteRepository, $exerciceRepository, $clientRepository, $attachmentUploader);
+
+        $saisieRapideRecette = new SaisieRapideRecetteShortcode($recetteScreen, $exerciceRepository, $clientRepository);
+        $saisieRapideRecette->registerHooks();
+
+        $saisieRapideCombinee = new SaisieRapideCombineeShortcode($saisieRapide, $saisieRapideRecette);
+        $saisieRapideCombinee->registerHooks();
 
         (new ServiceWorker())->registerHooks();
     }
@@ -130,6 +144,7 @@ final class Plugin
         );
 
         $attachmentUploader = new AttachmentUploader();
+        $parametresRepository = new ParametresRepository($this->database->tableParametres());
 
         $screens = [
             new DepenseScreen($depenseRepository, $exerciceRepository, $fournisseurRepository, $attachmentUploader),
@@ -141,10 +156,21 @@ final class Plugin
                 $attachmentUploader
             ),
             new SoldeScreen($depenseRepository, $recetteRepository, $exerciceRepository),
+            new RapportExerciceScreen(
+                $exerciceRepository,
+                $depenseRepository,
+                $recetteRepository,
+                $sponsorRepository,
+                $devisRepository,
+                $factureRepository,
+                $clientRepository,
+                $fournisseurRepository,
+                $parametresRepository
+            ),
             new ClientScreen($clientRepository),
             new FournisseurScreen($fournisseurRepository),
             new ParametresScreen(
-                new ParametresRepository($this->database->tableParametres()),
+                $parametresRepository,
                 $exerciceRepository,
                 $this->capabilities,
                 $exerciceDeletionGuard

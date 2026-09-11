@@ -1,6 +1,8 @@
 # Front/SaisieRapideShortcode.php
 
-**Rôle** : implémente la demande du 10/09/2026 — une page front-end légère, mobile-first, pour saisir une dépense en quelques secondes en déplacement (montant, catégorie, photo du justificatif via l'appareil photo du téléphone), avec un manifest PWA léger pour l'ajouter à l'écran d'accueil. Shortcode `[sp_compta_saisie_rapide]`, à placer sur n'importe quelle page WordPress (créer une page "Saisie rapide" et y coller le shortcode).
+**Rôle** : implémente la demande du 10/09/2026 — un formulaire front-end léger, mobile-first, pour saisir une dépense en quelques secondes en déplacement (montant, catégorie, photo du justificatif via l'appareil photo du téléphone).
+
+**Depuis le 11/09/2026, ce n'est plus un shortcode public.** Jusque-là `[sp_compta_saisie_rapide]` pointait directement ici ; désormais le shortcode public du même nom est géré par [SaisieRapideCombineeShortcode.php](SaisieRapideCombineeShortcode.md), qui assemble ce formulaire et celui des recettes sur une seule page avec un bouton pour basculer de l'un à l'autre (demande utilisateur : passer de Dépense à Recette "intuitivement", sans se souvenir de deux URLs différentes). Cette classe reste responsable du formulaire Dépense lui-même (`render()`) et de son enregistrement (`handleSave()`), simplement plus de sa propre inscription en tant que shortcode WordPress ni de son propre manifest PWA (un seul manifest désormais, porté par la classe combinée).
 
 ## Pourquoi front-end et pas wp-admin
 
@@ -10,15 +12,9 @@ wp-admin n'est pas pensé pour du tactile/mobile — trop de chrome, pas optimis
 
 Le constructeur prend un `DepenseScreen` **déjà construit** (celui de wp-admin, voir [Plugin.php](../Plugin.php)`::bootFront()`) et appelle directement `$depenseScreen->saveFromRequest($_POST, $_FILES)` dans `handleSave()` — exactement la même validation, la même dérivation catégorie/sous-catégorie, le même upload de justificatif que l'écran admin (voir [DepenseScreen.md](../Admin/DepenseScreen.md)). Cette classe n'ajoute **aucune** logique de sauvegarde propre, uniquement un formulaire HTML différent et le glue WordPress (nonce, capacité, redirection).
 
-## PWA : manifest + service worker (ajouté le 10/09/2026)
+## PWA : manifest + service worker
 
-`maybeRenderHead()` injecte un `<link rel="manifest">` en **data URI** (`start_url`/`scope` = `"."`, donc pas besoin de connaître à l'avance l'URL de la page — fonctionne quelle que soit la page WordPress où le shortcode est placé) + les meta tags iOS (`apple-mobile-web-app-capable`...) + un `<script>` inline qui enregistre [ServiceWorker::url()](ServiceWorker.md) via `navigator.serviceWorker.register()` — uniquement sur les pages qui contiennent réellement le shortcode (`has_shortcode()` sur le contenu du post courant, jamais sur le reste du site).
-
-**Historique** : la première version (08-10/09/2026) se limitait au manifest, sans service worker, pour rester "légère" — sans lui, pas de bannière d'installation automatique sur Chrome/Android (l'ajout à l'écran d'accueil restait possible via le menu du navigateur). Le service worker a été ajouté séparément une fois le besoin de la bannière automatique confirmé — voir [ServiceWorker.md](ServiceWorker.md) pour pourquoi il n'alourdit pas la solution (pas de règle de réécriture WordPress, pas de cache).
-
-## Icône : SVG généré, pas de fichier image
-
-`iconDataUri()` génère un petit carré navy avec "SP" en data URI — pas de logo du club fourni à ce stade. À remplacer facilement par le vrai logo une fois disponible (voir aussi `logo_url` dans [ParametresScreen](../Admin/ParametresScreen.md), pas encore branché ici).
+Depuis le 11/09/2026, cette classe n'en porte plus — voir [SaisieRapideCombineeShortcode.md](SaisieRapideCombineeShortcode.md) pour le manifest unique (icône SVG générée, service worker via [ServiceWorker.md](ServiceWorker.md)) qui couvre désormais les deux formulaires.
 
 ## Mode de paiement (ajouté le 11/09/2026)
 
@@ -32,12 +28,17 @@ Date, fournisseur et détail sont dans un `<details>`/`<summary>` replié par d�
 
 Pas de champ `id` dans le formulaire — `saveFromRequest()` (côté `DepenseScreen`) crée toujours une nouvelle dépense. Corriger une saisie depuis un téléphone se fait plus tard depuis wp-admin.
 
+## Confirmation après enregistrement (`sp_compta_saved=depense`)
+
+`handleSave()` redirige avec `sp_compta_saved=depense` (pas juste `=1`) — nécessaire depuis que ce formulaire partage sa page avec celui des recettes ([SaisieRapideCombineeShortcode.md](SaisieRapideCombineeShortcode.md)) : sans cette distinction, enregistrer une dépense aurait aussi affiché à tort le message de confirmation "Recette enregistrée" dans l'autre onglet. `renderForm()` n'affiche son message que si la valeur vaut exactement `'depense'`.
+
 ## En cas de bug
 
 - Le formulaire affiche "Accès réservé" à un membre du bureau qui devrait y avoir accès → vérifier sa capacité `sp_compta_manager` (voir [Capabilities.md](../Capabilities.md)), pas cette classe.
-- Le manifest n'apparaît pas dans les outils de dev du navigateur → vérifier que la page contient bien le shortcode dans son contenu (`has_shortcode()`), et que c'est une page singulière (`is_singular()` — ne fonctionne pas sur une page d'accueil de type liste d'articles).
+- Le manifest n'apparaît pas dans les outils de dev du navigateur → voir [SaisieRapideCombineeShortcode.md](SaisieRapideCombineeShortcode.md#en-cas-de-bug), plus géré ici.
 - Upload de la photo qui échoue → voir [AttachmentUploader.md](../Media/AttachmentUploader.md), pas cette classe (le comportement est identique à l'écran admin).
 - Redirection après enregistrement qui atterrit sur la page d'accueil au lieu de la page de saisie → vérifier que `redirect_to` est bien soumis et que `wp_validate_redirect()` ne le rejette pas (il refuse toute URL hors du site, par sécurité).
+- Message "Dépense enregistrée" absent après un enregistrement pourtant réussi → vérifier que la redirection porte bien `sp_compta_saved=depense` et pas une autre valeur.
 
 ## Tests
 

@@ -6,8 +6,12 @@ Pistes d'évolution connues : ce qui est prévu ou envisagé mais pas encore fai
 
 - **Écrans Devis / Facture** : plus complexes que les CRUD déjà faits (sélection client, lignes dynamiques, calcul de total, bouton « transformer en facture »). Pas encore commencés. Le modèle visuel du devis attend un document de référence de l'utilisateur (« type centre de loisirs »).
 - **Textes légaux des documents PDF** (mention TVA, numérotation légale affichée...) : à valider document par document au moment de construire chaque export, pas avant. Une proposition de gabarit visuel a été faite, réponse en attente.
-- **Export vers le formulaire CERFA lui-même** (pas juste l'alignement sur ses codes de catégories) : pas demandé pour l'instant, mais le référentiel `Categories.php` est structuré pour le permettre le jour où ce sera utile.
-- **Saisie rapide pour les Recettes** : seule la Dépense est couverte pour l'instant (cas d'usage principal : un achat en déplacement). Le même patron que la saisie rapide Dépense serait facile à dupliquer.
+- ~~Export vers le formulaire CERFA lui-même~~ — **abandonné, décision utilisateur du 11/09/2026** : les soldes du club restent sous les 10 000 €, largement sous le seuil (23 000 € de subventions publiques cumulées) qui rendrait ce formulaire obligatoire. Le référentiel `Categories.php` reste structuré comme le CERFA (bonne pratique de lisibilité comptable), mais l'export du formulaire lui-même ne sera pas construit.
+- ~~Saisie rapide pour les Recettes~~ — **fait le 11/09/2026**, voir `REALISATION.md`.
+
+## Identifié au 11/09/2026 — piste ouverte sur le rapport AG
+
+Le rapport AG ([Reporting/RapportAgGenerator.php](src/Reporting/RapportAgGenerator.md)) compare aujourd'hui les totaux recettes/dépenses de l'exercice actuel à l'exercice précédent (un seul graphique). Piste non demandée pour l'instant, à envisager si le besoin se confirme : un second graphique de répartition par catégorie CERFA (dépenses ou recettes), ou une comparaison sur plusieurs exercices (pas seulement N-1) si le club accumule plusieurs années d'historique.
 
 ## Dépendance externe
 

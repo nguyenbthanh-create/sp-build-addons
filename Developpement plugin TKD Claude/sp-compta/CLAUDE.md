@@ -67,6 +67,14 @@ Pas de binaire PHP, pas de WordPress local dans ce sandbox (même limitation que
 
 **Mode de paiement en saisie rapide (11/09/2026)** : [src/Front/SaisieRapideShortcode.php](src/Front/SaisieRapideShortcode.md) propose désormais le champ "Mode de paiement" (mêmes options que l'écran admin, via la nouvelle méthode publique [DepenseScreen::modesPaiement()](src/Admin/DepenseScreen.md)) — jusque-là seul l'écran wp-admin le proposait, alors que `saveFromRequest()` le lisait déjà silencieusement.
 
+**Incrément 11 (11/09/2026)** — saisie rapide Recettes + export/rapport d'exercice, suite à un état des lieux utilisateur :
+- [src/Front/SaisieRapideRecetteShortcode.php](src/Front/SaisieRapideRecetteShortcode.md) : shortcode `[sp_compta_saisie_rapide_recette]`, pendant exact de la saisie rapide Dépense.
+- [src/Admin/RapportExerciceScreen.php](src/Admin/RapportExerciceScreen.md) (nouvel écran "Rapport / Export") : pour chaque exercice, une sauvegarde brute JSON ([src/Reporting/ExerciceExportateur.php](src/Reporting/ExerciceExportateur.md)) et un rapport financier imprimable pour l'AG avec comparaison à l'exercice précédent ([src/Reporting/RapportAgGenerator.php](src/Reporting/RapportAgGenerator.md), graphique en SVG généré en PHP, sans dépendance externe).
+- **Décision utilisateur** : pas d'export vers le formulaire CERFA officiel — soldes du club sous les 10 000 €, sous le seuil légal (23 000 € de subventions publiques cumulées) qui l'imposerait. Le référentiel `Categories.php` reste structuré comme le CERFA (lisibilité comptable), mais aucun export de ce formulaire ne sera construit sauf changement de situation.
+- [src/Reporting/MouvementsCsvExportateur.php](src/Reporting/MouvementsCsvExportateur.md) (même jour, demande de la trésorière) : troisième export sur l'écran "Rapport / Export", un CSV des mouvements pensé pour Excel-FR (point-virgule, BOM UTF-8, montant signé, protection anti-injection de formule sur les champs libres).
+
+**Saisie rapide : bascule Dépense/Recette (11/09/2026)** : [src/Front/SaisieRapideCombineeShortcode.php](src/Front/SaisieRapideCombineeShortcode.md) devient le vrai shortcode public `[sp_compta_saisie_rapide]` — il assemble [SaisieRapideShortcode.php](src/Front/SaisieRapideShortcode.md) et [SaisieRapideRecetteShortcode.php](src/Front/SaisieRapideRecetteShortcode.md) (qui ne sont plus des shortcodes autonomes, seulement leur `render()`/`handleSave()` sont réutilisés) sur une seule page, avec deux boutons de bascule (JS pur, pas de rechargement) et un manifest PWA unique. Suite à un retour utilisateur après test de la version à deux pages séparées.
+
 ## Repositories disponibles
 
 `Fournisseur`, `Client`, `Depense`, `Recette`, `Sponsor`, `Exercice`, `Parametres`, `Devis`, `Facture` — tous dans `src/Repository/`, tous avec leur `.md` jumeau et leurs tests dans `tests/Unit/`. `Devis`/`Facture` prennent en plus un `DocumentNumeroGenerator` en constructeur (voir leur `.md` pour le câblage).

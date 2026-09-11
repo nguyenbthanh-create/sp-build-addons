@@ -35,6 +35,14 @@ final class RecetteScreen implements AdminScreen
         add_action('admin_post_' . self::ACTION_DELETE, [$this, 'handleDelete']);
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function modesPaiement(): array
+    {
+        return self::MODES_PAIEMENT;
+    }
+
     public function slug(): string
     {
         return self::SLUG;

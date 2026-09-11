@@ -5,30 +5,29 @@ declare(strict_types=1);
 namespace SpCompta\Front;
 
 use SpCompta\Accounting\Categories;
-use SpCompta\Admin\DepenseScreen;
+use SpCompta\Admin\RecetteScreen;
 use SpCompta\Capabilities;
+use SpCompta\Repository\ClientRepository;
 use SpCompta\Repository\ExerciceRepository;
-use SpCompta\Repository\FournisseurRepository;
 
 /**
- * Formulaire front-end mobile-first pour saisir une depense en quelques
- * secondes (montant, categorie, photo du justificatif), pense pour une
- * utilisation au telephone en deplacement. Depuis le 11/09/2026, cette
- * classe n'est plus un shortcode a part entiere : elle est assemblee avec
- * SaisieRapideRecetteShortcode par SaisieRapideCombineeShortcode.php (le
- * vrai shortcode public, [sp_compta_saisie_rapide]), qui gere le bascule
- * entre les deux formulaires et le manifest PWA unique - voir sa doc pour
- * pourquoi (jusque-la deux pages/manifests separes, peu intuitif).
+ * Pendant de SaisieRapideShortcode.php pour les recettes (meme demande
+ * utilisateur, confirmee le 11/09/2026 - jusque-la seule la Depense etait
+ * couverte). Meme patron a l'identique : reutilisation totale de
+ * RecetteScreen::saveFromRequest(), aucune logique de sauvegarde propre a
+ * cette classe. Depuis le meme jour, plus un shortcode a part entiere - voir
+ * SaisieRapideShortcode.md pour pourquoi (assemblee avec la version Depense
+ * par SaisieRapideCombineeShortcode.php).
  */
-final class SaisieRapideShortcode
+final class SaisieRapideRecetteShortcode
 {
-    private const ACTION_SAVE = 'sp_compta_saisie_rapide_save';
-    private const NONCE = 'sp_compta_saisie_rapide_nonce';
+    private const ACTION_SAVE = 'sp_compta_saisie_rapide_recette_save';
+    private const NONCE = 'sp_compta_saisie_rapide_recette_nonce';
 
     public function __construct(
-        private DepenseScreen $depenseScreen,
+        private RecetteScreen $recetteScreen,
         private ExerciceRepository $exerciceRepository,
-        private FournisseurRepository $fournisseurRepository
+        private ClientRepository $clientRepository
     ) {
     }
 
@@ -77,10 +76,10 @@ final class SaisieRapideShortcode
         $redirectTo = get_permalink() ?: home_url('/');
 
         echo '<div class="sp-compta-saisie-rapide">';
-        echo '<h2>Nouvelle depense</h2>';
+        echo '<h2>Nouvelle recette</h2>';
 
-        if (($_GET['sp_compta_saved'] ?? '') === 'depense') {
-            echo '<p class="confirmation">Depense enregistree.</p>';
+        if (($_GET['sp_compta_saved'] ?? '') === 'recette') {
+            echo '<p class="confirmation">Recette enregistree.</p>';
         }
 
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" enctype="multipart/form-data">';
@@ -95,8 +94,8 @@ final class SaisieRapideShortcode
         echo '<div class="champ"><label for="sp-compta-sr-categorie">Categorie</label>';
         echo '<select id="sp-compta-sr-categorie" name="sous_categorie" required>';
         echo '<option value="">-- Choisir --</option>';
-        foreach (Categories::DEPENSE as $code => $definition) {
-            echo '<optgroup label="' . esc_attr(Categories::libelleCategorie(Categories::DEPENSE, $code)) . '">';
+        foreach (Categories::RECETTE as $code => $definition) {
+            echo '<optgroup label="' . esc_attr(Categories::libelleCategorie(Categories::RECETTE, $code)) . '">';
             foreach ($definition['sous_categories'] as $key => $label) {
                 echo '<option value="' . esc_attr($key) . '">' . esc_html($label) . '</option>';
             }
@@ -107,7 +106,7 @@ final class SaisieRapideShortcode
         echo '<div class="champ"><label for="sp-compta-sr-mode">Mode de paiement</label>';
         echo '<select id="sp-compta-sr-mode" name="mode_paiement">';
         echo '<option value="">--</option>';
-        foreach (DepenseScreen::modesPaiement() as $mode) {
+        foreach (RecetteScreen::modesPaiement() as $mode) {
             echo '<option value="' . esc_attr($mode) . '">' . esc_html($mode) . '</option>';
         }
         echo '</select></div>';
@@ -118,10 +117,12 @@ final class SaisieRapideShortcode
         echo '<details><summary>Plus de details (optionnel)</summary>';
         echo '<div class="champ"><label for="sp-compta-sr-date">Date</label>';
         echo '<input type="date" id="sp-compta-sr-date" name="date" value="' . esc_attr($today) . '"></div>';
-        echo '<div class="champ"><label for="sp-compta-sr-fournisseur">Fournisseur</label>';
-        echo '<select id="sp-compta-sr-fournisseur" name="fournisseur_id"><option value="">-- Aucun --</option>';
-        foreach ($this->fournisseurRepository->all() as $fournisseur) {
-            echo '<option value="' . esc_attr((string) $fournisseur->id()) . '">' . esc_html($fournisseur->nom()) . '</option>';
+        echo '<div class="champ"><label for="sp-compta-sr-provenance">Provenance</label>';
+        echo '<input type="text" id="sp-compta-sr-provenance" name="provenance" placeholder="Cotisation, buvette..."></div>';
+        echo '<div class="champ"><label for="sp-compta-sr-client">Client lie</label>';
+        echo '<select id="sp-compta-sr-client" name="client_id"><option value="">-- Aucun --</option>';
+        foreach ($this->clientRepository->all() as $client) {
+            echo '<option value="' . esc_attr((string) $client->id()) . '">' . esc_html($client->nom()) . '</option>';
         }
         echo '</select></div>';
         echo '<div class="champ"><label for="sp-compta-sr-detail">Detail</label>';
@@ -141,12 +142,12 @@ final class SaisieRapideShortcode
             wp_die(esc_html__('Acces non autorise.', 'sp-compta'));
         }
 
-        $this->depenseScreen->saveFromRequest($_POST, $_FILES);
+        $this->recetteScreen->saveFromRequest($_POST, $_FILES);
 
         $redirectTo = isset($_POST['redirect_to']) ? esc_url_raw(wp_unslash($_POST['redirect_to'])) : home_url('/');
         $redirectTo = wp_validate_redirect($redirectTo, home_url('/'));
 
-        wp_safe_redirect(add_query_arg('sp_compta_saved', 'depense', $redirectTo));
+        wp_safe_redirect(add_query_arg('sp_compta_saved', 'recette', $redirectTo));
         exit;
     }
 }
