@@ -1,0 +1,23 @@
+{
+    "name": "asso/sp-compta",
+    "description": "Plugin WordPress de gestion de tresorerie associative (depenses, recettes, devis, factures, clients, fournisseurs, sponsors).",
+    "type": "wordpress-plugin",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.6",
+        "squizlabs/php_codesniffer": "^3.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "SpCompta\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SpCompta\\Tests\\": "tests/"
+        }
+    }
+}
