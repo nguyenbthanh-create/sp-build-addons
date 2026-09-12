@@ -19,7 +19,7 @@ final class DepenseScreen implements AdminScreen
     private const ACTION_SAVE = 'sp_compta_save_depense';
     private const ACTION_DELETE = 'sp_compta_delete_depense';
     private const NONCE = 'sp_compta_depense_nonce';
-    private const MODES_PAIEMENT = ['CB', 'cheque', 'especes', 'virement'];
+    private const MODES_PAIEMENT = ['CB', 'cheque', 'especes', 'virement', 'prelevement'];
 
     public function __construct(
         private DepenseRepository $repository,

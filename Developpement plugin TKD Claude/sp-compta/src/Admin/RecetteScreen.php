@@ -19,7 +19,7 @@ final class RecetteScreen implements AdminScreen
     private const ACTION_SAVE = 'sp_compta_save_recette';
     private const ACTION_DELETE = 'sp_compta_delete_recette';
     private const NONCE = 'sp_compta_recette_nonce';
-    private const MODES_PAIEMENT = ['CB', 'cheque', 'especes', 'virement'];
+    private const MODES_PAIEMENT = ['CB', 'cheque', 'especes', 'virement', 'prelevement'];
 
     public function __construct(
         private RecetteRepository $repository,

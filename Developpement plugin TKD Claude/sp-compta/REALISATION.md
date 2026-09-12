@@ -50,6 +50,10 @@ Journal daté de ce qui a été **réellement fait** sur ce plugin. Reconstitué
 - **Export CSV des mouvements** ([Reporting/MouvementsCsvExportateur.php](src/Reporting/MouvementsCsvExportateur.md)), ajouté le même jour à la demande de la trésorière pour archivage dans Excel : une ligne par dépense/recette triée par date, montant signé (négatif pour une dépense), tiers résolu (fournisseur/client/provenance), format pensé pour Excel-FR (point-virgule, BOM UTF-8, virgule décimale) et protégé contre l'injection de formule sur les champs de texte libre.
 - **Bascule Dépense/Recette sur la saisie rapide** ([Front/SaisieRapideCombineeShortcode.php](src/Front/SaisieRapideCombineeShortcode.md)), suite à un retour utilisateur après avoir testé la fonctionnalité : les deux formulaires de saisie rapide, jusque-là deux shortcodes/pages séparés, sont désormais réunis sur une seule page avec deux boutons pour passer de l'un à l'autre sans rechargement. Le shortcode `[sp_compta_saisie_rapide]` pointe maintenant vers cette page combinée ; `[sp_compta_saisie_rapide_recette]` n'existe plus en tant que shortcode public (les deux anciens manifests PWA distincts sont fusionnés en un seul).
 
+## 12/09/2026
+
+- Ajout du mode de paiement **« prelevement »** (prélèvement automatique) dans `DepenseScreen::MODES_PAIEMENT` et `RecetteScreen::MODES_PAIEMENT` — les deux constantes sont dupliquées entre les deux écrans (pas de référentiel commun), donc modifiées ensemble. Aucune migration de schéma nécessaire : la colonne `mode_paiement` est un simple `VARCHAR(20)`, pas un ENUM (contrairement à `tkd-cotisations`). Répercuté automatiquement dans la saisie rapide (Dépense/Recette) et l'export CSV des mouvements, qui réutilisent déjà `modesPaiement()`/la valeur brute sans liste dupliquée.
+
 ---
 
-*Dernière mise à jour de ce fichier : 11/09/2026. Ce plugin n'a pas d'historique Git — pense-bête à mettre à jour manuellement après chaque session, ou mieux : initialiser Git dessus (voir [../JOURNAL.md](../JOURNAL.md)).*
+*Dernière mise à jour de ce fichier : 12/09/2026. Ce plugin n'a pas d'historique Git — pense-bête à mettre à jour manuellement après chaque session, ou mieux : initialiser Git dessus (voir [../JOURNAL.md](../JOURNAL.md)).*
