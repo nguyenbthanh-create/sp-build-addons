@@ -1,0 +1,400 @@
+<style>
+  /* --- CONTENEUR PRINCIPAL --- */
+  .tkd-table-wrapper {
+    background-color: #1a1a1a; /* Fond global sombre */
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 1200px;
+  }
+  /* --- COULEUR COLONNE POOMSAE --- */
+  .tkd-custom-table td:last-child {
+    color: FFFFFF; /* Remplace par la couleur de ton choix (ici jaune) */
+    /* Tu peux même ajouter d'autres styles comme font-weight: bold; */
+  }
+  /* --- EN-TÊTE DU TABLEAU --- */
+  .tkd-header-section {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .tkd-header-section h1 {
+    color: #FFD700;
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin: 0 0 10px 0;
+    letter-spacing: 1px;
+  }
+  
+  .tkd-header-section p {
+    color: #aaaaaa;
+    font-size: 14px;
+    margin: 0 0 15px 0;
+  }
+  
+  .tkd-divider {
+    border: none;
+    height: 3px;
+    background-color: #DC143C; /* Ligne rouge */
+    margin: 0;
+  }
+
+  /* --- RESPONSIVE WRAPPER --- */
+  .tkd-table-responsive {
+    width: 100%;
+    overflow-x: auto; /* Permet le scroll sur mobile pour ne pas perdre la 3e colonne */
+  }
+
+  /* --- STYLE DU TABLEAU --- */
+  .tkd-custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px; /* Force l'affichage de toutes les colonnes */
+    margin-top: 10px;
+  }
+
+  .tkd-custom-table th {
+    color: #FFD700;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 15px 10px;
+    border-bottom: 1px solid #333;
+    font-size: 13px;
+  }
+  
+  /* Alignements spécifiques des en-têtes */
+  .tkd-custom-table th.col-center { text-align: center; }
+  .tkd-custom-table th.col-left { text-align: left; }
+
+  .tkd-custom-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #333;
+    vertical-align: middle;
+    font-size: 13px;
+  }
+
+  /* Lignes alternées */
+  .tkd-custom-table tbody tr:nth-child(even) { background-color: #1a1a1a; }
+  .tkd-custom-table tbody tr:nth-child(odd)  { background-color: #222222; }
+  .tkd-custom-table tbody tr:hover { background-color: #2a2a2a; }
+
+  /* --- TYPOGRAPHIE TEXTES --- */
+  .col-grd { 
+    color: #4c98af;
+	text-align: center; 
+    font-weight: bold; 
+    font-size: 14px; 
+  }
+  .col-belt-cell { text-align: center; }
+  
+  .tkd-kor {
+    color: #5bc0de; /* Bleu Cyan pour le Coréen */
+    font-style: italic;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .tkd-fr {
+    color: #ffffff; /* Blanc pour le Français */
+    display: block;
+  }
+
+  /* --- PASTILLES DE CEINTURES (PILLS) --- */
+  .tkd-pill {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 11px;
+    min-width: 85px;
+    text-align: center;
+    color: #000000; /* Texte noir par défaut */
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  /* Couleurs des pastilles */
+  .bg-blanche { background-color: #ffffff; }
+  .bg-jaune { background-color: #FFD700; }
+  .bg-jau-ora { background: linear-gradient(90deg, #FFD700 50%, #FF8C00 50%); }
+  .bg-orange { background-color: #FF8C00; }
+  .bg-ora-ver { background: linear-gradient(90deg, #FF8C00 50%, #27ae60 50%); }
+  .bg-verte { background-color: #27ae60; color: #ffffff; }
+  .bg-violette { background-color: #8e44ad; color: #ffffff; }
+  .bg-bleue { background-color: #2980b9; color: #ffffff; }
+  .bg-rouge { background-color: #c0102a; color: #ffffff; }
+  .bg-poom { background: linear-gradient(90deg, #c0102a 50%, #111111 50%); color: #ffffff; border-color: #c0392b; }
+
+</style>
+
+<div class="tkd-table-wrapper">
+  
+  <div class="tkd-header-section">
+    <h1>PROGRAMME DE PROGRESSION TECHNIQUE</h1>
+    <p>Grades &amp; Ceintures • Taekwondo Claira • tkdclaira.fr</p>
+    <hr class="tkd-divider">
+  </div>
+
+  <div class="tkd-table-responsive">
+    <table class="tkd-custom-table">
+      <thead>
+        <tr>
+          <th class="col-center" style="width: 50px;">GRD</th>
+          <th class="col-center" style="width: 110px;">CEINTURE</th>
+          <th class="col-left">TECHNIQUES BRAS</th>
+          <th class="col-left">TECHNIQUES JAMBES</th>
+          <th class="col-left">POOMSAE A CONNAITRE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 16e -->
+        <tr>
+          <td class="col-grd">16e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-blanche">BLANCHE</span></td>
+          <td>
+            <span class="tkd-kor">Montonn Jireugui</span>
+            <span class="tkd-fr">Poing niveau moyen</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Ap paldolegui</span>
+            <span class="tkd-fr">Levée de jambe</span>
+          </td>
+          <td>-</td>
+        </tr>
+        <!-- 15e -->
+        <tr>
+          <td class="col-grd">15e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-jaune">JAUNE</span></td>
+          <td>
+            <span class="tkd-kor">Arae Makki</span>
+            <span class="tkd-fr">Blocage bas</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Ap Tchagui</span>
+            <span class="tkd-fr">Coup de pied de face niveau visage</span>
+          </td>
+          <td>-</td>
+        </tr>
+        <!-- 14e -->
+        <tr>
+          <td class="col-grd">14e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-jau-ora">JAUN / ORA</span></td>
+          <td>
+            <span class="tkd-kor">Momtong Makki</span>
+            <span class="tkd-fr">Blocage moyen vers intérieur</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Neryo Tchagui</span>
+            <span class="tkd-fr">Coup de pied marteau</span>
+          </td>
+          <td>1/2 Taegeuk 1 (Il Jang)</td>
+        </tr>
+        <!-- 13e -->
+        <tr>
+          <td class="col-grd">13e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-orange">ORANGE</span></td>
+          <td>
+            <span class="tkd-kor">Olgoul Makki</span>
+            <span class="tkd-fr">Blocage visage</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Yop Tchagui</span>
+            <span class="tkd-fr">Coup de pied latéral</span>
+          </td>
+          <td>Taegeuk 1 (Il Jang) complet</td>
+        </tr>
+        <!-- 12e -->
+        <tr>
+          <td class="col-grd">12e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-orange">ORA (*)</span></td>
+          <td>
+            <span class="tkd-kor">Montonn Doubonn Jireugui</span>
+            <span class="tkd-fr">Enchaînement de deux coups de poing</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Bandal Tchagui</span>
+            <span class="tkd-fr">Semi-circulaire ventre</span>
+          </td>
+          <td>1/2 Taegeuk 2 (Yi Jang)</td>
+        </tr>
+        <!-- 11e -->
+        <tr>
+          <td class="col-grd">11e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-ora-ver">ORA / VER</span></td>
+          <td>
+            <span class="tkd-kor">Sonnal Mok Tchigui</span>
+            <span class="tkd-fr">Frappe tranchant cou</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Dollyo Tchagui</span>
+            <span class="tkd-fr">Circulaire niveau visage</span>
+          </td>
+          <td>Taegeuk 2 complet</td>
+        </tr>
+        <!-- 10e -->
+        <tr>
+          <td class="col-grd">10e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-verte">VERTE</span></td>
+          <td>
+            <span class="tkd-kor">Bakkat Makki</span>
+            <span class="tkd-fr">Blocage vers l'extérieur avant-bras</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Dwit Tchagui</span>
+            <span class="tkd-fr">Coup de pied arrière</span>
+          </td>
+          <td>1/2 Taegeuk 3 (Sam Jang)</td>
+        </tr>
+        <!-- 9e -->
+        <tr>
+          <td class="col-grd">9e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-verte">VERTE (*)</span></td>
+          <td>
+            <span class="tkd-kor">Sonnal montonn Makki</span>
+            <span class="tkd-fr">Blocage double tranchant</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Twi-o Ap Tchagui</span>
+            <span class="tkd-fr">Coup de pied sauté de face</span>
+          </td>
+          <td>Taegeuk 3 complet</td>
+        </tr>
+        <!-- 8e -->
+        <tr>
+          <td class="col-grd">8e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-violette">VIOLETTE</span></td>
+          <td>
+            <span class="tkd-kor">Pyon Son Kkeut Jireugui</span>
+            <span class="tkd-fr">Pique de doigts</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Furyot Tchagui</span>
+            <span class="tkd-fr">Coup de pied fouetté</span>
+          </td>
+          <td>1/2 Taegeuk 4 (Sa Jang)</td>
+        </tr>
+        <!-- 7e -->
+        <tr>
+          <td class="col-grd">7e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-violette">VIO (*)</span></td>
+          <td>
+            <span class="tkd-kor">Jebi Poom Mok Tchigui</span>
+            <span class="tkd-fr">Bloc. haut + frappe cou</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Momdolyo Tchagui</span>
+            <span class="tkd-fr">Retourné circulaire</span>
+          </td>
+          <td>Taegeuk 4 complet</td>
+        </tr>
+        <!-- 6e -->
+        <tr>
+          <td class="col-grd">6e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-bleue">BLEUE</span></td>
+          <td>
+            <span class="tkd-kor">Palkoup Tchigui</span>
+            <span class="tkd-fr">Frappe du coude</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Twi-o Yop Tchagui</span>
+            <span class="tkd-fr">Sauté latéral</span>
+          </td>
+          <td>1/2 Taegeuk 5 (Oh Jang)</td>
+        </tr>
+        <!-- 5e -->
+        <tr>
+          <td class="col-grd">5e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-bleue">BLEUE (*)</span></td>
+          <td>
+            <span class="tkd-kor">Me Joomok Tchigui</span>
+            <span class="tkd-fr">Frappe marteau poing</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Twi-o Dollyo Tchagui</span>
+            <span class="tkd-fr">Sauté circulaire</span>
+          </td>
+          <td>Taegeuk 5 complet</td>
+        </tr>
+        <!-- 4e -->
+        <tr>
+          <td class="col-grd">4e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-bleue">BLEUE (**)</span></td>
+          <td>
+            <span class="tkd-kor">Eotgoreo Makki</span>
+            <span class="tkd-fr">Blocage croisé bas/haut</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Nare Tchagui</span>
+            <span class="tkd-fr">Double coup de pied</span>
+          </td>
+          <td>Taegeuk 6 complet (Youk Jang)</td>
+        </tr>
+        <!-- 3e -->
+        <tr>
+          <td class="col-grd">3e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-rouge">ROUGE</span></td>
+          <td>
+            <span class="tkd-kor">Batangson Montonn Makki</span>
+            <span class="tkd-fr">Blocage paume niveau moyen</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Twi-o Dwit Tchagui</span>
+            <span class="tkd-fr">Sauté arrière</span>
+          </td>
+          <td>Taegeuk 7 complet (Chil Jang)</td>
+        </tr>
+        <!-- 2e -->
+        <tr>
+          <td class="col-grd">2e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-rouge">ROUGE (*)</span></td>
+          <td>
+            <span class="tkd-kor">Kawi Makki</span>
+            <span class="tkd-fr">Blocage en ciseaux</span>
+          </td>
+          <td>
+            <span class="tkd-kor">Twi-o Mondolyo Tchagui</span>
+            <span class="tkd-fr">Sauté retourné</span>
+          </td>
+          <td>Taegeuk 8 complet (Pal Jang)</td>
+        </tr>
+        <!-- 1e -->
+        <tr>
+          <td class="col-grd">1e</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-rouge">ROUGE (**)</span></td>
+          <td colspan="2">
+            <span class="tkd-kor">Maîtrise des enchaînements cibles et combinaisons</span>
+          </td>
+          <td>Révision Globale (1 à 8)</td>
+        </tr>
+        <!-- Poom -->
+        <tr>
+          <td class="col-grd">Poom</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-poom">ROU / NOI</span></td>
+          <td colspan="2">
+            <span class="tkd-kor">Techniques spécifiques Koryo &amp; Cibles Multiples</span>
+          </td>
+          <td>Koryo Poomsae</td>
+        </tr>
+        <!-- Y Poom -->
+        <tr>
+          <td class="col-grd">Y Poom</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-poom">ROU / NOI</span></td>
+          <td colspan="2">
+            <span class="tkd-kor">Techniques spécifiques Keumgang &amp; Maintien équilibre</span>
+          </td>
+          <td>Keumgang Poomsae</td>
+        </tr>
+        <!-- Sam Poom -->
+        <tr>
+          <td class="col-grd">Sam Poom</td>
+          <td class="col-belt-cell"><span class="tkd-pill bg-poom">ROU / NOI</span></td>
+          <td colspan="2">
+            <span class="tkd-kor">Techniques spécifiques Taebaek &amp; Précision raquettes</span>
+          </td>
+          <td>Taebaek Poomsae</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
