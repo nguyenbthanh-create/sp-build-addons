@@ -396,15 +396,21 @@ function tkd_page_init_saison() {
         }
     }
 
-    // Récupérer tous les élèves actifs avec leur cotisation actuelle
-    $eleves = $wpdb->get_results(
+    // Récupérer tous les élèves actifs de la saison courante avec leur cotisation actuelle.
+    // Le filtre e.saison exclut les non-renouvelés restés actifs=1 sur l'ancienne saison, en
+    // attendant la désactivation manuelle par le bureau (cf. même correctif sur la Vue globale).
+    // Une saison vide (fiche ajoutée/modifiée manuellement côté sp_build sans ce champ rempli —
+    // ce n'est qu'un placeholder visuel, pas une valeur par défaut) n'est pas traitée comme une
+    // ancienne saison : seule une AUTRE saison explicite exclut la fiche.
+    $eleves = $wpdb->get_results( $wpdb->prepare(
         "SELECT e.id, e.nom, e.prenom, e.categorie_age,
                 c.montant_du, c.statut
          FROM {$wpdb->prefix}sp_cal_eleves e
-         LEFT JOIN {$wpdb->prefix}sp_cal_cotisations c ON c.eleve_id = e.id AND c.saison = '$saison'
-         WHERE e.actif = 1
-         ORDER BY e.categorie_age, e.nom, e.prenom"
-    );
+         LEFT JOIN {$wpdb->prefix}sp_cal_cotisations c ON c.eleve_id = e.id AND c.saison = %s
+         WHERE e.actif = 1 AND (e.saison = %s OR e.saison = '' OR e.saison IS NULL)
+         ORDER BY e.categorie_age, e.nom, e.prenom",
+        $saison, $saison
+    ) );
 
     // Préparer les données JS pour le filtrage client
     $eleves_js = [];
@@ -638,6 +644,20 @@ function tkd_page_cotisations_global() {
     }
 
     $where = "WHERE e.actif = 1";
+    // Sur la saison en cours, un adherent qui n'a pas encore renouvele (fiche restee sur l'ancienne
+    // saison cote sp_build) ne doit pas apparaitre comme s'il etait deja inscrit cette saison-ci —
+    // meme s'il n'a pas encore ete desactive manuellement par le bureau (etape separee et volontaire,
+    // cf. class-renouvellement.php). Sur une saison passee (lecture seule), on garde l'ancien
+    // comportement : on affiche les actifs actuels tels quels, la fiche ne conservant pas l'historique
+    // complet des saisons traversees.
+    // Le champ e.saison n'a pas de valeur par defaut sur la fiche sp_build quand un adherent est
+    // ajoute/modifie manuellement (juste un placeholder visuel, pas une vraie valeur — cf.
+    // class-admin-members.php:507) : une fiche avec saison vide n'est donc pas forcement un
+    // non-renouvele, elle peut juste ne jamais avoir ete renseignee. On l'exclut seulement si elle
+    // porte une AUTRE saison explicite (signe qu'elle vient reellement de l'ancienne saison).
+    if ( $filtre_saison === $saison_courante ) {
+        $where .= $wpdb->prepare( " AND (e.saison = %s OR e.saison = '' OR e.saison IS NULL)", $filtre_saison );
+    }
     if ( $filtre_cat ) $where .= $wpdb->prepare( " AND e.categorie_age = %s", $filtre_cat );
     $saison_clause = $wpdb->prepare( "c.saison = %s", $filtre_saison );
 
@@ -692,6 +712,10 @@ function tkd_page_cotisations_global() {
             Vous consultez une saison passée (<strong><?php echo esc_html( $filtre_saison ); ?></strong>), en lecture. Pour saisir un paiement sur la saison en cours, repassez sur <strong><?php echo esc_html( $saison_courante ); ?></strong>.
         </p></div>
         <?php endif; ?>
+
+        <p style="font-size:13px; color:#666;">
+            <?php echo count( $eleves ); ?> adhérent<?php echo count( $eleves ) > 1 ? 's' : ''; ?> affiché<?php echo count( $eleves ) > 1 ? 's' : ''; ?>
+        </p>
 
         <table class="widefat">
             <thead><tr><th>Nom</th><th>Prénom</th><th>Catégorie</th><th>Dû</th><th>Payé</th><th>Reste</th><th>Statut</th><th>Actions</th></tr></thead>
@@ -894,6 +918,40 @@ function tkd_page_params() {
 // 8. FICHE INDIVIDUELLE — SAISIE PAIEMENTS
 // ============================================================
 
+// Initialisation individuelle depuis la fiche (cas "non initialisé" : évite de repasser
+// par l'écran d'Initialisation en masse pour un seul élève).
+add_action( 'wp_ajax_tkd_initialiser_cotisation_eleve', 'tkd_ajax_initialiser_cotisation_eleve' );
+function tkd_ajax_initialiser_cotisation_eleve() {
+    check_ajax_referer( 'tkd_paiement_nonce', 'nonce' );
+    if ( ! current_user_can( TKD_COT_CAP ) ) wp_die( 'Accès refusé' );
+
+    global $wpdb;
+    $eleve_id = intval( $_POST['eleve_id'] );
+    $tarif_id = intval( $_POST['tarif_id'] );
+    $saison   = tkd_get_saison_courante();
+
+    $tarif = $wpdb->get_row( $wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}sp_cal_cotisation_tarifs WHERE id = %d", $tarif_id
+    ));
+    if ( ! $tarif ) wp_send_json_error( 'Tarif introuvable' );
+
+    $existing = $wpdb->get_var( $wpdb->prepare(
+        "SELECT id FROM {$wpdb->prefix}sp_cal_cotisations WHERE eleve_id = %d AND saison = %s",
+        $eleve_id, $saison
+    ));
+    if ( $existing ) wp_send_json_error( 'Une cotisation existe déjà pour cet élève sur cette saison.' );
+
+    $wpdb->insert( $wpdb->prefix . 'sp_cal_cotisations', [
+        'eleve_id'   => $eleve_id,
+        'saison'     => $saison,
+        'tarif_id'   => $tarif->id,
+        'montant_du' => $tarif->montant,
+        'statut'     => 'en_attente',
+    ]);
+
+    wp_send_json_success( 'Cotisation initialisée avec le tarif "' . $tarif->libelle . '".' );
+}
+
 add_action( 'wp_ajax_tkd_ajouter_paiement', 'tkd_ajax_ajouter_paiement' );
 function tkd_ajax_ajouter_paiement() {
     check_ajax_referer( 'tkd_paiement_nonce', 'nonce' );
@@ -1036,10 +1094,48 @@ function tkd_render_fiche_cotisation() {
         </h2>
 
         <?php if ( ! $cotis ): ?>
-            <div class="notice notice-warning" style="margin:0;">
-                <p>Aucune cotisation initialisée pour cet élève.
-                <a href="?page=tkd-cotisations-init">Initialiser la saison →</a></p>
+            <div class="notice notice-warning" style="margin:0; padding:12px 16px;">
+                <p style="margin-top:0;">Aucune cotisation initialisée pour cet élève sur la saison <?php echo esc_html($saison); ?>.</p>
+                <?php if ( empty( $tarifs ) ): ?>
+                <p style="margin-bottom:0;">Aucun tarif n'est encore défini pour cette saison.
+                <a href="?page=tkd-cotisations-tarifs">Créer les tarifs →</a></p>
+                <?php else: ?>
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <label style="font-weight:600; font-size:13px;">Tarif à appliquer :
+                        <select id="tkd-init-tarif-select" style="padding:6px 8px; border:1px solid #ddd; border-radius:4px;">
+                            <?php foreach ($tarifs as $t): ?>
+                            <option value="<?php echo $t->id; ?>">
+                                <?php echo esc_html($t->libelle . ' — ' . number_format($t->montant,2) . ' €'); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+                    <button type="button" class="button button-primary" id="tkd-btn-init-cotis">Initialiser avec ce tarif</button>
+                    <span id="tkd-init-msg" style="font-size:13px;"></span>
+                </div>
+                <p style="margin-bottom:0;"><a href="?page=tkd-cotisations-init">Ou initialiser plusieurs élèves à la fois →</a></p>
+                <?php endif; ?>
             </div>
+            <script>
+            document.getElementById('tkd-btn-init-cotis')?.addEventListener('click', function() {
+                var msg = document.getElementById('tkd-init-msg');
+                msg.style.color = '';
+                msg.textContent = 'Initialisation…';
+                fetch(ajaxurl, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/x-www-form-urlencoded'},
+                    body: new URLSearchParams({
+                        action:   'tkd_initialiser_cotisation_eleve',
+                        nonce:    '<?php echo $nonce; ?>',
+                        eleve_id: <?php echo $eleve_id; ?>,
+                        tarif_id: document.getElementById('tkd-init-tarif-select').value,
+                    })
+                }).then(r => r.json()).then(r => {
+                    if (r.success) { msg.style.color='green'; msg.textContent='✅ ' + r.data; setTimeout(()=>location.reload(),600); }
+                    else { msg.style.color='red'; msg.textContent='❌ ' + r.data; }
+                });
+            });
+            </script>
         <?php else: ?>
 
         <div class="tkd-fiche-grid">
