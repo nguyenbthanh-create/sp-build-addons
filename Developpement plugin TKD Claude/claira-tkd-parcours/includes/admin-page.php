@@ -103,66 +103,7 @@ function claira_tkd_render_admin_page() {
     $selected_age = $edit_grade ? wp_get_post_terms( $edit_grade->ID, 'tkd_age_group', array( 'fields' => 'ids' ) ) : array();
     $selected_keup = $edit_grade ? get_post_meta( $edit_grade->ID, '_claira_tkd_keup_rank', true ) : '';
 
-    $keup_options_by_age = array(
-        'Baby' => array(
-            '19e' => '19e',
-            '18e' => '18e',
-            '17e' => '17e',
-            '16e' => '16e',
-            '15e' => '15e',
-            '14e' => '14e',
-            '13e' => '13e',
-        ),
-        'Enfant' => array(
-            '16e' => '16e',
-            '15e' => '15e',
-            '14e' => '14e',
-            '13e' => '13e',
-            '12e' => '12e',
-            '11e' => '11e',
-            '10e' => '10e',
-            '9e' => '9e',
-            '8e' => '8e',
-            '7e' => '7e',
-            '6e' => '6e',
-            '5e' => '5e',
-            '4e' => '4e',
-            '3e' => '3e',
-            '2e' => '2e',
-            '1e' => '1e',
-            'Poom' => 'Poom',
-            'Y Poom' => 'Y Poom',
-            'Sam Poom' => 'Sam Poom',
-        ),
-        'Adolescent' => array(
-            '10e' => '10e',
-            '9e' => '9e',
-            '8e' => '8e',
-            '7e' => '7e',
-            '6e' => '6e',
-            '5e' => '5e',
-            '4e' => '4e',
-            '3e' => '3e',
-            '2e' => '2e',
-            '1e' => '1e',
-            'II Poom' => 'II Poom',
-            '1er Dan' => '1er Dan',
-        ),
-        'Adulte' => array(
-            '10e' => '10e',
-            '9e' => '9e',
-            '8e' => '8e',
-            '7e' => '7e',
-            '6e' => '6e',
-            '5e' => '5e',
-            '4e' => '4e',
-            '3e' => '3e',
-            '2e' => '2e',
-            '1e' => '1e',
-            'II Poom' => 'II Poom',
-            '1er Dan' => '1er Dan',
-        ),
-    );
+    $keup_options_by_age = claira_tkd_get_keup_options_by_age();
 
     $selected_age_name = '';
     if ( ! empty( $selected_age ) ) {

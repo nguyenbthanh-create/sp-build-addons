@@ -3,7 +3,7 @@
  * Plugin Name: Claira TKD Parcours
  * Plugin URI:  https://example.com/
  * Description: Interface ludique de suivi des grades TKD avec contenu texte, ressources téléchargeables et vidéos URL.
- * Version:     1.2.1
+ * Version:     1.3.0
  * Author:      Claira
  * Text Domain: claira-tkd-parcours
  * Domain Path: /languages
@@ -15,11 +15,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'CLAIRA_TKD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLAIRA_TKD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.2.1' );
+define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.3.0' );
 
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/post-types.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/shortcodes.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/import.php';
+require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/print-view.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/admin-page.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/enqueue.php';
 
@@ -30,6 +31,7 @@ add_action( 'admin_enqueue_scripts', 'claira_tkd_admin_assets' );
 add_action( 'admin_menu', 'claira_tkd_register_admin_menu' );
 
 add_shortcode( 'claira_tkd_parcours', 'claira_tkd_parcours_shortcode' );
+add_shortcode( 'claira_tkd_parcours_tableau', 'claira_tkd_progression_table_shortcode' );
 
 add_action( 'plugins_loaded', 'claira_tkd_load_textdomain' );
 

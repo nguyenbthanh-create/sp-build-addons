@@ -3,7 +3,7 @@ Contributors: Claira
 Tags: taekwondo, progression, grade, parcours, ressources, vidéo, shortcode
 Requires at least: 5.0
 Tested up to: 6.5
-Stable tag: 1.2.0
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -16,6 +16,7 @@ Claira TKD Parcours propose un affichage ludique des grades TKD avec un modal re
 == Fonctionnalités ==
 
 * Shortcode public : [claira_tkd_parcours]
+* Shortcode « cahier de révision » imprimable : [claira_tkd_parcours_tableau age="Enfant"]
 * Page d’administration dans le back-office WordPress (menu « TKD Parcours ») : ajout, édition, suppression et import en masse des grades
 * Type de contenu personnalisé : tkd_grade (sans écran d’édition natif WordPress)
 * Taxonomie : tranches d’âge
@@ -44,6 +45,9 @@ La gestion des grades (import, ajout, édition, suppression) se fait exclusiveme
 
 [claira_tkd_parcours]
 : Affiche l’interface publique de visualisation du parcours.
+
+[claira_tkd_parcours_tableau age="Enfant"]
+: Affiche un tableau complet imprimable (« cahier de révision ») pour la tranche d’âge donnée (Enfant, Adolescent ou Adulte), généré en direct depuis les grades enregistrés — remplace les anciens fichiers technique_enfant.html / technique_adoadulte.html maintenus à la main.
 
 == Notes ==
 

@@ -5,6 +5,75 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Rangs keup valides par tranche d'âge, dans l'ordre officiel de progression
+ * (du grade le plus bas au plus haut). Référence unique utilisée à la fois par
+ * le formulaire d'admin (liste déroulante) et par la vue tableau imprimable
+ * (ordre d'affichage des lignes) — cf. claira_tkd_sort_grades_by_keup().
+ */
+function claira_tkd_get_keup_options_by_age() {
+    return array(
+        'Baby' => array(
+            '19e' => '19e',
+            '18e' => '18e',
+            '17e' => '17e',
+            '16e' => '16e',
+            '15e' => '15e',
+            '14e' => '14e',
+            '13e' => '13e',
+        ),
+        'Enfant' => array(
+            '16e' => '16e',
+            '15e' => '15e',
+            '14e' => '14e',
+            '13e' => '13e',
+            '12e' => '12e',
+            '11e' => '11e',
+            '10e' => '10e',
+            '9e' => '9e',
+            '8e' => '8e',
+            '7e' => '7e',
+            '6e' => '6e',
+            '5e' => '5e',
+            '4e' => '4e',
+            '3e' => '3e',
+            '2e' => '2e',
+            '1e' => '1e',
+            'Poom' => 'Poom',
+            'Y Poom' => 'Y Poom',
+            'Sam Poom' => 'Sam Poom',
+        ),
+        'Adolescent' => array(
+            '10e' => '10e',
+            '9e' => '9e',
+            '8e' => '8e',
+            '7e' => '7e',
+            '6e' => '6e',
+            '5e' => '5e',
+            '4e' => '4e',
+            '3e' => '3e',
+            '2e' => '2e',
+            '1e' => '1e',
+            'II Poom' => 'II Poom',
+            '1er Dan' => '1er Dan',
+        ),
+        'Adulte' => array(
+            '10e' => '10e',
+            '9e' => '9e',
+            '8e' => '8e',
+            '7e' => '7e',
+            '6e' => '6e',
+            '5e' => '5e',
+            '4e' => '4e',
+            '3e' => '3e',
+            '2e' => '2e',
+            '1e' => '1e',
+            'II Poom' => 'II Poom',
+            '1er Dan' => '1er Dan',
+        ),
+    );
+}
+
+/**
  * Référentiel de progression technique (extrait des tableaux Enfant et Ado/Adulte).
  * Sert de source pour l'import en masse déclenché depuis la page d'administration TKD Parcours.
  */

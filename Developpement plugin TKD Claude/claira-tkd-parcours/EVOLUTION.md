@@ -1,5 +1,13 @@
 # Evolution log
 
+## 2026-09-14 — Cahier de révision imprimable généré depuis la base
+
+- Nouveau shortcode `[claira_tkd_parcours_tableau age="Enfant"]` (`includes/print-view.php`) : reproduit le rendu des anciens fichiers statiques `technique_enfant.html` / `technique_adoadulte.html` (tableau complet, pastilles de couleur par ceinture, bilingue coréen/français), mais généré à la volée depuis les grades enregistrés en base plutôt que maintenu à la main dans deux fichiers HTML séparés.
+- Objectif : ces deux fichiers servaient de "cahier de révision" téléchargeable/imprimable pour les élèves (mise en place avant que le plugin n'existe). Plutôt que de les regénérer automatiquement à chaque modification (ce qui aurait recréé une seconde source de vérité à synchroniser, avec des questions d'écriture disque côté hébergeur), le même rendu est maintenant produit directement par le plugin à chaque affichage : une seule source de vérité, toujours à jour.
+- Extraction de `includes/import.php` : la liste des rangs keup par tranche d'âge (précédemment dupliquée dans `admin-page.php`) devient `claira_tkd_get_keup_options_by_age()`, réutilisée à la fois par le formulaire d'admin et par le tri des lignes du tableau imprimable.
+- Ajout d'un rendu spécifique pour l'impression (`@media print` dans `assets/css/style.css`) : fond blanc et texte noir à l'impression, plutôt que le thème sombre de l'affichage à l'écran.
+- Un grade dont le champ "Techniques jambes" est vide alors que "Techniques bras" est rempli est affiché sur une cellule fusionnée (comme les grades de révision globale / Poom dans les fichiers d'origine) — heuristique simple basée sur les données existantes, pas de nouveau champ dédié.
+
 ## 2026-09-12 — Correction : page blanche après validation d'un formulaire admin
 
 - Bug : après avoir déplacé la gestion des grades dans une page d'admin WordPress (menu « TKD Parcours »), valider un import ou un ajout/édition menait à une page blanche.
