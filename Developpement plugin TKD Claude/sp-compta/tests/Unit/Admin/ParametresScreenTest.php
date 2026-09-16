@@ -131,4 +131,49 @@ final class ParametresScreenTest extends WP_UnitTestCase
         $this->assertTrue($result);
         $this->assertNull($this->exerciceRepository->find((int) $exercice->id()));
     }
+
+    /** @test */
+    public function it_corrects_the_solde_initial_of_an_existing_exercice(): void
+    {
+        // Given an existing exercice with a wrong solde_initial
+        $exercice = $this->screen->saveExerciceFromRequest([
+            'date_debut' => '2026-09-01',
+            'date_fin' => '2027-08-31',
+            'solde_initial' => '4315.79',
+        ]);
+
+        // When saveExerciceFromRequest is called again with the same id and the corrected value
+        $updated = $this->screen->saveExerciceFromRequest([
+            'exercice_id' => (string) $exercice->id(),
+            'date_debut' => '2026-09-01',
+            'date_fin' => '2027-08-31',
+            'solde_initial' => '5315.79',
+        ]);
+
+        // Then the same exercice is updated, not duplicated
+        $this->assertSame($exercice->id(), $updated->id());
+        $this->assertSame(5315.79, $updated->soldeInitial());
+        $this->assertCount(1, $this->exerciceRepository->all());
+    }
+
+    /** @test */
+    public function it_never_deactivates_the_active_exercice_when_correcting_its_solde(): void
+    {
+        // Given an active exercice
+        $exercice = $this->screen->saveExerciceFromRequest(['date_debut' => '2026-09-01', 'date_fin' => '2027-08-31']);
+        $this->screen->activateExerciceFromRequest(['id' => (string) $exercice->id()]);
+
+        // When its solde_initial is corrected via the edit form
+        $this->screen->saveExerciceFromRequest([
+            'exercice_id' => (string) $exercice->id(),
+            'date_debut' => '2026-09-01',
+            'date_fin' => '2027-08-31',
+            'solde_initial' => '5315.79',
+        ]);
+
+        // Then it is still the active exercice
+        $active = $this->exerciceRepository->active();
+        $this->assertNotNull($active);
+        $this->assertSame($exercice->id(), $active->id());
+    }
 }

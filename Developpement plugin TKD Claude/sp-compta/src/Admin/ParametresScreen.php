@@ -59,10 +59,14 @@ final class ParametresScreen implements AdminScreen
             wp_die(esc_html__('Acces non autorise.', 'sp-compta'));
         }
 
+        $editingExercice = isset($_GET['edit_exercice'])
+            ? $this->exerciceRepository->find((int) $_GET['edit_exercice'])
+            : null;
+
         echo '<div class="wrap">';
         echo '<h1>Parametres</h1>';
         $this->renderParametresForm();
-        $this->renderExerciceSection();
+        $this->renderExerciceSection($editingExercice);
         $this->renderAccesBureau();
         echo '</div>';
     }
@@ -116,27 +120,44 @@ final class ParametresScreen implements AdminScreen
         echo '</form>';
     }
 
-    private function renderExerciceSection(): void
+    private function renderExerciceSection(?Exercice $editing = null): void
     {
         echo '<hr>';
         echo '<h2>Exercices comptables</h2>';
 
+        $locked = $editing !== null && $this->exerciceDeletionGuard->hasData((int) $editing->id());
+        $dateDebut = $editing !== null ? $editing->dateDebut() : '';
+        $dateFin = $editing !== null ? $editing->dateFin() : '';
+        $soldeInitial = $editing !== null ? (string) $editing->soldeInitial() : '0';
+
+        echo '<h3>' . ($editing !== null ? 'Modifier l\'exercice' : 'Creer un nouvel exercice') . '</h3>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '">';
         wp_nonce_field(self::NONCE);
         echo '<input type="hidden" name="action" value="' . esc_attr(self::ACTION_SAVE_EXERCICE) . '">';
+        echo '<input type="hidden" name="exercice_id" value="' . esc_attr($editing !== null ? (string) $editing->id() : '') . '">';
         echo '<table class="form-table"><tbody>';
         echo '<tr><th><label for="sp-compta-date-debut">Date de debut</label></th>';
-        echo '<td><input type="date" id="sp-compta-date-debut" name="date_debut" required></td></tr>';
+        echo '<td><input type="date" id="sp-compta-date-debut" name="date_debut" value="' . esc_attr($dateDebut) . '"'
+            . ($locked ? ' readonly' : '') . ' required></td></tr>';
         echo '<tr><th><label for="sp-compta-date-fin">Date de fin</label></th>';
-        echo '<td><input type="date" id="sp-compta-date-fin" name="date_fin" required></td></tr>';
+        echo '<td><input type="date" id="sp-compta-date-fin" name="date_fin" value="' . esc_attr($dateFin) . '"'
+            . ($locked ? ' readonly' : '') . ' required></td></tr>';
+        if ($locked) {
+            echo '<tr><td></td><td><span class="description">';
+            echo 'Dates verrouillees : des donnees (depenses, recettes...) sont deja rattachees a cet exercice.';
+            echo '</span></td></tr>';
+        }
         echo '<tr><th><label for="sp-compta-solde-initial">Solde initial du compte</label></th>';
-        echo '<td><input type="number" step="0.01" id="sp-compta-solde-initial" name="solde_initial" value="0"></td></tr>';
+        echo '<td><input type="number" step="0.01" id="sp-compta-solde-initial" name="solde_initial" value="' . esc_attr($soldeInitial) . '"></td></tr>';
         echo '</tbody></table>';
-        submit_button('Creer un nouvel exercice');
+        submit_button($editing !== null ? 'Mettre a jour l\'exercice' : 'Creer un nouvel exercice');
+        if ($editing !== null) {
+            echo ' <a class="button" href="' . esc_url(remove_query_arg('edit_exercice')) . '">Annuler</a>';
+        }
         echo '</form>';
 
         echo '<table class="widefat striped"><thead><tr>';
-        echo '<th>Debut</th><th>Fin</th><th>Solde initial</th><th>Statut</th><th>Suppression</th>';
+        echo '<th>Debut</th><th>Fin</th><th>Solde initial</th><th>Statut</th><th>Actions</th>';
         echo '</tr></thead><tbody>';
 
         foreach ($this->exerciceRepository->all() as $exercice) {
@@ -161,8 +182,14 @@ final class ParametresScreen implements AdminScreen
             echo '</td>';
 
             echo '<td>';
+            $editUrl = add_query_arg(
+                ['page' => self::SLUG, 'edit_exercice' => $exercice->id()],
+                admin_url('admin.php')
+            );
+            echo '<a href="' . esc_url($editUrl) . '">Modifier</a>';
+
             if ($this->exerciceDeletionGuard->hasData((int) $exercice->id())) {
-                echo '<span class="description">Non supprimable (donnees presentes)</span>';
+                echo ' | <span class="description">Non supprimable (donnees presentes)</span>';
             } else {
                 $deleteUrl = wp_nonce_url(
                     add_query_arg(
@@ -171,7 +198,7 @@ final class ParametresScreen implements AdminScreen
                     ),
                     self::NONCE
                 );
-                echo '<a href="' . esc_url($deleteUrl) . '" onclick="return confirm(\'Supprimer cet exercice ?\');">Supprimer</a>';
+                echo ' | <a href="' . esc_url($deleteUrl) . '" onclick="return confirm(\'Supprimer cet exercice ?\');">Supprimer</a>';
             }
             echo '</td>';
 
@@ -240,15 +267,24 @@ final class ParametresScreen implements AdminScreen
     }
 
     /**
+     * Cree un nouvel exercice, ou met a jour un exercice existant si
+     * exercice_id est fourni (formulaire "Modifier l'exercice") - le statut
+     * actif de l'exercice existant est toujours preserve, une mise a jour ne
+     * doit jamais desactiver silencieusement l'exercice en cours.
+     *
      * @param array<string, mixed> $request
      */
     public function saveExerciceFromRequest(array $request): Exercice
     {
+        $id = isset($request['exercice_id']) && $request['exercice_id'] !== '' ? (int) $request['exercice_id'] : null;
+        $existing = $id !== null ? $this->exerciceRepository->find($id) : null;
+
         $exercice = new Exercice(
-            null,
+            $id,
             sanitize_text_field(wp_unslash($request['date_debut'] ?? '')),
             sanitize_text_field(wp_unslash($request['date_fin'] ?? '')),
-            isset($request['solde_initial']) ? (float) $request['solde_initial'] : 0.0
+            isset($request['solde_initial']) ? (float) $request['solde_initial'] : 0.0,
+            $existing !== null ? $existing->actif() : false
         );
 
         return $this->exerciceRepository->save($exercice);
