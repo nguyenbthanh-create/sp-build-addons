@@ -7,6 +7,7 @@ namespace SpCompta;
 use SpCompta\Admin\ClientScreen;
 use SpCompta\Admin\DepenseScreen;
 use SpCompta\Admin\FournisseurScreen;
+use SpCompta\Admin\IkScreen;
 use SpCompta\Admin\Menu;
 use SpCompta\Admin\ParametresScreen;
 use SpCompta\Admin\RapportExerciceScreen;
@@ -14,11 +15,13 @@ use SpCompta\Admin\RecetteScreen;
 use SpCompta\Admin\SoldeScreen;
 use SpCompta\Admin\SponsorScreen;
 use SpCompta\Billing\ExerciceDeletionGuard;
+use SpCompta\Billing\IkPaiementSync;
 use SpCompta\Billing\SponsorPaiementSync;
 use SpCompta\Front\SaisieRapideCombineeShortcode;
 use SpCompta\Front\SaisieRapideRecetteShortcode;
 use SpCompta\Front\SaisieRapideShortcode;
 use SpCompta\Front\ServiceWorker;
+use SpCompta\Integration\SpBuildReader;
 use SpCompta\Media\AttachmentUploader;
 use SpCompta\Numbering\DocumentNumeroGenerator;
 use SpCompta\Numbering\SequenceGenerator;
@@ -28,6 +31,7 @@ use SpCompta\Repository\DevisRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\FactureRepository;
 use SpCompta\Repository\FournisseurRepository;
+use SpCompta\Repository\IkPaiementRepository;
 use SpCompta\Repository\ParametresRepository;
 use SpCompta\Repository\RecetteRepository;
 use SpCompta\Repository\SponsorRepository;
@@ -145,6 +149,8 @@ final class Plugin
 
         $attachmentUploader = new AttachmentUploader();
         $parametresRepository = new ParametresRepository($this->database->tableParametres());
+        $ikRepository = new IkPaiementRepository($this->database->tableIkPaiement());
+        $spBuildReader = new SpBuildReader();
 
         $screens = [
             new DepenseScreen($depenseRepository, $exerciceRepository, $fournisseurRepository, $attachmentUploader),
@@ -154,6 +160,12 @@ final class Plugin
                 $exerciceRepository,
                 new SponsorPaiementSync($sponsorRepository, $recetteRepository),
                 $attachmentUploader
+            ),
+            new IkScreen(
+                $spBuildReader,
+                $ikRepository,
+                new IkPaiementSync($ikRepository, $depenseRepository, $exerciceRepository),
+                $exerciceRepository
             ),
             new SoldeScreen($depenseRepository, $recetteRepository, $exerciceRepository),
             new RapportExerciceScreen(

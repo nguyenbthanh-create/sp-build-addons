@@ -11,7 +11,7 @@ final class Database
      * colonne) pour que maybeUpgrade() rejoue createTables() sur les sites
      * deja actives, sans desactivation/reactivation du plugin.
      */
-    private const DB_VERSION = '1.2.0';
+    private const DB_VERSION = '1.3.0';
     private const DB_VERSION_OPTION = 'sp_compta_db_version';
 
     public function tableExercice(): string
@@ -74,6 +74,11 @@ final class Database
         return $this->prefix() . 'sp_compta_facture_ligne';
     }
 
+    public function tableIkPaiement(): string
+    {
+        return $this->prefix() . 'sp_compta_ik_paiement';
+    }
+
     public function createTables(): void
     {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -92,6 +97,7 @@ final class Database
         dbDelta($this->devisLigneSchema($charsetCollate));
         dbDelta($this->factureSchema($charsetCollate));
         dbDelta($this->factureLigneSchema($charsetCollate));
+        dbDelta($this->ikPaiementSchema($charsetCollate));
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION);
     }
@@ -318,6 +324,24 @@ final class Database
             prix_unitaire DECIMAL(10,2) NOT NULL DEFAULT 0,
             PRIMARY KEY (id),
             KEY facture_id (facture_id)
+        ) {$charsetCollate};";
+    }
+
+    private function ikPaiementSchema(string $charsetCollate): string
+    {
+        $table = $this->tableIkPaiement();
+
+        return "CREATE TABLE {$table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            trainer_id BIGINT UNSIGNED NOT NULL,
+            annee SMALLINT UNSIGNED NOT NULL,
+            mois TINYINT UNSIGNED NOT NULL,
+            paye TINYINT(1) NOT NULL DEFAULT 0,
+            montant_verse DECIMAL(10,2) NULL,
+            date_paiement DATE NULL,
+            depense_id BIGINT UNSIGNED NULL,
+            PRIMARY KEY (id),
+            UNIQUE KEY trainer_periode (trainer_id, annee, mois)
         ) {$charsetCollate};";
     }
 
