@@ -271,7 +271,10 @@ add_action( 'admin_menu', function() {
 function tkd_page_tarifs() {
     global $wpdb;
     $saison = tkd_get_saison_courante();
-    $cats   = [ 'Baby', 'Enfant', 'Ado/adulte', 'RENFO' ];
+    // 5 catégories officielles (cohérent avec sp_build depuis le 18/09/2026) — "RENFO" est un
+    // code de discipline, pas une catégorie d'âge : les élèves en Renforcement musculaire ont
+    // "Tout âge" (non subdivisé par âge, contrairement au Taekwondo).
+    $cats   = [ 'Baby', 'Enfant', 'Ado/adulte', 'Adulte', 'Tout âge' ];
 
     // Sauvegarde
     if ( isset( $_POST['save_tarifs'] ) ) {
@@ -340,7 +343,7 @@ function tkd_page_tarifs() {
     document.getElementById('tkd-add-tarif').addEventListener('click', function() {
         const tbody = document.querySelector('#tkd-tarifs-table tbody');
         const i = tbody.querySelectorAll('tr').length;
-        const cats = ['Baby','Enfant','Ado\/adulte','RENFO'];
+        const cats = ['Baby','Enfant','Ado\/adulte','Adulte','Tout âge'];
         let catHTML = cats.map(c => `<label style="margin-right:10px;"><input type="checkbox" name="tarifs[${i}][categories][]" value="${c}"> ${c}</label>`).join('');
         const row = `<tr class="tkd-tarif-row">
             <td><input type="text" name="tarifs[${i}][libelle]" style="width:100%;" placeholder="ex: Cotisation Baby"></td>
@@ -459,8 +462,8 @@ function tkd_page_init_saison() {
                 <label>Filtrer :
                     <select id="tkd-filtre-cat">
                         <option value="">Toutes catégories</option>
-                        <?php foreach (['Baby','Enfant','Ado/adulte','RENFO'] as $c): ?>
-                        <option value="<?php echo $c; ?>"><?php echo $c; ?></option>
+                        <?php foreach (['Baby','Enfant','Ado/adulte','Adulte','Tout âge'] as $c): ?>
+                        <option value="<?php echo esc_attr($c); ?>"><?php echo esc_html($c); ?></option>
                         <?php endforeach; ?>
                     </select>
                 </label>
@@ -693,8 +696,8 @@ function tkd_page_cotisations_global() {
             <label>Catégorie :
                 <select onchange="window.location='?page=tkd-cotisations&saison=<?php echo esc_js( $filtre_saison ); ?>&cat='+this.value+'&statut=<?php echo esc_js( $filtre_st ); ?>'">
                     <option value="">Toutes</option>
-                    <?php foreach ( [ 'Baby', 'Enfant', 'Ado/adulte', 'RENFO' ] as $c ) : ?>
-                        <option value="<?php echo $c; ?>" <?php selected( $filtre_cat, $c ); ?>><?php echo $c; ?></option>
+                    <?php foreach ( [ 'Baby', 'Enfant', 'Ado/adulte', 'Adulte', 'Tout âge' ] as $c ) : ?>
+                        <option value="<?php echo esc_attr($c); ?>" <?php selected( $filtre_cat, $c ); ?>><?php echo esc_html($c); ?></option>
                     <?php endforeach; ?>
                 </select>
             </label>
@@ -717,8 +720,11 @@ function tkd_page_cotisations_global() {
             <?php echo count( $eleves ); ?> adhérent<?php echo count( $eleves ) > 1 ? 's' : ''; ?> affiché<?php echo count( $eleves ) > 1 ? 's' : ''; ?>
         </p>
 
-        <table class="widefat">
-            <thead><tr><th>Nom</th><th>Prénom</th><th>Catégorie</th><th>Dû</th><th>Payé</th><th>Reste</th><th>Statut</th><th>Actions</th></tr></thead>
+        <table class="widefat" id="tkd-cotis-table">
+            <thead><tr>
+                <th id="tkd-sort-nom" style="cursor:pointer;user-select:none;" title="Trier par ordre alphabétique">Nom <span id="tkd-sort-nom-ico" style="color:#9ca3af;">↕</span></th>
+                <th>Prénom</th><th>Catégorie</th><th>Dû</th><th>Payé</th><th>Reste</th><th>Statut</th><th>Actions</th>
+            </tr></thead>
             <tbody>
             <?php foreach ( $eleves as $e ) :
                 $statut    = $e->statut ?? 'non_init';
@@ -726,7 +732,7 @@ function tkd_page_cotisations_global() {
                 $color     = $statut_colors[ $statut ] ?? '#999';
                 $label     = $statut_labels[ $statut ] ?? '⚫';
             ?>
-                <tr>
+                <tr data-name="<?php echo esc_attr( mb_strtolower( $e->nom . ' ' . $e->prenom ) ); ?>">
                     <td><?php echo esc_html( $e->nom ); ?></td>
                     <td><?php echo esc_html( $e->prenom ); ?></td>
                     <td><?php echo esc_html( $e->categorie_age ); ?></td>
@@ -746,6 +752,25 @@ function tkd_page_cotisations_global() {
             </tbody>
         </table>
     </div>
+    <script>
+    (function(){
+        var th  = document.getElementById('tkd-sort-nom');
+        var ico = document.getElementById('tkd-sort-nom-ico');
+        if (!th) return;
+        var dir = null; // null = ordre serveur (catégorie puis nom), 'asc', 'desc'
+        th.addEventListener('click', function(){
+            dir = dir === 'asc' ? 'desc' : 'asc';
+            ico.textContent = dir === 'asc' ? '▲' : '▼';
+            var tbody = document.querySelector('#tkd-cotis-table tbody');
+            var rows  = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            rows.sort(function(a, b){
+                var cmp = a.dataset.name.localeCompare(b.dataset.name, 'fr');
+                return dir === 'asc' ? cmp : -cmp;
+            });
+            rows.forEach(function(r){ tbody.appendChild(r); });
+        });
+    })();
+    </script>
     <?php
 }
 
@@ -1519,9 +1544,13 @@ function tkd_calculer_categorie_age( $date_naissance_jj_mm, $annee_naissance, $s
     $naissance = mktime(0, 0, 0, $mois, $jour, intval($annee_naissance));
     $age = (int) floor( ($ref - $naissance) / (365.25 * 24 * 3600) );
 
+    // 4 tranches, alignées sur la règle fédérale codée côté sp_build
+    // (SpCalPro_DB::bascule_categories_septembre()) — avant cette correction, Ado/adulte et
+    // Adulte étaient fusionnés ici en une seule tranche "Ado/adulte" (cf. échange du 18/09/2026).
     if ( $age < 6 )       return 'Baby';
     if ( $age <= 10 )     return 'Enfant';
-    return 'Ado/adulte';
+    if ( $age <= 14 )     return 'Ado/adulte';
+    return 'Adulte';
 }
 
 add_action( 'admin_post_tkd_recalculer_categories', 'tkd_recalculer_categories' );
