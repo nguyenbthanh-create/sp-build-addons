@@ -1,0 +1,18 @@
+# Bloque l'acces direct aux fichiers de developpement / documentation qui ne
+# doivent jamais etre servis au navigateur, ainsi qu'au tampon et a la
+# signature du club (utilises uniquement en local par PHP pour generer les
+# PDF — jamais requis par URL — et qui ne doivent pas etre copiables
+# publiquement pour eviter la fabrication de faux documents).
+
+RewriteEngine On
+RewriteRule (^|/)\.git(/|$) - [F,L]
+
+<FilesMatch "(^readme\.txt$|^composer\.(json|lock)$|\.(md|json|sql|log)$|^[Tt]ampon\.jpe?g$|^[Ss]ignature\.jpe?g$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
