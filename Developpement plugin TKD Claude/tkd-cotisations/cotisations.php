@@ -1094,15 +1094,42 @@ function tkd_ajax_marquer_depot() {
     global $wpdb;
     $paiement_id = intval( $_POST['paiement_id'] );
     $depose      = ! empty( $_POST['depose'] );
+    $date_depot  = $depose ? current_time( 'Y-m-d' ) : null;
 
     $updated = $wpdb->update(
         $wpdb->prefix . 'sp_cal_cotisation_paiements',
-        [ 'date_depot_reelle' => $depose ? current_time( 'Y-m-d' ) : null ],
+        [ 'date_depot_reelle' => $date_depot ],
         [ 'id' => $paiement_id ]
     );
     if ( $updated === false ) wp_send_json_error( 'Échec de la mise à jour' );
 
-    wp_send_json_success( $depose ? 'Chèque marqué comme déposé.' : 'Chèque marqué comme non déposé.' );
+    // Règlement intérieur du club : un mail + reçu doit partir à l'adhérent à chaque dépôt
+    // effectif d'un chèque en banque (pas au décochage, correction d'une saisie erronée).
+    $email_envoye = false;
+    if ( $depose ) {
+        $paiement = $wpdb->get_row( $wpdb->prepare(
+            "SELECT p.*, c.eleve_id, c.saison
+             FROM {$wpdb->prefix}sp_cal_cotisation_paiements p
+             INNER JOIN {$wpdb->prefix}sp_cal_cotisations c ON c.id = p.cotisation_id
+             WHERE p.id = %d", $paiement_id
+        ) );
+        if ( $paiement && in_array( $paiement->mode, [ 'cheque', 'cheque_ancv' ], true ) ) {
+            $eleve = $wpdb->get_row( $wpdb->prepare(
+                "SELECT * FROM {$wpdb->prefix}sp_cal_eleves WHERE id=%d", $paiement->eleve_id
+            ) );
+            $cotis = tkd_get_cotisation_eleve( $paiement->eleve_id, $paiement->saison );
+            if ( $eleve && $cotis ) {
+                $email_envoye = (bool) tkd_envoyer_notification_depot_cheque( $eleve, $cotis, $paiement );
+            }
+        }
+    }
+
+    if ( ! $depose ) {
+        wp_send_json_success( 'Chèque marqué comme non déposé.' );
+    }
+    wp_send_json_success( $email_envoye
+        ? 'Chèque marqué comme déposé — email envoyé à l\'adhérent.'
+        : 'Chèque marqué comme déposé (email non envoyé — aucune adresse valide pour cet adhérent).' );
 }
 
 // Page fiche individuelle (appelée depuis vue globale)
@@ -1946,7 +1973,19 @@ function tkd_envoyer_facture_solde( $eleve, $cotis ) {
     return tkd_envoyer_recu_paiement( $eleve, $cotis, $total, $dernier->mode, '', $dernier->date_paiement, $dernier->recu_num, $paiements_email );
 }
 
-function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference, $date_paie, $recu_num, $detail_paiements = array() ) {
+/**
+ * Notifie l'adhérent qu'un chèque qu'il a remis vient d'être déposé en banque (exigence du
+ * règlement intérieur du club) — envoyée quand le bureau coche « Déposé » sur la fiche
+ * cotisation, avec le reçu de ce paiement en pièce jointe (doléance du 24/09/2026).
+ */
+function tkd_envoyer_notification_depot_cheque( $eleve, $cotis, $paiement ) {
+    return tkd_envoyer_recu_paiement(
+        $eleve, $cotis, $paiement->montant, $paiement->mode, $paiement->reference,
+        $paiement->date_paiement, $paiement->recu_num, array(), $paiement->date_depot_reelle
+    );
+}
+
+function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference, $date_paie, $recu_num, $detail_paiements = array(), $date_depot = null ) {
     $dest = $eleve->email ?: $eleve->email_parent;
     if ( ! $dest || ! is_email($dest) ) return false;
 
@@ -1979,7 +2018,11 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
     if ( ! empty($eleve->categorie_saisie) ) $objet .= ' - ' . wp_unslash($eleve->categorie_saisie);
     $montant_fmt = number_format( $montant, 2, ',', ' ' ) . ' €';
 
-    $subject = '[' . $nom_club . '] Reçu N° ' . $recu_num . ' — Paiement cotisation';
+    $date_depot_fmt = $date_depot ? date_create( $date_depot )->format( 'd/m/Y' ) : '';
+
+    $subject = $date_depot
+        ? '[' . $nom_club . '] Votre chèque a été déposé — Reçu N° ' . $recu_num
+        : '[' . $nom_club . '] Reçu N° ' . $recu_num . ' — Paiement cotisation';
 
     $body  = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"></head>';
     $body .= '<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Arial,sans-serif;">';
@@ -1988,15 +2031,19 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
     $body .= '<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.08);">';
 
     $body .= '<tr><td style="background:#1e3a5f;padding:28px 40px;text-align:center;">';
-    $body .= '<div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">REÇU DE PAIEMENT</div>';
+    $body .= '<div style="font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:2px;margin-bottom:6px;">' . ( $date_depot ? 'CHÈQUE DÉPOSÉ' : 'REÇU DE PAIEMENT' ) . '</div>';
     $body .= '<div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:1px;">' . esc_html( strtoupper($nom_club) ) . '</div>';
     $body .= '<div style="display:inline-block;background:rgba(255,255,255,.12);border-radius:20px;padding:5px 16px;margin-top:10px;font-size:13px;font-weight:700;color:#fff;letter-spacing:.5px;">N° ' . esc_html($recu_num) . '</div>';
     $body .= '</td></tr>';
 
     $body .= '<tr><td style="padding:32px 40px;">';
-    $intro = empty( $detail_paiements )
-        ? 'nous vous confirmons la bonne réception de votre paiement.'
-        : 'votre cotisation est intégralement réglée — voici le récapitulatif de l\'ensemble de vos paiements.';
+    if ( $date_depot ) {
+        $intro = 'nous vous informons que votre chèque a été déposé en banque le <strong>' . esc_html( $date_depot_fmt ) . '</strong>. Voici le reçu correspondant.';
+    } elseif ( empty( $detail_paiements ) ) {
+        $intro = 'nous vous confirmons la bonne réception de votre paiement.';
+    } else {
+        $intro = 'votre cotisation est intégralement réglée — voici le récapitulatif de l\'ensemble de vos paiements.';
+    }
     $body .= '<p style="font-size:15px;color:#374151;margin:0 0 24px;">Bonjour <strong>' . esc_html($eleve->prenom) . '</strong>,<br>' . $intro . '</p>';
 
     $body .= '<div style="background:#f4f8fc;border:1px solid #1e3a5f;border-radius:10px;padding:20px;text-align:center;margin-bottom:24px;">';
@@ -2011,6 +2058,7 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
         'Mode de paiement' => $mode_label,
         'Date du paiement' => $date_fmt,
     );
+    if ( $date_depot ) $rows['Date de dépôt en banque'] = $date_depot_fmt;
     $first = true;
     foreach ( $rows as $lbl => $val ) {
         $border = $first ? '' : 'border-top:1px solid #e2e8f0;';
