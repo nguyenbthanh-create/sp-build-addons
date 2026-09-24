@@ -78,8 +78,6 @@ function tkd_cotisations_install() {
             note           varchar(255) NOT NULL DEFAULT '',
             saisi_par      varchar(100) NOT NULL DEFAULT '',
             recu_num       varchar(20)  NOT NULL DEFAULT '',
-            date_depot_prevue date NULL DEFAULT NULL,
-            date_depot_reelle date NULL DEFAULT NULL,
             PRIMARY KEY (id)
         ) $charset
     ");
@@ -90,18 +88,6 @@ function tkd_cotisations_install() {
         ALTER TABLE {$wpdb->prefix}sp_cal_cotisation_paiements
         MODIFY mode enum('cheque','virement','helloasso','autre','espece','cheque_ancv','carte_bancaire','pass_sport') NOT NULL
     ");
-
-    // Ajoute les colonnes de suivi des depots de cheques sur les sites deja installes
-    // avant le 24/09/2026 (CREATE TABLE IF NOT EXISTS ci-dessus ne touche pas une table
-    // existante) — gere via SHOW COLUMNS pour eviter une ALTER en double a chaque
-    // chargement (contrairement au MODIFY ci-dessus, un ADD COLUMN repete echoue).
-    $table_paiements = $wpdb->prefix . 'sp_cal_cotisation_paiements';
-    if ( empty( $wpdb->get_col( "SHOW COLUMNS FROM {$table_paiements} LIKE 'date_depot_prevue'" ) ) ) {
-        $wpdb->query( "ALTER TABLE {$table_paiements} ADD COLUMN date_depot_prevue date NULL DEFAULT NULL AFTER reference" );
-    }
-    if ( empty( $wpdb->get_col( "SHOW COLUMNS FROM {$table_paiements} LIKE 'date_depot_reelle'" ) ) ) {
-        $wpdb->query( "ALTER TABLE {$table_paiements} ADD COLUMN date_depot_reelle date NULL DEFAULT NULL AFTER date_depot_prevue" );
-    }
 }
 // Activation propre via hook plugin
 register_activation_hook( __FILE__, 'tkd_cotisations_install' );
@@ -1004,10 +990,6 @@ function tkd_ajax_ajouter_paiement() {
     $reference    = sanitize_text_field( $_POST['reference'] ?? '' );
     $note         = sanitize_text_field( $_POST['note'] ?? '' );
     $date_paie    = sanitize_text_field( $_POST['date_paiement'] ?? date('Y-m-d') );
-    // Date de depot en banque prevue : pertinente seulement pour les cheques (cf. doleance
-    // paiement en plusieurs cheques echelonnes) — vide sinon.
-    $date_depot_prevue = sanitize_text_field( $_POST['date_depot_prevue'] ?? '' );
-    if ( ! in_array( $mode, [ 'cheque', 'cheque_ancv' ], true ) ) $date_depot_prevue = '';
 
     if ( $montant <= 0 ) wp_send_json_error( 'Montant invalide' );
 
@@ -1023,49 +1005,33 @@ function tkd_ajax_ajouter_paiement() {
     update_option( 'tkd_recu_last_num_' . $annee, $next_num );
 
     $wpdb->insert( $wpdb->prefix . 'sp_cal_cotisation_paiements', [
-        'cotisation_id'      => $cotis->id,
-        'date_paiement'      => $date_paie,
-        'montant'            => $montant,
-        'mode'               => $mode,
-        'reference'          => $reference,
-        'note'               => $note,
-        'saisi_par'          => wp_get_current_user()->display_name,
-        'recu_num'           => $recu_num,
-        'date_depot_prevue'  => $date_depot_prevue ?: null,
+        'cotisation_id' => $cotis->id,
+        'date_paiement' => $date_paie,
+        'montant'       => $montant,
+        'mode'          => $mode,
+        'reference'     => $reference,
+        'note'          => $note,
+        'saisi_par'     => wp_get_current_user()->display_name,
+        'recu_num'      => $recu_num,
     ]);
     $paiement_id = $wpdb->insert_id;
 
     tkd_recalcule_statut( $cotis->id );
 
-    // Facture envoyée seulement quand la cotisation est intégralement soldée (et non plus à
-    // chaque paiement) : permet un règlement échelonné en plusieurs chèques sans spammer
-    // l'adhérent d'un email par dépôt — cf. doléance du 24/09/2026. Vérifié avant le cas
-    // particulier Pass'Sport ci-dessous : c'est parfois justement ce dernier versement
-    // (bon Pass'Sport) qui solde la cotisation.
-    $cotis_a_jour  = tkd_get_cotisation_eleve( $eleve_id, $saison );
-    $devient_solde = $cotis_a_jour && $cotis_a_jour->statut === 'solde';
-
-    if ( $devient_solde ) {
-        $eleve = $wpdb->get_row( $wpdb->prepare(
-            "SELECT * FROM {$wpdb->prefix}sp_cal_eleves WHERE id=%d", $eleve_id
-        ));
-        if ( $eleve ) {
-            tkd_envoyer_facture_solde( $eleve, $cotis_a_jour );
-        }
-    }
-
     // Pass'Sport : paiement enregistré en interne uniquement, jamais de reçu envoyé à l'adhérent
     if ( $mode === 'pass_sport' ) {
-        $msg = 'Paiement Pass\'Sport enregistré en interne — Reçu N° ' . $recu_num . ' (non envoyé à l\'adhérent).';
-        if ( $devient_solde ) $msg .= ' Cotisation soldée — facture envoyée par email.';
-        wp_send_json_success( $msg );
+        wp_send_json_success( 'Paiement Pass\'Sport enregistré en interne — Reçu N° ' . $recu_num . ' (non envoyé à l\'adhérent).' );
     }
 
-    if ( $devient_solde ) {
-        wp_send_json_success( 'Paiement enregistré — cotisation soldée, facture envoyée par email (Reçu N° ' . $recu_num . ').' );
+    // Envoyer le reçu par email
+    $eleve = $wpdb->get_row( $wpdb->prepare(
+        "SELECT * FROM {$wpdb->prefix}sp_cal_eleves WHERE id=%d", $eleve_id
+    ));
+    if ( $eleve ) {
+        tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference, $date_paie, $recu_num );
     }
 
-    wp_send_json_success( 'Paiement enregistré — Reçu N° ' . $recu_num . ' (la facture sera envoyée à l\'adhérent une fois la cotisation intégralement soldée).' );
+    wp_send_json_success( 'Paiement enregistré — Reçu N° ' . $recu_num . ' envoyé par email.' );
 }
 
 add_action( 'wp_ajax_tkd_supprimer_paiement', 'tkd_ajax_supprimer_paiement' );
@@ -1084,25 +1050,6 @@ function tkd_ajax_supprimer_paiement() {
     tkd_recalcule_statut( $paiement->cotisation_id );
 
     wp_send_json_success( 'Paiement supprimé' );
-}
-
-add_action( 'wp_ajax_tkd_marquer_depot', 'tkd_ajax_marquer_depot' );
-function tkd_ajax_marquer_depot() {
-    check_ajax_referer( 'tkd_paiement_nonce', 'nonce' );
-    if ( ! current_user_can( TKD_COT_CAP ) ) wp_die( 'Accès refusé' );
-
-    global $wpdb;
-    $paiement_id = intval( $_POST['paiement_id'] );
-    $depose      = ! empty( $_POST['depose'] );
-
-    $updated = $wpdb->update(
-        $wpdb->prefix . 'sp_cal_cotisation_paiements',
-        [ 'date_depot_reelle' => $depose ? current_time( 'Y-m-d' ) : null ],
-        [ 'id' => $paiement_id ]
-    );
-    if ( $updated === false ) wp_send_json_error( 'Échec de la mise à jour' );
-
-    wp_send_json_success( $depose ? 'Chèque marqué comme déposé.' : 'Chèque marqué comme non déposé.' );
 }
 
 // Page fiche individuelle (appelée depuis vue globale)
@@ -1262,10 +1209,9 @@ function tkd_render_fiche_cotisation() {
             <p style="color:#999; font-size:13px;">Aucun paiement enregistré.</p>
         <?php else: ?>
         <table class="tkd-paiement-table">
-            <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Note</th><th>Saisi par</th><th>Dépôt prévu</th><th>Déposé</th><th></th><th>Reçu</th></tr></thead>
+            <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Note</th><th>Saisi par</th><th></th><th>Reçu</th></tr></thead>
             <tbody>
             <?php foreach ($paiements as $p): ?>
-            <?php $est_cheque = in_array( $p->mode, [ 'cheque', 'cheque_ancv' ], true ); ?>
             <tr>
                 <td><?php echo date('d/m/Y', strtotime($p->date_paiement)); ?></td>
                 <td><strong><?php echo number_format($p->montant, 2); ?> €</strong></td>
@@ -1293,23 +1239,6 @@ function tkd_render_fiche_cotisation() {
                 <td><?php echo esc_html($p->reference); ?></td>
                 <td><?php echo esc_html($p->note); ?></td>
                 <td><?php echo esc_html($p->saisi_par); ?></td>
-                <td>
-                    <?php if ( $est_cheque && ! empty($p->date_depot_prevue) ) : ?>
-                        <?php echo date('d/m/Y', strtotime($p->date_depot_prevue)); ?>
-                    <?php else: ?>
-                        <span style="color:#ccc;font-size:12px;">—</span>
-                    <?php endif; ?>
-                </td>
-                <td>
-                    <?php if ( $est_cheque ) : ?>
-                    <input type="checkbox" class="tkd-depot-checkbox"
-                           data-id="<?php echo $p->id; ?>" data-nonce="<?php echo $nonce; ?>"
-                           <?php checked( ! empty( $p->date_depot_reelle ) ); ?>
-                           title="<?php echo ! empty($p->date_depot_reelle) ? 'Déposé le ' . esc_attr(date('d/m/Y', strtotime($p->date_depot_reelle))) : 'Pas encore déposé'; ?>">
-                    <?php else: ?>
-                        <span style="color:#ccc;font-size:12px;">—</span>
-                    <?php endif; ?>
-                </td>
                 <td>
                     <button class="button button-small tkd-del-paiement" style="color:red;"
                             data-id="<?php echo $p->id; ?>" data-nonce="<?php echo $nonce; ?>">
@@ -1353,18 +1282,11 @@ function tkd_render_fiche_cotisation() {
                     <label>Référence (n° chèque, etc.)</label>
                     <input type="text" id="tkd-reference" placeholder="Optionnel">
                 </div>
-                <div id="tkd-depot-prevue-wrap" style="display:none;">
-                    <label>Date de dépôt prévue</label>
-                    <input type="date" id="tkd-depot-prevue">
-                </div>
                 <div>
                     <label>Note</label>
                     <input type="text" id="tkd-note" placeholder="Optionnel">
                 </div>
             </div>
-            <p style="color:#666; font-size:12px; margin-top:8px;">
-                ℹ️ La facture n'est envoyée à l'adhérent qu'une fois la cotisation intégralement soldée — utile pour un règlement en plusieurs chèques.
-            </p>
             <button class="button button-primary" style="margin-top:12px;" id="tkd-btn-ajouter">Enregistrer le paiement</button>
             <span id="tkd-msg" style="margin-left:10px; font-size:13px;"></span>
         </div>
@@ -1418,16 +1340,10 @@ function tkd_render_fiche_cotisation() {
         if (m) document.querySelector('input[name="nouveau_montant"]').value = m;
     });
 
-    // Mode Pass'Sport → affiche le rappel "pas de reçu envoyé" ; Chèque/Chèque ANCV → affiche la date de dépôt prévue
-    function tkdSyncModePaiement() {
-        var modeSelect = document.getElementById('tkd-mode');
-        if (!modeSelect) return;
-        document.getElementById('tkd-pass-sport-note').style.display = (modeSelect.value === 'pass_sport') ? 'block' : 'none';
-        var estCheque = (modeSelect.value === 'cheque' || modeSelect.value === 'cheque_ancv');
-        document.getElementById('tkd-depot-prevue-wrap').style.display = estCheque ? 'block' : 'none';
-    }
-    document.getElementById('tkd-mode')?.addEventListener('change', tkdSyncModePaiement);
-    tkdSyncModePaiement(); // état initial : "Chèque" est déjà l'option sélectionnée par défaut
+    // Mode Pass'Sport → affiche le rappel "pas de reçu envoyé"
+    document.getElementById('tkd-mode')?.addEventListener('change', function() {
+        document.getElementById('tkd-pass-sport-note').style.display = (this.value === 'pass_sport') ? 'block' : 'none';
+    });
 
     // Ajout paiement AJAX
     document.getElementById('tkd-btn-ajouter')?.addEventListener('click', function() {
@@ -1437,15 +1353,14 @@ function tkd_render_fiche_cotisation() {
             method: 'POST',
             headers: {'Content-Type':'application/x-www-form-urlencoded'},
             body: new URLSearchParams({
-                action:             'tkd_ajouter_paiement',
-                nonce:              '<?php echo $nonce; ?>',
-                eleve_id:           <?php echo $eleve_id; ?>,
-                montant:            document.getElementById('tkd-montant').value,
-                mode:               document.getElementById('tkd-mode').value,
-                reference:          document.getElementById('tkd-reference').value,
-                note:               document.getElementById('tkd-note').value,
-                date_paiement:      document.getElementById('tkd-date').value,
-                date_depot_prevue:  document.getElementById('tkd-depot-prevue').value,
+                action:        'tkd_ajouter_paiement',
+                nonce:         '<?php echo $nonce; ?>',
+                eleve_id:      <?php echo $eleve_id; ?>,
+                montant:       document.getElementById('tkd-montant').value,
+                mode:          document.getElementById('tkd-mode').value,
+                reference:     document.getElementById('tkd-reference').value,
+                note:          document.getElementById('tkd-note').value,
+                date_paiement: document.getElementById('tkd-date').value,
             })
         }).then(r => r.json()).then(r => {
             if (r.success) { msg.style.color='green'; msg.textContent='✅ ' + r.data; setTimeout(()=>location.reload(),800); }
@@ -1470,25 +1385,6 @@ function tkd_render_fiche_cotisation() {
                 else alert('Erreur : ' + r.data);
             });
         }.bind(btn));
-    });
-
-    // Case à cocher "Déposé"
-    document.querySelectorAll('.tkd-depot-checkbox').forEach(function(chk) {
-        chk.addEventListener('change', function() {
-            fetch(ajaxurl, {
-                method: 'POST',
-                headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                body: new URLSearchParams({
-                    action:      'tkd_marquer_depot',
-                    nonce:       this.dataset.nonce,
-                    paiement_id: this.dataset.id,
-                    depose:      this.checked ? '1' : '',
-                })
-            }).then(r => r.json()).then(r => {
-                if (!r.success) { alert('Erreur : ' + r.data); this.checked = !this.checked; }
-                else { location.reload(); }
-            });
-        }.bind(chk));
     });
     </script>
     <?php
@@ -1920,33 +1816,7 @@ function tkd_html_recu( $eleve, $cotis, $montant, $mode, $reference, $date_paie,
     return $html;
 }
 
-/**
- * Point d'entrée "facture au solde" : récupère tous les paiements de la cotisation et
- * envoie un seul email récapitulatif (via tkd_envoyer_recu_paiement) au lieu d'un email
- * par paiement — permet un règlement en plusieurs chèques sans spammer l'adhérent
- * (doléance du 24/09/2026).
- */
-function tkd_envoyer_facture_solde( $eleve, $cotis ) {
-    $paiements = tkd_get_paiements( $cotis->id );
-
-    // Le Pass'Sport n'est jamais notifié à l'adhérent (déjà géré à part, cf. tkd_ajax_ajouter_paiement).
-    $paiements_email = array_values( array_filter( (array) $paiements, function( $p ) {
-        return $p->mode !== 'pass_sport';
-    } ) );
-    if ( empty( $paiements_email ) ) return false;
-
-    $total = array_sum( array_column( $paiements_email, 'montant' ) );
-
-    if ( count( $paiements_email ) === 1 ) {
-        $p = $paiements_email[0];
-        return tkd_envoyer_recu_paiement( $eleve, $cotis, $total, $p->mode, $p->reference, $p->date_paiement, $p->recu_num );
-    }
-
-    $dernier = end( $paiements_email );
-    return tkd_envoyer_recu_paiement( $eleve, $cotis, $total, $dernier->mode, '', $dernier->date_paiement, $dernier->recu_num, $paiements_email );
-}
-
-function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference, $date_paie, $recu_num, $detail_paiements = array() ) {
+function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference, $date_paie, $recu_num ) {
     $dest = $eleve->email ?: $eleve->email_parent;
     if ( ! $dest || ! is_email($dest) ) return false;
 
@@ -1967,10 +1837,9 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
         'pass_sport'     => "Pass'Sport",
         'autre'          => 'Autre',
     );
-    $mode_label  = ! empty( $detail_paiements )
-        ? sprintf( 'Réglé en %d fois', count( $detail_paiements ) )
-        : ( $mode_labels[$mode] ?? ucfirst($mode) ) . ( $reference ? ' N°' . $reference : '' );
-
+    $mode_label  = $mode_labels[$mode] ?? ucfirst($mode);
+    if ( $reference ) $mode_label .= ' N°' . $reference;
+    
     $nom_complet = trim( wp_unslash($eleve->prenom) . ' ' . wp_unslash($eleve->nom) );
     $date_fmt    = $date_paie ? date_create($date_paie)->format('d/m/Y') : date('d/m/Y');
     $today_fmt   = date('d/m/Y');
@@ -1994,10 +1863,7 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
     $body .= '</td></tr>';
 
     $body .= '<tr><td style="padding:32px 40px;">';
-    $intro = empty( $detail_paiements )
-        ? 'nous vous confirmons la bonne réception de votre paiement.'
-        : 'votre cotisation est intégralement réglée — voici le récapitulatif de l\'ensemble de vos paiements.';
-    $body .= '<p style="font-size:15px;color:#374151;margin:0 0 24px;">Bonjour <strong>' . esc_html($eleve->prenom) . '</strong>,<br>' . $intro . '</p>';
+    $body .= '<p style="font-size:15px;color:#374151;margin:0 0 24px;">Bonjour <strong>' . esc_html($eleve->prenom) . '</strong>,<br>nous vous confirmons la bonne réception de votre paiement.</p>';
 
     $body .= '<div style="background:#f4f8fc;border:1px solid #1e3a5f;border-radius:10px;padding:20px;text-align:center;margin-bottom:24px;">';
     $body .= '<div style="font-size:38px;font-weight:800;color:#1e3a5f;">' . esc_html($montant_fmt) . '</div>';
@@ -2021,24 +1887,6 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
         $first = false;
     }
     $body .= '</table>';
-
-    if ( ! empty( $detail_paiements ) ) {
-        $body .= '<div style="font-size:12px;color:#6b7280;font-weight:600;margin:0 0 8px;">Détail des règlements</div>';
-        $body .= '<table width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e2e8f0;border-radius:10px;margin-bottom:24px;">';
-        $first_d = true;
-        foreach ( $detail_paiements as $dp ) {
-            $dp_label = $mode_labels[ $dp->mode ] ?? ucfirst( $dp->mode );
-            if ( $dp->reference ) $dp_label .= ' N°' . $dp->reference;
-            $dp_date  = $dp->date_paiement ? date_create( $dp->date_paiement )->format( 'd/m/Y' ) : '';
-            $border   = $first_d ? '' : 'border-top:1px solid #e2e8f0;';
-            $body .= '<tr>';
-            $body .= '<td style="padding:10px 18px;font-size:12px;color:#6b7280;' . $border . '">' . esc_html( $dp_date . ' — ' . $dp_label ) . '</td>';
-            $body .= '<td style="padding:10px 18px;font-size:12px;font-weight:600;color:#111;text-align:right;' . $border . '">' . esc_html( number_format( $dp->montant, 2, ',', ' ' ) . ' €' ) . '</td>';
-            $body .= '</tr>';
-            $first_d = false;
-        }
-        $body .= '</table>';
-    }
 
     $body .= '<p style="font-size:13px;color:#6b7280;text-align:right;margin:0 0 4px;">Fait à ' . esc_html($club_ville) . ', le ' . esc_html($today_fmt) . '</p>';
     $body .= '<p style="font-size:12px;color:#94a3b8;text-align:center;font-style:italic;margin:24px 0 0 0;">Document à conserver</p>';
@@ -2232,54 +2080,4 @@ function tkd_do_cleanup_recus() {
 
 if ( ! wp_next_scheduled('tkd_cleanup_recus') ) {
     wp_schedule_event( time(), 'daily', 'tkd_cleanup_recus' );
-}
-
-// ============================================================
-// CRON — Rappel bureau : chèques à déposer
-// ============================================================
-// Doléance du 24/09/2026 : un règlement en plusieurs chèques (jusqu'à 3 + 1 bon
-// Pass'Sport) nécessite des dépôts en banque échelonnés dans le temps — ce rappel
-// quotidien évite au bureau de devoir surveiller manuellement les dates prévues.
-
-add_action( 'tkd_rappel_depots_cheques', 'tkd_do_rappel_depots_cheques' );
-function tkd_do_rappel_depots_cheques() {
-    global $wpdb;
-    $today = current_time( 'Y-m-d' );
-
-    $rows = $wpdb->get_results( $wpdb->prepare(
-        "SELECT p.montant, p.date_depot_prevue, p.mode, e.nom, e.prenom
-         FROM {$wpdb->prefix}sp_cal_cotisation_paiements p
-         INNER JOIN {$wpdb->prefix}sp_cal_cotisations c ON c.id = p.cotisation_id
-         INNER JOIN {$wpdb->prefix}sp_cal_eleves e ON e.id = c.eleve_id
-         WHERE p.mode IN ('cheque','cheque_ancv')
-           AND p.date_depot_reelle IS NULL
-           AND p.date_depot_prevue IS NOT NULL
-           AND p.date_depot_prevue <= %s
-         ORDER BY p.date_depot_prevue ASC",
-        $today
-    ) );
-    if ( empty( $rows ) ) return;
-
-    $emails = array_filter( array_map( function( $user_id ) {
-        $user = get_user_by( 'id', $user_id );
-        return $user ? $user->user_email : '';
-    }, tkd_cot_bureau_users() ) );
-    if ( empty( $emails ) ) return;
-
-    $mode_labels = array( 'cheque' => 'Chèque', 'cheque_ancv' => 'Chèque ANCV' );
-
-    $sujet = '[TKD Claira] ' . count( $rows ) . ' chèque(s) à déposer';
-    $corps = "Bonjour,\n\nLes chèques suivants sont à déposer en banque :\n\n";
-    foreach ( $rows as $r ) {
-        $retard = $r->date_depot_prevue < $today ? ' — EN RETARD' : '';
-        $corps .= '• ' . $r->prenom . ' ' . $r->nom . ' — ' . number_format( $r->montant, 2, ',', ' ' ) . ' € — '
-                 . ( $mode_labels[ $r->mode ] ?? $r->mode ) . ' — prévu le ' . date( 'd/m/Y', strtotime( $r->date_depot_prevue ) ) . $retard . "\n";
-    }
-    $corps .= "\nUne fois déposé, pensez à cocher la case « Déposé » sur la fiche cotisation de l'adhérent.\n\nL'équipe TKD Claira";
-
-    wp_mail( $emails, $sujet, $corps, array( 'Content-Type: text/plain; charset=UTF-8' ) );
-}
-
-if ( ! wp_next_scheduled( 'tkd_rappel_depots_cheques' ) ) {
-    wp_schedule_event( time(), 'daily', 'tkd_rappel_depots_cheques' );
 }
