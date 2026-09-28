@@ -62,20 +62,20 @@ function claira_tkd_render_admin_page() {
 
     $message = '';
     if ( isset( $_GET['created'] ) ) {
-        $message = '<div class="claira-tkd-admin-message success">' . esc_html__( 'Grade ajouté avec succès.', 'claira-tkd-parcours' ) . '</div>';
+        $message = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Grade ajouté avec succès.', 'claira-tkd-parcours' ) . '</p></div>';
     } elseif ( isset( $_GET['updated'] ) ) {
-        $message = '<div class="claira-tkd-admin-message success">' . esc_html__( 'Grade mis à jour avec succès.', 'claira-tkd-parcours' ) . '</div>';
+        $message = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Grade mis à jour avec succès.', 'claira-tkd-parcours' ) . '</p></div>';
     } elseif ( isset( $_GET['deleted'] ) ) {
-        $message = '<div class="claira-tkd-admin-message success">' . esc_html__( 'Grade supprimé.', 'claira-tkd-parcours' ) . '</div>';
+        $message = '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Grade supprimé.', 'claira-tkd-parcours' ) . '</p></div>';
     } elseif ( isset( $_GET['imported'] ) ) {
         $created = isset( $_GET['import_created'] ) ? absint( wp_unslash( $_GET['import_created'] ) ) : 0;
         $updated = isset( $_GET['import_updated'] ) ? absint( wp_unslash( $_GET['import_updated'] ) ) : 0;
-        $message = '<div class="claira-tkd-admin-message success">' . sprintf(
+        $message = '<div class="notice notice-success is-dismissible"><p>' . sprintf(
             /* translators: 1: nombre de grades créés, 2: nombre de grades mis à jour */
             esc_html__( 'Import terminé : %1$d grade(s) créé(s), %2$d grade(s) mis à jour.', 'claira-tkd-parcours' ),
             $created,
             $updated
-        ) . '</div>';
+        ) . '</p></div>';
     }
 
     $handle_res = claira_tkd_admin_page_message();
@@ -132,31 +132,30 @@ function claira_tkd_render_admin_page() {
         'order'          => 'ASC',
     ) );
     ?>
-    <div class="wrap">
-        <h1><?php esc_html_e( 'TKD Parcours', 'claira-tkd-parcours' ); ?></h1>
+    <div class="wrap sp-cal-wrap">
+        <h1>🥋 <?php esc_html_e( 'TKD Parcours', 'claira-tkd-parcours' ); ?></h1>
 
-        <div class="claira-tkd-admin">
             <?php if ( $message ) : ?>
-                <div class="claira-tkd-admin-message"><?php echo wp_kses_post( $message ); ?></div>
+                <?php echo wp_kses_post( $message ); ?>
             <?php endif; ?>
 
-            <section class="claira-tkd-admin-import">
+            <div class="sp-box">
                 <h2><?php esc_html_e( 'Import du référentiel', 'claira-tkd-parcours' ); ?></h2>
                 <p><?php esc_html_e( 'Crée ou met à jour en une fois tous les grades du programme de progression (Enfant, Ado, Adulte) à partir du référentiel technique du club.', 'claira-tkd-parcours' ); ?></p>
                 <form method="post">
                     <?php wp_nonce_field( 'claira_tkd_admin_action', 'claira_tkd_admin_nonce' ); ?>
                     <input type="hidden" name="claira_tkd_admin_action" value="bulk_import" />
-                    <button type="submit" class="button button-secondary" onclick="return confirm('<?php echo esc_js( __( 'Importer le référentiel ? Les grades déjà importés seront mis à jour (leurs techniques, jambes et poomsae seront écrasés par le référentiel).', 'claira-tkd-parcours' ) ); ?>');">
+                    <button type="submit" class="button" onclick="return confirm('<?php echo esc_js( __( 'Importer le référentiel ? Les grades déjà importés seront mis à jour (leurs techniques, jambes et poomsae seront écrasés par le référentiel).', 'claira-tkd-parcours' ) ); ?>');">
                         <?php esc_html_e( 'Importer / Mettre à jour les grades', 'claira-tkd-parcours' ); ?>
                     </button>
                 </form>
-            </section>
+            </div>
 
-            <section class="claira-tkd-admin-form">
-                <h2 style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+            <div class="sp-box claira-tkd-admin-form-box">
+                <h2>
                     <span><?php echo esc_html( $edit_grade ? __( 'Modifier un grade', 'claira-tkd-parcours' ) : __( 'Ajouter un grade', 'claira-tkd-parcours' ) ); ?></span>
                     <?php if ( $edit_grade ) : ?>
-                        <a class="button button-secondary" href="<?php echo esc_url( remove_query_arg( 'edit_grade' ) ); ?>" style="font-size:0.85rem; text-transform:none;">+ <?php esc_html_e( 'Saisir un autre grade', 'claira-tkd-parcours' ); ?></a>
+                        <a class="button button-small" href="<?php echo esc_url( remove_query_arg( 'edit_grade' ) ); ?>">+ <?php esc_html_e( 'Saisir un autre grade', 'claira-tkd-parcours' ); ?></a>
                     <?php endif; ?>
                 </h2>
                 <form method="post" enctype="multipart/form-data">
@@ -166,118 +165,98 @@ function claira_tkd_render_admin_page() {
                         <input type="hidden" name="claira_tkd_grade_id" value="<?php echo esc_attr( $edit_grade->ID ); ?>" />
                     <?php endif; ?>
 
-                    <p>
-                        <label for="claira_tkd_title"><?php esc_html_e( 'Titre du grade', 'claira-tkd-parcours' ); ?></label><br>
-                        <input type="text" id="claira_tkd_title" name="claira_tkd_title" value="<?php echo esc_attr( $title ); ?>" style="width:100%;" required />
-                    </p>
+                    <table class="form-table" role="presentation">
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_title"><?php esc_html_e( 'Titre du grade', 'claira-tkd-parcours' ); ?> *</label></th>
+                            <td><input type="text" id="claira_tkd_title" name="claira_tkd_title" class="regular-text" value="<?php echo esc_attr( $title ); ?>" required /></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_age_group"><?php esc_html_e( 'Tranche d’âge', 'claira-tkd-parcours' ); ?></label></th>
+                            <td>
+                                <select id="claira_tkd_age_group" name="claira_tkd_age_group">
+                                    <option value=""><?php esc_html_e( 'Aucune', 'claira-tkd-parcours' ); ?></option>
+                                    <?php foreach ( $age_terms as $term ) : ?>
+                                        <option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( in_array( $term->term_id, $selected_age, true ) ); ?>><?php echo esc_html( $term->name ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_keup_rank"><?php esc_html_e( 'Rang keup', 'claira-tkd-parcours' ); ?></label></th>
+                            <td>
+                                <select id="claira_tkd_keup_rank" name="claira_tkd_keup_rank">
+                                    <option value=""><?php esc_html_e( 'Choisir un rang keup', 'claira-tkd-parcours' ); ?></option>
+                                    <?php foreach ( $age_based_keup_options as $value => $label ) : ?>
+                                        <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $selected_keup, $value ); ?>><?php echo esc_html( $label ); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_tech_bras"><?php esc_html_e( 'Techniques Bras (Isolées)', 'claira-tkd-parcours' ); ?></label></th>
+                            <td><textarea id="claira_tkd_tech_bras" name="claira_tkd_tech_bras" rows="3" class="large-text"><?php echo esc_textarea( $tech_bras ); ?></textarea></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_tech_jambes"><?php esc_html_e( 'Techniques Jambes (Isolées)', 'claira-tkd-parcours' ); ?></label></th>
+                            <td><textarea id="claira_tkd_tech_jambes" name="claira_tkd_tech_jambes" rows="3" class="large-text"><?php echo esc_textarea( $tech_jambes ); ?></textarea></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_poomsae"><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></label></th>
+                            <td><textarea id="claira_tkd_poomsae" name="claira_tkd_poomsae" rows="2" class="large-text"><?php echo esc_textarea( $poomsae ); ?></textarea></td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><?php esc_html_e( 'Ressources téléchargeables', 'claira-tkd-parcours' ); ?></th>
+                            <td>
+                                <?php for ( $i = 0; $i < 3; $i++ ) : ?>
+                                    <p><input type="text" name="claira_tkd_download_urls[]" class="regular-text" value="<?php echo esc_attr( $download_urls[ $i ] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'URL de fichier (PDF, image, doc)', 'claira-tkd-parcours' ); ?>" /></p>
+                                <?php endfor; ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_video_url"><?php esc_html_e( 'URL vidéo externe', 'claira-tkd-parcours' ); ?></label></th>
+                            <td>
+                                <input type="url" id="claira_tkd_video_url" name="claira_tkd_video_url" class="regular-text" value="<?php echo esc_attr( $video_url ); ?>" placeholder="https://youtu.be/..." />
+                                <p class="description"><?php esc_html_e( 'Lien de partage YouTube ou Vimeo.', 'claira-tkd-parcours' ); ?></p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_video_file"><?php esc_html_e( 'Fichier vidéo local', 'claira-tkd-parcours' ); ?></label></th>
+                            <td>
+                                <?php if ( $video_file_id && wp_get_attachment_url( $video_file_id ) ) : ?>
+                                    <div class="claira-tkd-admin-video-current">
+                                        <strong><?php esc_html_e( 'Vidéo actuelle :', 'claira-tkd-parcours' ); ?></strong>
+                                        <a href="<?php echo esc_url( wp_get_attachment_url( $video_file_id ) ); ?>" target="_blank">
+                                            <?php echo esc_html( basename( get_attached_file( $video_file_id ) ) ); ?>
+                                        </a>
+                                        <label class="sp-btn-del">
+                                            <input type="checkbox" name="claira_tkd_delete_video_file" value="1" /> <?php esc_html_e( 'Supprimer cette vidéo', 'claira-tkd-parcours' ); ?>
+                                        </label>
+                                    </div>
+                                <?php endif; ?>
+                                <input type="file" id="claira_tkd_video_file" name="claira_tkd_video_file" accept="video/*" />
+                                <input type="hidden" name="claira_tkd_video_file_id" value="<?php echo esc_attr( $video_file_id ); ?>" />
+                                <p class="description"><?php esc_html_e( 'Envoyer ou remplacer un fichier MP4 / WebM depuis votre ordinateur pour l’héberger sur le site.', 'claira-tkd-parcours' ); ?></p>
+                            </td>
+                        </tr>
+                    </table>
 
                     <p>
-                        <label for="claira_tkd_tech_bras"><?php esc_html_e( 'Techniques Bras (Isolées)', 'claira-tkd-parcours' ); ?></label><br>
-                        <textarea id="claira_tkd_tech_bras" name="claira_tkd_tech_bras" rows="3" style="width:100%;"><?php echo esc_textarea( $tech_bras ); ?></textarea>
-                    </p>
-                    <p>
-                        <label for="claira_tkd_tech_jambes"><?php esc_html_e( 'Techniques Jambes (Isolées)', 'claira-tkd-parcours' ); ?></label><br>
-                        <textarea id="claira_tkd_tech_jambes" name="claira_tkd_tech_jambes" rows="3" style="width:100%;"><?php echo esc_textarea( $tech_jambes ); ?></textarea>
-                    </p>
-                    <p>
-                        <label for="claira_tkd_poomsae"><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></label><br>
-                        <textarea id="claira_tkd_poomsae" name="claira_tkd_poomsae" rows="2" style="width:100%;"><?php echo esc_textarea( $poomsae ); ?></textarea>
-                    </p>
-
-                    <p>
-                        <label for="claira_tkd_age_group"><?php esc_html_e( 'Tranche d’âge', 'claira-tkd-parcours' ); ?></label><br>
-                        <select id="claira_tkd_age_group" name="claira_tkd_age_group" style="width:100%;">
-                            <option value=""><?php esc_html_e( 'Aucune', 'claira-tkd-parcours' ); ?></option>
-                            <?php foreach ( $age_terms as $term ) : ?>
-                                <option value="<?php echo esc_attr( $term->term_id ); ?>" <?php selected( in_array( $term->term_id, $selected_age, true ) ); ?>><?php echo esc_html( $term->name ); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </p>
-
-                    <p>
-                        <label for="claira_tkd_keup_rank"><?php esc_html_e( 'Rang keup', 'claira-tkd-parcours' ); ?></label><br>
-                        <select id="claira_tkd_keup_rank" name="claira_tkd_keup_rank" style="width:100%;">
-                            <option value=""><?php esc_html_e( 'Choisir un rang keup', 'claira-tkd-parcours' ); ?></option>
-                            <?php foreach ( $age_based_keup_options as $value => $label ) : ?>
-                                <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $selected_keup, $value ); ?>><?php echo esc_html( $label ); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </p>
-
-                    <fieldset>
-                        <legend><?php esc_html_e( 'Ressources téléchargeables', 'claira-tkd-parcours' ); ?></legend>
-                        <?php for ( $i = 0; $i < 3; $i++ ) : ?>
-                            <p>
-                                <input type="text" name="claira_tkd_download_urls[]" value="<?php echo esc_attr( $download_urls[ $i ] ?? '' ); ?>" placeholder="<?php esc_attr_e( 'URL de fichier (PDF, image, doc)', 'claira-tkd-parcours' ); ?>" style="width:100%;" />
-                            </p>
-                        <?php endfor; ?>
-                    </fieldset>
-
-                    <p>
-                        <label for="claira_tkd_video_url"><?php esc_html_e( 'URL vidéo externe (YouTube share link, Vimeo)', 'claira-tkd-parcours' ); ?></label><br>
-                        <input type="url" id="claira_tkd_video_url" name="claira_tkd_video_url" value="<?php echo esc_attr( $video_url ); ?>" style="width:100%;" placeholder="https://youtu.be/..." />
-                    </p>
-
-                    <p>
-                        <label for="claira_tkd_video_file"><?php esc_html_e( 'Envoyer / Remplacer un fichier vidéo local (MP4, WebM)', 'claira-tkd-parcours' ); ?></label><br>
-                        <?php if ( $video_file_id && wp_get_attachment_url( $video_file_id ) ) : ?>
-                            <div style="margin: 5px 0; padding: 8px; background: #222; border-radius: 4px;">
-                                <strong><?php esc_html_e( 'Vidéo actuelle :', 'claira-tkd-parcours' ); ?></strong>
-                                <a href="<?php echo esc_url( wp_get_attachment_url( $video_file_id ) ); ?>" target="_blank" style="color:#38bdf8; text-decoration:underline;">
-                                    <?php echo esc_html( basename( get_attached_file( $video_file_id ) ) ); ?>
-                                </a>
-                                <label style="margin-left:15px; color:#ef4444;">
-                                    <input type="checkbox" name="claira_tkd_delete_video_file" value="1" /> <?php esc_html_e( 'Supprimer cette vidéo', 'claira-tkd-parcours' ); ?>
-                                </label>
-                            </div>
-                        <?php endif; ?>
-                        <input type="file" id="claira_tkd_video_file" name="claira_tkd_video_file" accept="video/*" style="width:100%;" />
-                        <input type="hidden" name="claira_tkd_video_file_id" value="<?php echo esc_attr( $video_file_id ); ?>" />
-                        <small style="color:#94a3b8;"><?php esc_html_e( 'Sélectionnez un fichier vidéo depuis votre ordinateur pour l’héberger sur le site.', 'claira-tkd-parcours' ); ?></small>
-                    </p>
-
-                    <p>
-                        <button type="submit" class="claira-tkd-admin-submit button button-primary">
+                        <button type="submit" class="button button-primary">
                             <?php echo esc_html( $edit_grade ? __( 'Mettre à jour le grade', 'claira-tkd-parcours' ) : __( 'Ajouter le grade', 'claira-tkd-parcours' ) ); ?>
                         </button>
                         <?php if ( $edit_grade ) : ?>
-                            <a class="claira-tkd-admin-cancel button" href="<?php echo esc_url( remove_query_arg( 'edit_grade' ) ); ?>"><?php esc_html_e( 'Annuler', 'claira-tkd-parcours' ); ?></a>
+                            <a class="button" style="margin-left:8px;" href="<?php echo esc_url( remove_query_arg( 'edit_grade' ) ); ?>"><?php esc_html_e( 'Annuler', 'claira-tkd-parcours' ); ?></a>
                         <?php endif; ?>
                     </p>
                 </form>
-            </section>
+            </div>
 
-            <section class="claira-tkd-admin-list">
-                <style>
-                    .claira-tkd-admin-pill {
-                        display: inline-block !important;
-                        width: 18px !important;
-                        height: 18px !important;
-                        min-width: 18px !important;
-                        border-radius: 50% !important;
-                        border: 1px solid rgba(255,255,255,0.4) !important;
-                        box-sizing: border-box !important;
-                        flex-shrink: 0 !important;
-                        margin-right: 8px !important;
-                        vertical-align: middle !important;
-                    }
-                    .claira-tkd-admin-pill.claira-tkd-belt-white { background: #ffffff !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-yellow { background: #ffd600 !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-orange { background: #f37021 !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-green { background: #00a651 !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-purple { background: #7b2cbf !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-blue { background: #0072ce !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-red { background: #ed1c24 !important; }
-                    .claira-tkd-admin-pill.claira-tkd-belt-black { background: #000000 !important; border-color: #777 !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-white-yellow { background: linear-gradient(180deg, #ffffff 50%, #ffd600 50%) !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-yellow-orange { background: linear-gradient(180deg, #ffd600 50%, #f37021 50%) !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-orange-green { background: linear-gradient(180deg, #f37021 50%, #00a651 50%) !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-red-black { background: linear-gradient(180deg, #ed1c24 50%, #000000 50%) !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-green-blue { background: linear-gradient(180deg, #00a651 50%, #0072ce 50%) !important; }
-                    .claira-tkd-admin-pill.claira-tkd-bicolor-blue-red { background: linear-gradient(180deg, #0072ce 50%, #ed1c24 50%) !important; }
-                </style>
-                <h2><?php esc_html_e( 'Grades existants', 'claira-tkd-parcours' ); ?></h2>
-                <table class="claira-tkd-admin-table">
+            <div class="sp-box">
+                <h2><?php
+                    /* translators: %d: nombre de grades */
+                    echo esc_html( sprintf( __( 'Grades existants (%d)', 'claira-tkd-parcours' ), count( $grades ) ) );
+                ?></h2>
+                <table class="wp-list-table widefat striped claira-tkd-admin-table">
                     <thead>
                         <tr>
                             <th><?php esc_html_e( 'Titre', 'claira-tkd-parcours' ); ?></th>
@@ -330,30 +309,31 @@ function claira_tkd_render_admin_page() {
                                 <tr>
                                     <td>
                                         <span class="claira-tkd-admin-pill <?php echo esc_attr( trim( $belt_class . ' ' . $bicolor_class ) ); ?>"></span>
-                                        <span><?php echo esc_html( get_the_title( $grade ) ); ?></span>
+                                        <strong><?php echo esc_html( get_the_title( $grade ) ); ?></strong>
                                     </td>
                                     <td><?php echo esc_html( $age ? $age[0]->name : '' ); ?></td>
                                     <td><?php echo esc_html( $keup_rank ); ?></td>
                                     <td>
-                                        <a class="claira-tkd-admin-action" href="<?php echo esc_url( add_query_arg( 'edit_grade', $grade->ID ) ); ?>"><?php esc_html_e( 'Éditer', 'claira-tkd-parcours' ); ?></a>
-                                        <form method="post" class="claira-tkd-admin-delete-form" onsubmit="return confirm('<?php echo esc_js( __( 'Supprimer ce grade ?', 'claira-tkd-parcours' ) ); ?>');">
-                                            <?php wp_nonce_field( 'claira_tkd_admin_action', 'claira_tkd_admin_nonce' ); ?>
-                                            <input type="hidden" name="claira_tkd_admin_action" value="delete" />
-                                            <input type="hidden" name="claira_tkd_grade_id" value="<?php echo esc_attr( $grade->ID ); ?>" />
-                                            <button type="submit" class="claira-tkd-admin-action button button-secondary"><?php esc_html_e( 'Supprimer', 'claira-tkd-parcours' ); ?></button>
-                                        </form>
+                                        <div class="claira-tkd-admin-actions">
+                                            <a class="button button-small" href="<?php echo esc_url( add_query_arg( 'edit_grade', $grade->ID ) ); ?>" title="<?php esc_attr_e( 'Éditer', 'claira-tkd-parcours' ); ?>">✏️</a>
+                                            <form method="post" class="claira-tkd-admin-delete-form" onsubmit="return confirm('<?php echo esc_js( __( 'Supprimer ce grade ?', 'claira-tkd-parcours' ) ); ?>');">
+                                                <?php wp_nonce_field( 'claira_tkd_admin_action', 'claira_tkd_admin_nonce' ); ?>
+                                                <input type="hidden" name="claira_tkd_admin_action" value="delete" />
+                                                <input type="hidden" name="claira_tkd_grade_id" value="<?php echo esc_attr( $grade->ID ); ?>" />
+                                                <button type="submit" class="button button-small sp-btn-del" title="<?php esc_attr_e( 'Supprimer', 'claira-tkd-parcours' ); ?>">🗑️</button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="4"><?php esc_html_e( 'Aucun grade créé pour le moment.', 'claira-tkd-parcours' ); ?></td>
+                                <td colspan="4" class="sp-muted"><?php esc_html_e( 'Aucun grade créé pour le moment. Utilisez l’import ou le formulaire ci-dessus.', 'claira-tkd-parcours' ); ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
-            </section>
-        </div>
+            </div>
     </div>
     <?php
     $keup_json = wp_json_encode( $keup_options_by_age );
@@ -422,7 +402,7 @@ function claira_tkd_sort_terms_by_order( $terms, $order_names = array() ) {
 
 function claira_tkd_handle_frontend_admin_form() {
     if ( ! isset( $_POST['claira_tkd_admin_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['claira_tkd_admin_nonce'] ) ), 'claira_tkd_admin_action' ) ) {
-        return '<div class="claira-tkd-admin-message error">' . esc_html__( 'La validation de sécurité a échoué.', 'claira-tkd-parcours' ) . '</div>';
+        return '<div class="notice notice-error"><p>' . esc_html__( 'La validation de sécurité a échoué.', 'claira-tkd-parcours' ) . '</p></div>';
     }
 
     $action = sanitize_text_field( wp_unslash( $_POST['claira_tkd_admin_action'] ) );
@@ -430,7 +410,7 @@ function claira_tkd_handle_frontend_admin_form() {
 
     if ( 'bulk_import' === $action ) {
         if ( ! current_user_can( 'edit_others_posts' ) ) {
-            return '<div class="claira-tkd-admin-message error">' . esc_html__( "Vous n'avez pas les droits nécessaires pour lancer l'import.", 'claira-tkd-parcours' ) . '</div>';
+            return '<div class="notice notice-error"><p>' . esc_html__( "Vous n'avez pas les droits nécessaires pour lancer l'import.", 'claira-tkd-parcours' ) . '</p></div>';
         }
 
         $result = claira_tkd_run_bulk_import();
@@ -453,7 +433,7 @@ function claira_tkd_handle_frontend_admin_form() {
             exit;
         }
 
-        return '<div class="claira-tkd-admin-message error">' . esc_html__( 'Impossible de supprimer ce grade.', 'claira-tkd-parcours' ) . '</div>';
+        return '<div class="notice notice-error"><p>' . esc_html__( 'Impossible de supprimer ce grade.', 'claira-tkd-parcours' ) . '</p></div>';
     }
 
     $title = isset( $_POST['claira_tkd_title'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_title'] ) ) : '';
@@ -469,7 +449,7 @@ function claira_tkd_handle_frontend_admin_form() {
     $keup_rank = isset( $_POST['claira_tkd_keup_rank'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_keup_rank'] ) ) : '';
 
     if ( empty( $title ) ) {
-        return '<div class="claira-tkd-admin-message error">' . esc_html__( 'Le titre du grade est requis.', 'claira-tkd-parcours' ) . '</div>';
+        return '<div class="notice notice-error"><p>' . esc_html__( 'Le titre du grade est requis.', 'claira-tkd-parcours' ) . '</p></div>';
     }
 
     $post_data = array(
@@ -485,7 +465,7 @@ function claira_tkd_handle_frontend_admin_form() {
 
     $new_grade_id = wp_insert_post( $post_data, true );
     if ( is_wp_error( $new_grade_id ) ) {
-        return '<div class="claira-tkd-admin-message error">' . esc_html__( 'Une erreur est survenue lors de la sauvegarde du grade.', 'claira-tkd-parcours' ) . '</div>';
+        return '<div class="notice notice-error"><p>' . esc_html__( 'Une erreur est survenue lors de la sauvegarde du grade.', 'claira-tkd-parcours' ) . '</p></div>';
     }
 
     update_post_meta( $new_grade_id, '_claira_tkd_tech_bras', $tech_bras );

@@ -1,5 +1,13 @@
 # Evolution log
 
+## 2026-09-28 — Page d'administration alignée sur le style de sp-build (v1.3.1)
+
+- La page « TKD Parcours » reprend la structure des pages d'admin de sp-build : `wrap sp-cal-wrap`, sections en boîtes `sp-box`, formulaire en `form-table` WordPress (libellés à gauche, champs `regular-text` / `large-text`, aides en `p.description`), liste des grades en `wp-list-table widefat striped`, boutons natifs WordPress (✏️ / 🗑️ en `button-small`, suppression en `sp-btn-del`).
+- Les messages (succès / erreur) utilisent désormais les notices WordPress natives (`notice notice-success is-dismissible`, `notice notice-error`), comme dans sp-build.
+- Nouveau fichier `assets/css/admin.css`, chargé uniquement sur cette page : copie des règles générales de `sp-build/assets/css/admin.css` (`.sp-cal-wrap`, `.sp-box`, `.sp-btn-del`, `.sp-muted`) pour que le rendu soit identique même si sp-build n'est pas actif, plus les pastilles de ceinture de la liste (auparavant dans un `<style>` inline avec des `!important`).
+- Suppression du thème sombre de l'admin dans `assets/css/style.css` (≈180 lignes de règles `.claira-tkd-admin*` en `!important`) : `style.css` ne sert plus qu'au parcours public et au cahier de révision, et n'est plus chargé dans le back-office.
+- Version passée à 1.3.1 pour forcer le rechargement des feuilles de style.
+
 ## 2026-09-14 — Cahier de révision imprimable généré depuis la base
 
 - Nouveau shortcode `[claira_tkd_parcours_tableau age="Enfant"]` (`includes/print-view.php`) : reproduit le rendu des anciens fichiers statiques `technique_enfant.html` / `technique_adoadulte.html` (tableau complet, pastilles de couleur par ceinture, bilingue coréen/français), mais généré à la volée depuis les grades enregistrés en base plutôt que maintenu à la main dans deux fichiers HTML séparés.

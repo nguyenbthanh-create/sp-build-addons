@@ -1,0 +1,89 @@
+/* ============================================================
+   Claira TKD Parcours – Admin CSS
+   Reprend le style général de sp-build (sp-build/assets/css/admin.css :
+   .sp-cal-wrap, .sp-box, .sp-btn-del, .sp-muted) pour que la page
+   « TKD Parcours » ait le même rendu que les pages SP Calendar PRO,
+   même quand sp-build n'est pas actif.
+   ============================================================ */
+
+/* ── Wrap global ── */
+.sp-cal-wrap { max-width: 1400px; }
+.sp-cal-wrap > h1 { margin-bottom: 20px; }
+
+/* ── Boîte ── */
+.sp-box {
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+}
+.sp-box h2 {
+    margin: 0 0 14px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid #f0f0f1;
+    font-size: 15px;
+    display: flex; align-items: center; gap: 8px;
+}
+.sp-box h2 .dashicons { font-size: 18px; width:18px; height:18px; }
+.sp-box p.description {
+    max-width: 100%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    margin-top: 4px;
+}
+
+/* ── Bouton supprimer ── */
+.sp-btn-del { color: #c00 !important; }
+.sp-btn-del:hover { background: #fef2f2 !important; }
+
+/* ── Texte muted ── */
+.sp-muted { color: #888; font-size: 12px; }
+
+/* ── Champs du formulaire ── */
+.sp-cal-wrap .form-table td { overflow: visible; }
+.sp-cal-wrap .form-table input[type="text"],
+.sp-cal-wrap .form-table input[type="url"],
+.sp-cal-wrap .form-table select,
+.sp-cal-wrap .form-table textarea { width: 100%; max-width: 100%; box-sizing: border-box; }
+
+/* ── Spécifique TKD Parcours ── */
+.claira-tkd-admin-form-box { max-width: 900px; }
+.claira-tkd-admin-form-box h2 { justify-content: space-between; flex-wrap: wrap; }
+
+.claira-tkd-admin-video-current {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 8px; padding: 8px 12px;
+    background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;
+}
+
+.claira-tkd-admin-table td { vertical-align: middle; }
+.claira-tkd-admin-actions { display: flex; gap: 4px; align-items: center; }
+.claira-tkd-admin-delete-form { display: inline; margin: 0; }
+
+/* Pastille couleur de ceinture dans la liste des grades */
+.claira-tkd-admin-pill {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid #c3c4c7;
+    box-sizing: border-box;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+.claira-tkd-admin-pill.claira-tkd-belt-white { background: #ffffff; }
+.claira-tkd-admin-pill.claira-tkd-belt-yellow { background: #ffd600; }
+.claira-tkd-admin-pill.claira-tkd-belt-orange { background: #f37021; }
+.claira-tkd-admin-pill.claira-tkd-belt-green { background: #00a651; }
+.claira-tkd-admin-pill.claira-tkd-belt-purple { background: #7b2cbf; }
+.claira-tkd-admin-pill.claira-tkd-belt-blue { background: #0072ce; }
+.claira-tkd-admin-pill.claira-tkd-belt-red { background: #ed1c24; }
+.claira-tkd-admin-pill.claira-tkd-belt-black { background: #000000; }
+.claira-tkd-admin-pill.claira-tkd-bicolor-white-yellow { background: linear-gradient(180deg, #ffffff 50%, #ffd600 50%); }
+.claira-tkd-admin-pill.claira-tkd-bicolor-yellow-orange { background: linear-gradient(180deg, #ffd600 50%, #f37021 50%); }
+.claira-tkd-admin-pill.claira-tkd-bicolor-orange-green { background: linear-gradient(180deg, #f37021 50%, #00a651 50%); }
+.claira-tkd-admin-pill.claira-tkd-bicolor-red-black { background: linear-gradient(180deg, #ed1c24 50%, #000000 50%); }
+.claira-tkd-admin-pill.claira-tkd-bicolor-green-blue { background: linear-gradient(180deg, #00a651 50%, #0072ce 50%); }
+.claira-tkd-admin-pill.claira-tkd-bicolor-blue-red { background: linear-gradient(180deg, #0072ce 50%, #ed1c24 50%); }

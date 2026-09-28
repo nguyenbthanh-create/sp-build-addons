@@ -64,7 +64,8 @@ La gestion des grades se fait entièrement depuis le menu **TKD Parcours** du ba
 - `includes/print-view.php` : shortcode « cahier de révision » imprimable (`[claira_tkd_parcours_tableau]`)
 - `includes/admin-page.php` : page d'administration « TKD Parcours » dans le back-office (menu, formulaire, liste, import)
 - `includes/enqueue.php` : charge CSS et JS
-- `assets/css/style.css` : styles du plugin
+- `assets/css/style.css` : styles du parcours public et du cahier de révision
+- `assets/css/admin.css` : styles de la page d'administration (repris du style général de sp-build)
 - `assets/js/script.js` : gestion du modal
 
 ## Notes
@@ -72,4 +73,4 @@ La gestion des grades se fait entièrement depuis le menu **TKD Parcours** du ba
 - L'accès public au parcours est libre, sans filtrage par profil.
 - Le plugin est conçu pour être responsive et fonctionnel sur PC, tablette et smartphone.
 - Les vidéos sont principalement gérées par URL, avec une option de fichier vidéo téléchargeable.
-- À faire plus tard : aligner le style visuel de la page d'administration sur le style général de sp-build.
+- La page d'administration reprend le style général de sp-build (boîtes `sp-box`, formulaires et tableaux WordPress natifs).

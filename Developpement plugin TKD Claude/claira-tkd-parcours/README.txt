@@ -54,4 +54,4 @@ La gestion des grades (import, ajout, édition, suppression) se fait exclusiveme
 * L’accès public est libre, sans filtrage par âge ni grade.
 * Les vidéos sont principalement gérées par URL, mais il est possible de proposer un fichier vidéo téléchargeable via ID de média.
 * Le plugin est conçu pour être léger et facile à intégrer dans un site utilisant un thème WordPress standard.
-* Le style visuel de la page d’administration doit encore être aligné sur le style général de sp-build (prévu pour une prochaine évolution).
+* La page d’administration reprend le style général de sp-build (boîtes sp-box, formulaires et tableaux WordPress natifs).

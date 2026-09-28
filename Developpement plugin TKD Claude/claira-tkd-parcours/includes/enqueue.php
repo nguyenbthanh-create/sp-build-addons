@@ -28,5 +28,5 @@ function claira_tkd_admin_assets( $hook ) {
         return;
     }
 
-    wp_enqueue_style( 'claira-tkd-admin-style', CLAIRA_TKD_PLUGIN_URL . 'assets/css/style.css', array(), CLAIRA_TKD_PLUGIN_VERSION );
+    wp_enqueue_style( 'claira-tkd-admin-style', CLAIRA_TKD_PLUGIN_URL . 'assets/css/admin.css', array(), CLAIRA_TKD_PLUGIN_VERSION );
 }
