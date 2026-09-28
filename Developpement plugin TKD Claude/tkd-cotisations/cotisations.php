@@ -1289,7 +1289,7 @@ function tkd_render_fiche_cotisation() {
             <p style="color:#999; font-size:13px;">Aucun paiement enregistré.</p>
         <?php else: ?>
         <table class="tkd-paiement-table">
-            <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Référence</th><th>Note</th><th>Saisi par</th><th>Dépôt prévu</th><th>Déposé</th><th></th><th>Reçu</th></tr></thead>
+            <thead><tr><th>Date</th><th>Montant</th><th>Mode</th><th>Reçu</th><th>Référence</th><th>Note</th><th>Saisi par</th><th>Dépôt prévu</th><th>Déposé</th><th></th></tr></thead>
             <tbody>
             <?php foreach ($paiements as $p): ?>
             <?php $est_cheque = in_array( $p->mode, [ 'cheque', 'cheque_ancv' ], true ); ?>
