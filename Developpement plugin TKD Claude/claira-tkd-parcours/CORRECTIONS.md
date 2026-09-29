@@ -55,3 +55,11 @@ Ce document résume les corrections effectuées dans le plugin `claira-tkd-parco
 - Chaque grade est maintenant rendu comme un bouton cliquable direct dans `includes/shortcodes.php`.
 - L'ouverture des modales est gérée uniquement par `assets/js/script.js`.
 - Les anciens fichiers de hotspot ont été supprimés.
+
+## 10. Impression du tableau de progression sur une seule feuille A3 (25/09/2026)
+
+- Problème : imprimer/télécharger en PDF `[claira_tkd_parcours_tableau]` coupait le tableau sur deux pages.
+- Solution (`includes/print-view.php` + `assets/css/style.css`) : bouton « Imprimer / PDF (une feuille A3) » ; à l'impression, un script pose `@page { size: A3 landscape }` (dynamiquement, pour ne pas imposer l'A3 aux autres pages du site), masque le reste de la page (en-tête/pied du thème) et réduit le tableau (zoom) jusqu'à ce qu'il tienne sur une feuille. Feuille de style d'impression compactée (fond blanc, texte noir, ceintures en couleur exacte).
+- Non testé en conditions réelles (pas de runtime WordPress ici) : à vérifier sur le site de test, dans Chrome et Firefox (Firefox ≥ 126 pour `zoom`).
+- Ajustement du 25/09/2026 (retour de l'aperçu d'impression) : le tableau tenait bien sur une page mais était décalé à droite et n'occupait que la moitié de la hauteur. Corrections : marges/paddings/largeurs des conteneurs du thème neutralisés à l'impression, facteur d'échelle recherché par dichotomie (il peut maintenant agrandir le tableau, pas seulement le réduire), et règles d'impression appliquées via une classe `.is-printing` posée avant la mesure (la mise en page mesurée est celle de l'impression, plus celle de l'écran).
+- Correctif du 25/09/2026 : avec deux tableaux sur la même page (Enfant + Ado/Adulte), l'impression n'isolait que le premier — le second (masqué comme « reste de la page ») sortait vide. Le bouton cliqué désigne maintenant le tableau à imprimer (`window.clairaTkdPrint(this)`) ; sans bouton (Ctrl+P), le premier tableau est utilisé.

@@ -220,6 +220,11 @@ function claira_tkd_progression_table_shortcode( $atts ) {
     ob_start();
     ?>
     <div class="claira-tkd-print-wrapper">
+        <div class="claira-tkd-print-toolbar">
+            <button type="button" class="claira-tkd-print-btn" onclick="window.clairaTkdPrint(this)">
+                <?php esc_html_e( '🖨️ Imprimer / PDF (une feuille A3)', 'claira-tkd-parcours' ); ?>
+            </button>
+        </div>
         <div class="claira-tkd-print-header">
             <h1><?php echo esc_html( $header['title'] ); ?></h1>
             <p><?php echo esc_html( $header['subtitle'] ); ?></p>
@@ -303,5 +308,80 @@ function claira_tkd_progression_table_shortcode( $atts ) {
     </div>
     <?php echo $modals_html; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans claira_tkd_render_grade_modal(). ?>
     <?php
+    // Un seul script par page, même si plusieurs tableaux sont affichés.
+    static $print_script_done = false;
+    if ( ! $print_script_done ) {
+        $print_script_done = true;
+        ?>
+        <script>
+        (function () {
+            // Plusieurs tableaux peuvent coexister sur la page (Enfant, Ado/Adulte) : le bouton
+            // cliqué désigne celui à imprimer ; sans bouton (Ctrl+P), on prend le premier.
+            var wrap = null;
+            window.clairaTkdPrint = function (btn) {
+                wrap = btn.closest ? btn.closest(".claira-tkd-print-wrapper") : null;
+                window.print();
+            };
+            // A3 paysage, marges 8 mm, en pixels CSS (96 dpi)
+            var PAGE_W = (420 - 16) / 25.4 * 96, PAGE_H = (297 - 16) / 25.4 * 96;
+            var pageStyle = null, saved = [];
+
+            function beforePrint() {
+                if (!wrap) wrap = document.querySelector(".claira-tkd-print-wrapper");
+                if (!wrap) return;
+                pageStyle = document.createElement('style');
+                pageStyle.textContent = '@page { size: A3 landscape; margin: 8mm; }';
+                document.head.appendChild(pageStyle);
+                wrap.classList.add('is-printing');
+
+                // Isole le tableau : masque le reste de la page (en-tête/pied du thème...) et
+                // neutralise marges, paddings et largeurs max des conteneurs du thème qui le
+                // décaleraient ou le rétréciraient sur la feuille.
+                for (var n = wrap; n && n !== document.body; n = n.parentNode) {
+                    if (n !== wrap) {
+                        saved.push([n, n.style.cssText]);
+                        var reset = { 'margin': '0', 'padding': '0', 'max-width': 'none', 'min-width': '0', 'width': 'auto', 'float': 'none', 'left': '0', 'top': '0', 'transform': 'none' };
+                        Object.keys(reset).forEach(function (p) { n.style.setProperty(p, reset[p], 'important'); });
+                    }
+                    Array.prototype.forEach.call(n.parentNode.children, function (s) {
+                        if (s !== n && s.tagName !== 'SCRIPT' && s.tagName !== 'STYLE' && s.style.display !== 'none') {
+                            saved.push([s, s.style.cssText]);
+                            s.style.setProperty('display', 'none', 'important');
+                        }
+                    });
+                }
+
+                // Ajuste le facteur d'échelle (zoom) pour remplir la feuille sans la dépasser :
+                // recherche par dichotomie, la hauteur du tableau dépendant de sa largeur
+                // (largeur de mise en page = largeur de feuille / zoom).
+                var lo = 0.4, hi = 2.5, target = PAGE_H * 0.97;
+                for (var i = 0; i < 9; i++) {
+                    var mid = (lo + hi) / 2;
+                    wrap.style.zoom = '1';
+                    wrap.style.width = (PAGE_W / mid) + 'px';
+                    if (wrap.offsetHeight * mid <= target) lo = mid; else hi = mid;
+                }
+                wrap.style.width = (PAGE_W / lo) + 'px';
+                wrap.style.zoom = String(lo);
+            }
+
+            function afterPrint() {
+                if (!wrap) return;
+                if (pageStyle && pageStyle.parentNode) pageStyle.parentNode.removeChild(pageStyle);
+                pageStyle = null;
+                for (var i = saved.length - 1; i >= 0; i--) saved[i][0].style.cssText = saved[i][1];
+                saved = [];
+                wrap.classList.remove('is-printing');
+                wrap.style.zoom = '';
+                wrap.style.width = '';
+                wrap = null;
+            }
+
+            window.addEventListener('beforeprint', beforePrint);
+            window.addEventListener('afterprint', afterPrint);
+        })();
+        </script>
+        <?php
+    }
     return ob_get_clean();
 }
