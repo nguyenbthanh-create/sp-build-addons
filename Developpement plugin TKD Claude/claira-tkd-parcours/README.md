@@ -51,10 +51,12 @@ Ajouter la balise suivante pour afficher le schéma des grades par tranche d'âg
 [claira_tkd_schema_grades]
 ```
 
+Chaque grade du schéma est cliquable et ouvre sa fiche (programme technique, poomsae, vidéo, téléchargements).
+
 Le schéma est généré à chaque affichage depuis les grades enregistrés : ceinture (couleur déduite du titre), rang keup, étoiles (« (*) » dans le titre) et âge minimum conseillé. Un intertitre d'âge est ajouté à chaque changement d'âge minimum. Textes modifiables par attributs (valeurs par défaut = textes actuels du site) :
 
 ```php
-[claira_tkd_schema_grades bandeau="..." note="..." sous_titre_baby="3 – 6 ans" sous_titre_enfant="7 ans révolus" sous_titre_ado="11 ans révolus"]
+[claira_tkd_schema_grades bandeau="..." aide="..." note="..." sous_titre_baby="3 – 6 ans" sous_titre_enfant="7 ans révolus" sous_titre_ado="11 ans révolus"]
 ```
 
 Les âges minimums sont indicatifs : après examen, les entraîneurs peuvent autoriser un grade plus tôt (c'est précisé sous le schéma).

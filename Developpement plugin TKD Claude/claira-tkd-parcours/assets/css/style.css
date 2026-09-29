@@ -331,13 +331,15 @@
    ========================================================================== */
 
 .claira-tkd-print-wrapper {
-  background-color: #1a1a1a;
+  background-color: #f6f6f4;
+  border: 1px solid #e4e4e0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  color: #ffffff;
+  color: #222222;
   padding: 20px;
   border-radius: 8px;
   margin: 20px auto;
   max-width: 1200px;
+  box-sizing: border-box;
 }
 
 .claira-tkd-print-header {
@@ -346,7 +348,7 @@
 }
 
 .claira-tkd-print-header h1 {
-  color: #FFD700;
+  color: #222222;
   font-size: 28px;
   font-weight: 900;
   text-transform: uppercase;
@@ -355,7 +357,7 @@
 }
 
 .claira-tkd-print-header p {
-  color: #aaaaaa;
+  color: #6b6b6b;
   font-size: 14px;
   margin: 0 0 15px 0;
 }
@@ -363,28 +365,32 @@
 .claira-tkd-print-divider {
   border: none;
   height: 3px;
-  background-color: #DC143C;
+  background-color: #c0392b;
   margin: 0;
 }
 
 .claira-tkd-print-responsive {
   width: 100%;
   overflow-x: auto;
+  background: #ffffff;
+  border: 1px solid #e4e4e0;
+  border-radius: 8px;
+  margin-top: 16px;
 }
 
 .claira-tkd-print-table {
   width: 100%;
   border-collapse: collapse;
   min-width: 800px;
-  margin-top: 10px;
 }
 
 .claira-tkd-print-table th {
-  color: #FFD700;
+  background: #fffbea;
+  color: #8a6d00;
   font-weight: bold;
   text-transform: uppercase;
-  padding: 15px 10px;
-  border-bottom: 1px solid #333;
+  padding: 14px 10px;
+  border-bottom: 2px solid #d4af37;
   font-size: 13px;
 }
 .claira-tkd-print-table th.col-center { text-align: center; }
@@ -392,18 +398,19 @@
 
 .claira-tkd-print-table td {
   padding: 12px 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #ececea;
   vertical-align: middle;
   font-size: 13px;
-  color: #ffffff;
+  color: #222222;
 }
 
-.claira-tkd-print-table tbody tr:nth-child(even) { background-color: #1a1a1a; }
-.claira-tkd-print-table tbody tr:nth-child(odd)  { background-color: #222222; }
-.claira-tkd-print-table tbody tr:hover { background-color: #2a2a2a; }
+.claira-tkd-print-table tbody tr:nth-child(even) { background-color: #fafaf8; }
+.claira-tkd-print-table tbody tr:nth-child(odd)  { background-color: #ffffff; }
+.claira-tkd-print-table tbody tr:hover { background-color: #fffbea; }
+.claira-tkd-print-table tbody tr:last-child td { border-bottom: none; }
 
 .claira-tkd-print-table .col-grd {
-  color: #4c98af;
+  color: #1f6f9f;
   text-align: center;
   font-weight: bold;
   font-size: 14px;
@@ -411,13 +418,13 @@
 .claira-tkd-print-table .col-belt-cell { text-align: center; }
 
 .claira-tkd-print-kor {
-  color: #5bc0de;
+  color: #1f6f9f;
   font-style: italic;
   display: block;
   margin-bottom: 2px;
 }
 .claira-tkd-print-fr {
-  color: #ffffff;
+  color: #222222;
   display: block;
 }
 .claira-tkd-print-spacer {
@@ -433,21 +440,23 @@
   min-width: 85px;
   text-align: center;
   white-space: nowrap;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.15);
 }
 
 @media print {
-  .claira-tkd-print-wrapper {
+  .claira-tkd-print-wrapper,
+  .claira-tkd-print-responsive {
     background-color: #ffffff !important;
-    color: #000000 !important;
-  }
-  .claira-tkd-print-table td,
-  .claira-tkd-print-fr {
-    color: #000000 !important;
+    border: none !important;
   }
   .claira-tkd-print-table tbody tr:nth-child(even),
   .claira-tkd-print-table tbody tr:nth-child(odd) {
     background-color: #ffffff !important;
+  }
+  .claira-tkd-print-pill,
+  .claira-tkd-print-table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 
@@ -618,3 +627,95 @@
   .claira-tkd-schema-circle,
   .claira-tkd-schema-age-accent { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* Pastilles cliquables : réinitialise le style de bouton du thème */
+button.claira-tkd-schema-badge {
+  width: 100%;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  line-height: normal;
+  text-transform: none;
+  letter-spacing: normal;
+  box-shadow: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  -webkit-appearance: none;
+  appearance: none;
+}
+button.claira-tkd-schema-badge:not(.claira-tkd-schema-badge-white):not(.claira-tkd-schema-badge-white-yellow):not(.claira-tkd-schema-badge-red-black):not(.claira-tkd-schema-badge-black) {
+  border: none;
+}
+button.claira-tkd-schema-badge:hover,
+button.claira-tkd-schema-badge:focus-visible {
+  transform: translateX(3px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+button.claira-tkd-schema-badge:focus-visible {
+  outline: 2px solid #222222;
+  outline-offset: 2px;
+}
+
+.claira-tkd-schema-help {
+  text-align: center;
+  font-size: 12px;
+  color: var(--schema-muted);
+  margin: -10px 0 16px;
+}
+
+/* ==========================================================================
+   Fiche d'un grade (modale) — textes bilingues coréen / français
+   ========================================================================== */
+
+.claira-tkd-modal .claira-tkd-print-kor { color: #5bc0de; }
+.claira-tkd-modal .claira-tkd-print-fr { color: #e2e8f0; }
+.claira-tkd-modal .claira-tkd-print-spacer { height: 8px; }
+.claira-tkd-section-text { line-height: 1.5; font-size: 0.95rem; }
+.claira-tkd-modal-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-style: italic;
+  color: #94a3b8;
+}
+
+/* Variante claire, utilisée par le schéma des grades */
+.claira-tkd-modal--light .claira-tkd-modal-backdrop { background: rgba(0, 0, 0, 0.55); }
+.claira-tkd-modal--light .claira-tkd-modal-panel {
+  background: #ffffff;
+  border-color: #e4e4e0;
+  color: #222222;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+.claira-tkd-modal--light .claira-tkd-modal-close {
+  background: #f0f0ee;
+  color: #222222;
+}
+.claira-tkd-modal--light .claira-tkd-modal-close:hover { background: #c0392b; color: #ffffff; }
+.claira-tkd-modal--light .claira-tkd-modal-header { border-bottom-color: #ececea; }
+.claira-tkd-modal--light .claira-tkd-modal-header h2 { color: #222222; }
+.claira-tkd-modal--light .claira-tkd-modal-tags { color: #8a6d00; }
+.claira-tkd-modal--light .claira-tkd-modal-details {
+  background: #f6f6f4;
+  border-bottom-color: #ececea;
+}
+.claira-tkd-modal--light .claira-tkd-modal-details p { color: #6b6b6b; }
+.claira-tkd-modal--light .claira-tkd-modal-details strong { color: #222222; }
+.claira-tkd-modal--light .claira-tkd-section {
+  background: #fafaf8;
+  border: 1px solid #ececea;
+  border-top: 3px solid #c0392b;
+}
+.claira-tkd-modal--light .claira-tkd-section h3 { color: #8a6d00; }
+.claira-tkd-modal--light .claira-tkd-print-kor { color: #1f6f9f; }
+.claira-tkd-modal--light .claira-tkd-print-fr { color: #222222; }
+.claira-tkd-modal--light .claira-tkd-modal-empty { color: #6b6b6b; }
+.claira-tkd-modal--light .claira-tkd-resources,
+.claira-tkd-modal--light .claira-tkd-video {
+  background: #fafaf8;
+  border-color: #ececea;
+}
+.claira-tkd-modal--light .claira-tkd-resources h3,
+.claira-tkd-modal--light .claira-tkd-video h3 { color: #222222; }
+.claira-tkd-modal--light .claira-tkd-resources a,
+.claira-tkd-modal--light .claira-tkd-video a { background: #222222; color: #ffffff; }
+.claira-tkd-modal--light .claira-tkd-resources a:hover,
+.claira-tkd-modal--light .claira-tkd-video a:hover { background: #c0392b; }

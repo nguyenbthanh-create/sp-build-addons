@@ -201,7 +201,8 @@ function claira_tkd_progression_table_shortcode( $atts ) {
                         $tech_bras   = get_post_meta( $grade->ID, '_claira_tkd_tech_bras', true );
                         $tech_jambes = get_post_meta( $grade->ID, '_claira_tkd_tech_jambes', true );
                         $poomsae     = get_post_meta( $grade->ID, '_claira_tkd_poomsae', true );
-                        $title       = claira_tkd_get_grade_display_label( get_the_title( $grade ) );
+                        list( $belt_name, $stars ) = claira_tkd_split_grade_stars( get_the_title( $grade ) );
+                        $title       = trim( $belt_name . ' ' . $stars );
                         $pill        = claira_tkd_get_pill_colors( get_the_title( $grade ) );
                         // Un tech_jambes vide alors que tech_bras est rempli signale une description
                         // fusionnée (ex. grades de révision globale / Poom) : on affiche alors une

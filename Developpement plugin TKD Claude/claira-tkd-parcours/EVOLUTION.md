@@ -1,5 +1,12 @@
 # Evolution log
 
+## 2026-09-29 — Schéma des grades interactif + cahier de révision en style clair (v1.5.0)
+
+- Les pastilles de `[claira_tkd_schema_grades]` sont cliquables : elles ouvrent la fiche du grade (programme technique bras / jambes, poomsae, téléchargements, vidéo), en thème clair. Un grade sans programme saisi (ex. Baby) affiche « bientôt disponible ». Une ligne d'aide (« Cliquez sur un grade… ») s'affiche sous le bandeau (attribut `aide`, vide pour la masquer).
+- La fiche d'un grade est extraite dans `claira_tkd_render_grade_modal()` (`includes/shortcodes.php`) et partagée par `[claira_tkd_parcours]` et `[claira_tkd_schema_grades]`. Les techniques y sont affichées en bilingue coréen / français (comme le cahier de révision) au lieu d'un simple texte avec retours à la ligne ; une description globale (champ jambes vide) est titrée « Programme technique ».
+- `assets/js/script.js` : ouverture par tout bouton `data-modal` (cartes et pastilles), modales rattachées à `<body>` (pas de rognage par un conteneur Elementor), focus placé sur « Fermer » à l'ouverture et rendu au bouton à la fermeture.
+- `[claira_tkd_parcours_tableau]` passe en style clair (même palette que le schéma : fond clair, tableau blanc, en-têtes dorés). Les étoiles s'y affichent en ★ comme sur le schéma (« Orange ★ » au lieu de « ORANGE (*) »).
+
 ## 2026-09-28 — Schéma des grades généré depuis la base (v1.4.0)
 
 - Nouveau shortcode `[claira_tkd_schema_grades]` (`includes/schema-view.php`) : reprend la page « Schéma des grades » du site (colonnes Baby / Enfant / Ado & Adulte, pastilles de ceinture, intertitres d'âge minimum), mais générée à chaque affichage depuis les grades enregistrés au lieu d'un bloc HTML de ~60 pastilles écrites à la main. Style adapté au thème clair du site (fond clair, cartes blanches), palette de ceintures inchangée. Styles dans `assets/css/style.css` (préfixe `.claira-tkd-schema`).

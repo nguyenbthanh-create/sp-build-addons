@@ -122,12 +122,17 @@ function claira_tkd_split_grade_stars( $title ) {
  * la page « Schéma des grades » : ajouter, renommer ou modifier un grade (y
  * compris son âge minimum conseillé) dans l'admin suffit à mettre la page à jour.
  *
- * Attributs (tous facultatifs) : bandeau, note, sous_titre_baby,
+ * Chaque pastille est cliquable : elle ouvre la fiche du grade (programme
+ * technique, poomsae, vidéo, téléchargements), la même que dans
+ * [claira_tkd_parcours] (claira_tkd_render_grade_modal()).
+ *
+ * Attributs (tous facultatifs) : bandeau, aide, note, sous_titre_baby,
  * sous_titre_enfant, sous_titre_ado.
  */
 function claira_tkd_schema_grades_shortcode( $atts ) {
     $atts = shortcode_atts( array(
         'bandeau'           => __( 'Toutes les catégories d’âge commencent le parcours par la ceinture blanche', 'claira-tkd-parcours' ),
+        'aide'              => __( 'Cliquez sur un grade pour voir son programme technique.', 'claira-tkd-parcours' ),
         'note'              => __( 'Les âges minimums sont donnés à titre de conseil : après examen, les entraîneurs peuvent autoriser un passage de grade plus tôt. Le bureau et l’équipe pédagogique étudient chaque dossier au cas par cas.', 'claira-tkd-parcours' ),
         'sous_titre_baby'   => __( '3 – 6 ans', 'claira-tkd-parcours' ),
         'sous_titre_enfant' => __( '7 ans révolus', 'claira-tkd-parcours' ),
@@ -135,6 +140,7 @@ function claira_tkd_schema_grades_shortcode( $atts ) {
     ), $atts, 'claira_tkd_schema_grades' );
 
     $columns_html = '';
+    $modals_html  = '';
 
     foreach ( claira_tkd_get_schema_columns( $atts ) as $slug => $column ) {
         $term_ids = array();
@@ -196,13 +202,25 @@ function claira_tkd_schema_grades_shortcode( $atts ) {
                             <span class="claira-tkd-schema-age-note"><?php esc_html_e( '— âge min. conseillé', 'claira-tkd-parcours' ); ?></span>
                         </div>
                     <?php endif; ?>
-                    <div class="claira-tkd-schema-badge claira-tkd-schema-badge-<?php echo esc_attr( $style['key'] ); ?>" style="background:<?php echo esc_attr( $style['background'] ); ?>;">
+                    <?php
+                    $modal_id = 'claira-tkd-schema-grade-' . $grade->ID;
+                    $modals_html .= claira_tkd_render_grade_modal( $grade, $modal_id, array(
+                        'title' => trim( $name . ' ' . $stars ),
+                        'tags'  => array(
+                            $keup,
+                            $column['title'],
+                            '' !== $min_age ? sprintf( __( 'âge min. conseillé : %s ans', 'claira-tkd-parcours' ), $min_age ) : '',
+                        ),
+                        'class' => 'claira-tkd-modal--light',
+                    ) );
+                    ?>
+                    <button type="button" class="claira-tkd-schema-badge claira-tkd-schema-badge-<?php echo esc_attr( $style['key'] ); ?>" style="background:<?php echo esc_attr( $style['background'] ); ?>;" data-modal="<?php echo esc_attr( $modal_id ); ?>" aria-haspopup="dialog">
                         <span class="claira-tkd-schema-circle" style="background:<?php echo esc_attr( $style['circle'] ); ?>;"></span>
                         <span class="claira-tkd-schema-grade<?php echo preg_match( '/^\d+e$/', $keup ) ? '' : ' is-long'; ?>" style="color:<?php echo esc_attr( $style['grade_color'] ); ?>;">
                             <?php echo esc_html( $keup ); ?><?php if ( $stars ) : ?><span class="claira-tkd-schema-star"> <?php echo esc_html( $stars ); ?></span><?php endif; ?>
                         </span>
                         <span class="claira-tkd-schema-name" style="color:<?php echo esc_attr( $style['color'] ); ?>;"><?php echo esc_html( $name ); ?></span>
-                    </div>
+                    </button>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -220,11 +238,15 @@ function claira_tkd_schema_grades_shortcode( $atts ) {
         <?php if ( '' !== $atts['bandeau'] ) : ?>
             <div class="claira-tkd-schema-banner"><?php echo esc_html( $atts['bandeau'] ); ?></div>
         <?php endif; ?>
+        <?php if ( '' !== $atts['aide'] ) : ?>
+            <p class="claira-tkd-schema-help"><?php echo esc_html( $atts['aide'] ); ?></p>
+        <?php endif; ?>
         <div class="claira-tkd-schema-cols"><?php echo $columns_html; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ci-dessus. ?></div>
         <?php if ( '' !== $atts['note'] ) : ?>
             <div class="claira-tkd-schema-footer"><?php echo esc_html( $atts['note'] ); ?></div>
         <?php endif; ?>
     </div>
+    <?php echo $modals_html; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans claira_tkd_render_grade_modal(). ?>
     <?php
     return ob_get_clean();
 }

@@ -95,6 +95,121 @@ function claira_tkd_get_video_embed_html( $video_url ) {
     return '<div class="claira-tkd-video-container"><iframe src="' . esc_url( $video_url ) . '" frameborder="0" allowfullscreen></iframe></div>';
 }
 
+/**
+ * Fenêtre (modale) de détail d'un grade : techniques bras / jambes, poomsae,
+ * téléchargements et vidéo. Partagée par [claira_tkd_parcours] et
+ * [claira_tkd_schema_grades] pour que le contenu affiché à l'adhérent soit
+ * le même partout.
+ *
+ * $args :
+ * - 'tags'  : libellés affichés sous le titre (rang keup, tranche d'âge…) ;
+ * - 'title' : titre à afficher (par défaut, le titre du grade) ;
+ * - 'class' : classe(s) CSS ajoutée(s) à la modale (ex. thème clair).
+ */
+function claira_tkd_render_grade_modal( $post, $modal_id, $args = array() ) {
+    $args = wp_parse_args( $args, array(
+        'tags'  => array(),
+        'title' => claira_tkd_get_grade_display_label( get_the_title( $post ) ),
+        'class' => '',
+    ) );
+
+    $grade_id      = $post->ID;
+    $tech_bras     = get_post_meta( $grade_id, '_claira_tkd_tech_bras', true );
+    $tech_jambes   = get_post_meta( $grade_id, '_claira_tkd_tech_jambes', true );
+    $poomsae       = get_post_meta( $grade_id, '_claira_tkd_poomsae', true );
+    $download_urls = get_post_meta( $grade_id, '_claira_tkd_download_urls', true );
+    $video_url     = get_post_meta( $grade_id, '_claira_tkd_video_url', true );
+    $video_file_id = get_post_meta( $grade_id, '_claira_tkd_video_file_id', true );
+    $keup_rank     = get_post_meta( $grade_id, '_claira_tkd_keup_rank', true );
+    $tags          = array_filter( (array) $args['tags'] );
+    $download_urls = is_array( $download_urls ) ? array_filter( $download_urls ) : array();
+
+    // Un champ jambes vide alors que bras est rempli = description globale
+    // (révision, poom…), comme dans le cahier de révision.
+    $bras_title = ( '' === trim( (string) $tech_jambes ) && '' !== trim( (string) $tech_bras ) )
+        ? __( 'Programme technique', 'claira-tkd-parcours' )
+        : __( 'Techniques Bras (Isolées)', 'claira-tkd-parcours' );
+
+    ob_start();
+    ?>
+    <div class="claira-tkd-modal <?php echo esc_attr( $args['class'] ); ?>" id="<?php echo esc_attr( $modal_id ); ?>" aria-hidden="true">
+        <div class="claira-tkd-modal-panel" role="dialog" aria-modal="true" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title">
+            <button class="claira-tkd-modal-close" type="button" aria-label="<?php esc_attr_e( 'Fermer', 'claira-tkd-parcours' ); ?>">×</button>
+            <header class="claira-tkd-modal-header">
+                <h2 id="<?php echo esc_attr( $modal_id ); ?>-title"><?php echo esc_html( $args['title'] ); ?></h2>
+                <?php if ( $tags ) : ?>
+                    <p class="claira-tkd-modal-tags"><?php echo esc_html( implode( ' · ', $tags ) ); ?></p>
+                <?php endif; ?>
+            </header>
+            <div class="claira-tkd-modal-details">
+                <p><strong><?php esc_html_e( 'Couleur de la ceinture', 'claira-tkd-parcours' ); ?> :</strong> <?php echo esc_html( claira_tkd_get_grade_display_label( get_the_title( $post ) ) ); ?></p>
+                <p><strong><?php esc_html_e( 'Rang keup', 'claira-tkd-parcours' ); ?> :</strong> <?php echo esc_html( $keup_rank ? $keup_rank : __( 'Non défini', 'claira-tkd-parcours' ) ); ?></p>
+            </div>
+            <div class="claira-tkd-modal-body">
+                <?php if ( $tech_bras ) : ?>
+                    <div class="claira-tkd-section">
+                        <h3><?php echo esc_html( $bras_title ); ?></h3>
+                        <div class="claira-tkd-section-text"><?php echo wp_kses_post( claira_tkd_render_technique_lines( $tech_bras ) ); ?></div>
+                    </div>
+                <?php endif; ?>
+                <?php if ( $tech_jambes ) : ?>
+                    <div class="claira-tkd-section">
+                        <h3><?php esc_html_e( 'Techniques Jambes (Isolées)', 'claira-tkd-parcours' ); ?></h3>
+                        <div class="claira-tkd-section-text"><?php echo wp_kses_post( claira_tkd_render_technique_lines( $tech_jambes ) ); ?></div>
+                    </div>
+                <?php endif; ?>
+                <?php if ( $poomsae ) : ?>
+                    <div class="claira-tkd-section">
+                        <h3><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></h3>
+                        <p><?php echo wp_kses_post( nl2br( esc_html( $poomsae ) ) ); ?></p>
+                    </div>
+                <?php endif; ?>
+                <?php if ( ! $tech_bras && ! $tech_jambes && ! $poomsae ) : ?>
+                    <p class="claira-tkd-modal-empty"><?php esc_html_e( 'Le programme technique de ce grade sera bientôt disponible. Renseignez-vous auprès de vos entraîneurs.', 'claira-tkd-parcours' ); ?></p>
+                <?php endif; ?>
+
+                <?php if ( $download_urls ) : ?>
+                    <div class="claira-tkd-resources">
+                        <h3><?php esc_html_e( 'Téléchargements', 'claira-tkd-parcours' ); ?></h3>
+                        <ul>
+                            <?php foreach ( $download_urls as $download_url ) :
+                                $url = $download_url;
+                                if ( is_numeric( $download_url ) ) {
+                                    $attachment_url = wp_get_attachment_url( absint( $download_url ) );
+                                    if ( $attachment_url ) {
+                                        $url = $attachment_url;
+                                    }
+                                }
+                                ?>
+                                <li><a href="<?php echo esc_url( $url ); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e( 'Télécharger la ressource', 'claira-tkd-parcours' ); ?></a></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ( $video_url || $video_file_id ) : ?>
+                    <div class="claira-tkd-video">
+                        <h3><?php esc_html_e( 'Vidéo de démonstration', 'claira-tkd-parcours' ); ?></h3>
+                        <?php if ( $video_url ) : ?>
+                            <?php echo claira_tkd_get_video_embed_html( $video_url ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction. ?>
+                        <?php endif; ?>
+                        <?php if ( $video_file_id && wp_get_attachment_url( $video_file_id ) ) : ?>
+                            <div class="claira-tkd-video-container" style="margin-top: 10px;">
+                                <video controls width="100%">
+                                    <source src="<?php echo esc_url( wp_get_attachment_url( $video_file_id ) ); ?>">
+                                </video>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="claira-tkd-modal-backdrop"></div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
 function claira_tkd_parcours_shortcode( $atts ) {
     $atts = shortcode_atts( array(
         'order' => 'ASC',
@@ -167,14 +282,8 @@ function claira_tkd_parcours_shortcode( $atts ) {
                 <div class="claira-tkd-list" role="list">
                     <?php foreach ( $posts as $post ) : setup_postdata( $post );
                                     $grade_id = $post->ID;
-                                    $tech_bras = get_post_meta( $grade_id, '_claira_tkd_tech_bras', true );
-                                    $tech_jambes = get_post_meta( $grade_id, '_claira_tkd_tech_jambes', true );
-                                    $poomsae = get_post_meta( $grade_id, '_claira_tkd_poomsae', true );
-                                    $download_urls = get_post_meta( $grade_id, '_claira_tkd_download_urls', true );
-                                    $video_url = get_post_meta( $grade_id, '_claira_tkd_video_url', true );
-                                    $video_file_id = get_post_meta( $grade_id, '_claira_tkd_video_file_id', true );
                                     $age_terms = get_the_terms( $grade_id, 'tkd_age_group' );
-                                    $age_label = $age_terms ? esc_html( $age_terms[0]->name ) : '';
+                                    $age_label = $age_terms ? $age_terms[0]->name : '';
                                     $keup_rank = get_post_meta( $grade_id, '_claira_tkd_keup_rank', true );
                                     $belt_class = claira_tkd_get_belt_color_class( get_the_title( $post ) );
                                     $bicolor_class = claira_tkd_get_bicolor_class( get_the_title( $post ) );
@@ -189,82 +298,7 @@ function claira_tkd_parcours_shortcode( $atts ) {
                                     <?php endif; ?>
                                 </button>
 
-                                <div class="claira-tkd-modal" id="<?php echo esc_attr( $modal_id ); ?>" aria-hidden="true">
-                                    <div class="claira-tkd-modal-panel" role="dialog" aria-labelledby="<?php echo esc_attr( $modal_id ); ?>-title">
-                                        <button class="claira-tkd-modal-close" type="button" aria-label="<?php esc_attr_e( 'Fermer', 'claira-tkd-parcours' ); ?>">×</button>
-                                        <header class="claira-tkd-modal-header">
-                                            <h2 id="<?php echo esc_attr( $modal_id ); ?>-title"><?php echo esc_html( $display_title ); ?></h2>
-                                            <?php if ( ! empty( $pill_meta ) ) : ?>
-                                                <p class="claira-tkd-modal-tags"><?php echo esc_html( implode( ' · ', $pill_meta ) ); ?></p>
-                                            <?php endif; ?>
-                                        </header>
-                                        <div class="claira-tkd-modal-details">
-                                            <p><strong><?php esc_html_e( 'Couleur de la ceinture', 'claira-tkd-parcours' ); ?> :</strong> <?php echo esc_html( $display_title ); ?></p>
-                                            <p><strong><?php esc_html_e( 'Rang keup', 'claira-tkd-parcours' ); ?> :</strong> <?php echo esc_html( $keup_rank ? $keup_rank : __( 'Non défini', 'claira-tkd-parcours' ) ); ?></p>
-                                        </div>
-                                        <div class="claira-tkd-modal-body">
-                                            <?php if ( $tech_bras ) : ?>
-                                                <div class="claira-tkd-section">
-                                                    <h3><?php esc_html_e( 'Techniques Bras (Isolées)', 'claira-tkd-parcours' ); ?></h3>
-                                                    <p><?php echo wp_kses_post( nl2br( $tech_bras ) ); ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if ( $tech_jambes ) : ?>
-                                                <div class="claira-tkd-section">
-                                                    <h3><?php esc_html_e( 'Techniques Jambes (Isolées)', 'claira-tkd-parcours' ); ?></h3>
-                                                    <p><?php echo wp_kses_post( nl2br( $tech_jambes ) ); ?></p>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if ( $poomsae ) : ?>
-                                                <div class="claira-tkd-section">
-                                                    <h3><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></h3>
-                                                    <p><?php echo wp_kses_post( nl2br( $poomsae ) ); ?></p>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php if ( ! empty( $download_urls ) ) : ?>
-                                                <div class="claira-tkd-resources">
-                                                    <h3><?php esc_html_e( 'Téléchargements', 'claira-tkd-parcours' ); ?></h3>
-                                                    <ul>
-                                                        <?php foreach ( $download_urls as $download_url ) :
-                                                            if ( empty( $download_url ) ) {
-                                                                continue;
-                                                            }
-
-                                                            $label = esc_html__( 'Télécharger la ressource', 'claira-tkd-parcours' );
-                                                            $url = esc_url( $download_url );
-                                                            if ( is_numeric( $download_url ) ) {
-                                                                $attachment_url = wp_get_attachment_url( absint( $download_url ) );
-                                                                if ( $attachment_url ) {
-                                                                    $url = esc_url( $attachment_url );
-                                                                }
-                                                            }
-                                                        ?>
-                                                            <li><a href="<?php echo $url; ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $label ); ?></a></li>
-                                                        <?php endforeach; ?>
-                                                    </ul>
-                                                </div>
-                                            <?php endif; ?>
-
-                                            <?php if ( $video_url || $video_file_id ) : ?>
-                                                <div class="claira-tkd-video">
-                                                    <h3><?php esc_html_e( 'Vidéo de démonstration', 'claira-tkd-parcours' ); ?></h3>
-                                                    <?php if ( $video_url ) : ?>
-                                                        <?php echo claira_tkd_get_video_embed_html( $video_url ); ?>
-                                                    <?php endif; ?>
-                                                    <?php if ( $video_file_id && wp_get_attachment_url( $video_file_id ) ) : ?>
-                                                        <div class="claira-tkd-video-container" style="margin-top: 10px;">
-                                                            <video controls width="100%">
-                                                                <source src="<?php echo esc_url( wp_get_attachment_url( $video_file_id ) ); ?>">
-                                                            </video>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <div class="claira-tkd-modal-backdrop"></div>
-                                </div>
+                                <?php echo claira_tkd_render_grade_modal( $post, $modal_id, array( 'tags' => $pill_meta ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction. ?>
                                 <?php endforeach; wp_reset_postdata(); ?>
                 </div>
             </div>
