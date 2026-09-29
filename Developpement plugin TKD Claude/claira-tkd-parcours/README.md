@@ -41,6 +41,8 @@ Ajouter la balise suivante pour afficher un tableau complet (une ligne par grade
 [claira_tkd_parcours_tableau age="Adolescent"]
 ```
 
+Les grades qui ont une vidéo ou un fichier à télécharger affichent un bouton « ▶ Vidéo » / « Ressources » qui ouvre la fiche du grade. Sur téléphone, le tableau est présenté sous forme de cartes (une par grade) ; l'impression utilise toujours le tableau.
+
 Ce tableau remplace les anciens fichiers statiques `technique_enfant.html` et `technique_adoadulte.html` : il est généré à la volée depuis les grades enregistrés, donc toujours à jour sans manipulation supplémentaire.
 
 ### Schéma des grades

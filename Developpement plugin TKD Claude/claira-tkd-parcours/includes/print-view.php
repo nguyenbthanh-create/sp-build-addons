@@ -175,6 +175,48 @@ function claira_tkd_progression_table_shortcode( $atts ) {
         'subtitle' => 'Grades & Ceintures • Taekwondo Claira',
     );
 
+    // Données de chaque ligne, calculées une fois pour le tableau (écran large
+    // et impression) et pour les cartes (téléphone).
+    $rows        = array();
+    $modals_html = '';
+    foreach ( $grades as $grade ) {
+        $tech_bras   = get_post_meta( $grade->ID, '_claira_tkd_tech_bras', true );
+        $tech_jambes = get_post_meta( $grade->ID, '_claira_tkd_tech_jambes', true );
+        $downloads   = get_post_meta( $grade->ID, '_claira_tkd_download_urls', true );
+        $has_video   = get_post_meta( $grade->ID, '_claira_tkd_video_url', true ) || get_post_meta( $grade->ID, '_claira_tkd_video_file_id', true );
+        $has_files   = is_array( $downloads ) && array_filter( $downloads );
+        list( $belt_name, $stars ) = claira_tkd_split_grade_stars( get_the_title( $grade ) );
+
+        $row = array(
+            'keup'        => get_post_meta( $grade->ID, '_claira_tkd_keup_rank', true ),
+            'tech_bras'   => $tech_bras,
+            'tech_jambes' => $tech_jambes,
+            'poomsae'     => get_post_meta( $grade->ID, '_claira_tkd_poomsae', true ),
+            'title'       => trim( $belt_name . ' ' . $stars ),
+            'pill'        => claira_tkd_get_pill_colors( get_the_title( $grade ) ),
+            // Un tech_jambes vide alors que tech_bras est rempli signale une description
+            // fusionnée (ex. grades de révision globale / Poom) : on affiche alors une
+            // seule cellule sur les deux colonnes, comme dans les fichiers d'origine.
+            'merged'      => ( '' === trim( (string) $tech_jambes ) && '' !== trim( (string) $tech_bras ) ),
+            'modal_id'    => '',
+            'media_label' => '',
+        );
+
+        // Bouton vers la fiche du grade uniquement s'il y a une vidéo ou un
+        // fichier à consulter : le texte, lui, est déjà dans le cahier.
+        if ( $has_video || $has_files ) {
+            $row['modal_id']    = 'claira-tkd-tableau-grade-' . $grade->ID;
+            $row['media_label'] = $has_video ? __( '▶ Vidéo', 'claira-tkd-parcours' ) : __( 'Ressources', 'claira-tkd-parcours' );
+            $modals_html       .= claira_tkd_render_grade_modal( $grade, $row['modal_id'], array(
+                'title' => $row['title'],
+                'tags'  => array( $row['keup'], $age_name ),
+                'class' => 'claira-tkd-modal--light',
+            ) );
+        }
+
+        $rows[] = $row;
+    }
+
     ob_start();
     ?>
     <div class="claira-tkd-print-wrapper">
@@ -196,39 +238,70 @@ function claira_tkd_progression_table_shortcode( $atts ) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ( $grades as $grade ) :
-                        $keup_rank   = get_post_meta( $grade->ID, '_claira_tkd_keup_rank', true );
-                        $tech_bras   = get_post_meta( $grade->ID, '_claira_tkd_tech_bras', true );
-                        $tech_jambes = get_post_meta( $grade->ID, '_claira_tkd_tech_jambes', true );
-                        $poomsae     = get_post_meta( $grade->ID, '_claira_tkd_poomsae', true );
-                        list( $belt_name, $stars ) = claira_tkd_split_grade_stars( get_the_title( $grade ) );
-                        $title       = trim( $belt_name . ' ' . $stars );
-                        $pill        = claira_tkd_get_pill_colors( get_the_title( $grade ) );
-                        // Un tech_jambes vide alors que tech_bras est rempli signale une description
-                        // fusionnée (ex. grades de révision globale / Poom) : on affiche alors une
-                        // seule cellule sur les deux colonnes, comme dans les fichiers d'origine.
-                        $merged = ( '' === trim( (string) $tech_jambes ) && '' !== trim( (string) $tech_bras ) );
-                        ?>
+                    <?php foreach ( $rows as $row ) : ?>
                         <tr>
-                            <td class="col-grd"><?php echo esc_html( $keup_rank ); ?></td>
+                            <td class="col-grd"><?php echo esc_html( $row['keup'] ); ?></td>
                             <td class="col-belt-cell">
-                                <span class="claira-tkd-print-pill" style="background:<?php echo esc_attr( $pill['background'] ); ?>; color:<?php echo esc_attr( $pill['color'] ); ?>;">
-                                    <?php echo esc_html( strtoupper( $title ) ); ?>
+                                <span class="claira-tkd-print-pill" style="background:<?php echo esc_attr( $row['pill']['background'] ); ?>; color:<?php echo esc_attr( $row['pill']['color'] ); ?>;">
+                                    <?php echo esc_html( strtoupper( $row['title'] ) ); ?>
                                 </span>
+                                <?php if ( $row['modal_id'] ) : ?>
+                                    <button type="button" class="claira-tkd-print-media-btn" data-modal="<?php echo esc_attr( $row['modal_id'] ); ?>" aria-haspopup="dialog"><?php echo esc_html( $row['media_label'] ); ?></button>
+                                <?php endif; ?>
                             </td>
-                            <?php if ( $merged ) : ?>
-                                <td colspan="2"><?php echo wp_kses_post( claira_tkd_render_technique_lines( $tech_bras ) ); ?></td>
+                            <?php if ( $row['merged'] ) : ?>
+                                <td colspan="2"><?php echo wp_kses_post( claira_tkd_render_technique_lines( $row['tech_bras'] ) ); ?></td>
                             <?php else : ?>
-                                <td><?php echo wp_kses_post( claira_tkd_render_technique_lines( $tech_bras ) ); ?></td>
-                                <td><?php echo wp_kses_post( claira_tkd_render_technique_lines( $tech_jambes ) ); ?></td>
+                                <td><?php echo wp_kses_post( claira_tkd_render_technique_lines( $row['tech_bras'] ) ); ?></td>
+                                <td><?php echo wp_kses_post( claira_tkd_render_technique_lines( $row['tech_jambes'] ) ); ?></td>
                             <?php endif; ?>
-                            <td><?php echo esc_html( $poomsae ? $poomsae : '-' ); ?></td>
+                            <td><?php echo esc_html( $row['poomsae'] ? $row['poomsae'] : '-' ); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
+
+        <?php // Version téléphone : une carte par grade (affichée à la place du tableau sous 700 px). ?>
+        <div class="claira-tkd-print-cards">
+            <?php foreach ( $rows as $row ) : ?>
+                <div class="claira-tkd-print-card">
+                    <div class="claira-tkd-print-card-head">
+                        <span class="claira-tkd-print-card-grd"><?php echo esc_html( $row['keup'] ); ?></span>
+                        <span class="claira-tkd-print-pill" style="background:<?php echo esc_attr( $row['pill']['background'] ); ?>; color:<?php echo esc_attr( $row['pill']['color'] ); ?>;">
+                            <?php echo esc_html( strtoupper( $row['title'] ) ); ?>
+                        </span>
+                        <?php if ( $row['modal_id'] ) : ?>
+                            <button type="button" class="claira-tkd-print-media-btn" data-modal="<?php echo esc_attr( $row['modal_id'] ); ?>" aria-haspopup="dialog"><?php echo esc_html( $row['media_label'] ); ?></button>
+                        <?php endif; ?>
+                    </div>
+                    <?php if ( '' === trim( (string) $row['tech_bras'] ) && '' === trim( (string) $row['tech_jambes'] ) && ! $row['poomsae'] ) : ?>
+                        <p class="claira-tkd-print-card-empty"><?php esc_html_e( 'Programme à venir.', 'claira-tkd-parcours' ); ?></p>
+                    <?php else : ?>
+                        <?php if ( $row['tech_bras'] ) : ?>
+                            <div class="claira-tkd-print-card-section">
+                                <div class="claira-tkd-print-card-label"><?php echo esc_html( $row['merged'] ? __( 'Programme technique', 'claira-tkd-parcours' ) : __( 'Techniques bras', 'claira-tkd-parcours' ) ); ?></div>
+                                <?php echo wp_kses_post( claira_tkd_render_technique_lines( $row['tech_bras'] ) ); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ( $row['tech_jambes'] ) : ?>
+                            <div class="claira-tkd-print-card-section">
+                                <div class="claira-tkd-print-card-label"><?php esc_html_e( 'Techniques jambes', 'claira-tkd-parcours' ); ?></div>
+                                <?php echo wp_kses_post( claira_tkd_render_technique_lines( $row['tech_jambes'] ) ); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ( $row['poomsae'] ) : ?>
+                            <div class="claira-tkd-print-card-section">
+                                <div class="claira-tkd-print-card-label"><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></div>
+                                <span class="claira-tkd-print-fr"><?php echo esc_html( $row['poomsae'] ); ?></span>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            <?php endforeach; ?>
+        </div>
     </div>
+    <?php echo $modals_html; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans claira_tkd_render_grade_modal(). ?>
     <?php
     return ob_get_clean();
 }

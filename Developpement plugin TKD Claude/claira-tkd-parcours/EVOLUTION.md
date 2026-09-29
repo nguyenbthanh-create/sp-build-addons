@@ -1,5 +1,11 @@
 # Evolution log
 
+## 2026-09-29 — Cahier de révision : vidéos et version téléphone (v1.6.0)
+
+- `[claira_tkd_parcours_tableau]` : un bouton « ▶ Vidéo » (ou « Ressources » s'il n'y a que des fichiers) apparaît sous la pastille des grades qui ont une vidéo ou un téléchargement ; il ouvre la fiche du grade (`claira_tkd_render_grade_modal()`, thème clair). Les lignes elles-mêmes ne sont pas cliquables : le texte est déjà dans le tableau.
+- Sur téléphone (moins de 700 px), le tableau est remplacé par une carte par grade (rang, pastille, techniques bras / jambes, poomsae, bouton vidéo) au lieu d'un tableau à faire défiler horizontalement.
+- À l'impression, le tableau complet est toujours utilisé ; cartes et boutons sont masqués.
+
 ## 2026-09-29 — Schéma des grades interactif + cahier de révision en style clair (v1.5.0)
 
 - Les pastilles de `[claira_tkd_schema_grades]` sont cliquables : elles ouvrent la fiche du grade (programme technique bras / jambes, poomsae, téléchargements, vidéo), en thème clair. Un grade sans programme saisi (ex. Baby) affiche « bientôt disponible ». Une ligne d'aide (« Cliquez sur un grade… ») s'affiche sous le bandeau (attribut `aide`, vide pour la masquer).
