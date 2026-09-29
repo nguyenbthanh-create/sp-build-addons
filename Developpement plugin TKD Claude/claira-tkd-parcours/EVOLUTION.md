@@ -1,5 +1,12 @@
 # Evolution log
 
+## 2026-09-28 — Schéma des grades généré depuis la base (v1.4.0)
+
+- Nouveau shortcode `[claira_tkd_schema_grades]` (`includes/schema-view.php`) : reprend la page « Schéma des grades » du site (colonnes Baby / Enfant / Ado & Adulte, pastilles de ceinture, intertitres d'âge minimum), mais générée à chaque affichage depuis les grades enregistrés au lieu d'un bloc HTML de ~60 pastilles écrites à la main. Style adapté au thème clair du site (fond clair, cartes blanches), palette de ceintures inchangée. Styles dans `assets/css/style.css` (préfixe `.claira-tkd-schema`).
+- Nouveau champ « Âge minimum conseillé » par grade (méta `_claira_tkd_min_age`, texte libre : `7`, `14+`…), dans le formulaire et la liste de l'admin. Le schéma précise qu'il s'agit d'un conseil : après examen, les entraîneurs peuvent autoriser un grade plus tôt (« âge min. conseillé » au lieu de « requis »).
+- Référentiel d'import complété d'après la page du site : grades Baby (19e à 13e), Il Poom Ado/Adulte (14+), âges minimums de tous les grades. L'import ne remplit l'âge minimum que s'il est vide (un âge ajusté dans l'admin n'est pas écrasé), et ne touche pas aux techniques des grades pour lesquels le référentiel n'en fournit pas (Baby, Il Poom Ado/Adulte).
+- Libellés des rangs poom harmonisés sur ceux du site : « Il Poom / Yi Poom / Sam Poom » (au lieu de « Poom / Y Poom » et « II Poom »). Une migration unique (`claira_tkd_migrate_poom_labels()`, option `claira_tkd_poom_labels_migrated`) renomme les valeurs déjà en base pour que l'import retrouve les grades existants au lieu de les dupliquer.
+
 ## 2026-09-28 — Page d'administration alignée sur le style de sp-build (v1.3.1)
 
 - La page « TKD Parcours » reprend la structure des pages d'admin de sp-build : `wrap sp-cal-wrap`, sections en boîtes `sp-box`, formulaire en `form-table` WordPress (libellés à gauche, champs `regular-text` / `large-text`, aides en `p.description`), liste des grades en `wp-list-table widefat striped`, boutons natifs WordPress (✏️ / 🗑️ en `button-small`, suppression en `sp-btn-del`).

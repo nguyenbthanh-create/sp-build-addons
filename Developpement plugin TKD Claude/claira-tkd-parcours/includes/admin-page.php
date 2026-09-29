@@ -102,6 +102,7 @@ function claira_tkd_render_admin_page() {
     $video_file_id = $edit_grade ? get_post_meta( $edit_grade->ID, '_claira_tkd_video_file_id', true ) : '';
     $selected_age = $edit_grade ? wp_get_post_terms( $edit_grade->ID, 'tkd_age_group', array( 'fields' => 'ids' ) ) : array();
     $selected_keup = $edit_grade ? get_post_meta( $edit_grade->ID, '_claira_tkd_keup_rank', true ) : '';
+    $min_age = $edit_grade ? get_post_meta( $edit_grade->ID, '_claira_tkd_min_age', true ) : '';
 
     $keup_options_by_age = claira_tkd_get_keup_options_by_age();
 
@@ -141,7 +142,7 @@ function claira_tkd_render_admin_page() {
 
             <div class="sp-box">
                 <h2><?php esc_html_e( 'Import du référentiel', 'claira-tkd-parcours' ); ?></h2>
-                <p><?php esc_html_e( 'Crée ou met à jour en une fois tous les grades du programme de progression (Enfant, Ado, Adulte) à partir du référentiel technique du club.', 'claira-tkd-parcours' ); ?></p>
+                <p><?php esc_html_e( 'Crée ou met à jour en une fois tous les grades du programme de progression (Baby, Enfant, Ado, Adulte) à partir du référentiel du club. Les âges minimums déjà renseignés ne sont pas modifiés.', 'claira-tkd-parcours' ); ?></p>
                 <form method="post">
                     <?php wp_nonce_field( 'claira_tkd_admin_action', 'claira_tkd_admin_nonce' ); ?>
                     <input type="hidden" name="claira_tkd_admin_action" value="bulk_import" />
@@ -190,6 +191,13 @@ function claira_tkd_render_admin_page() {
                                         <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $selected_keup, $value ); ?>><?php echo esc_html( $label ); ?></option>
                                     <?php endforeach; ?>
                                 </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row"><label for="claira_tkd_min_age"><?php esc_html_e( 'Âge minimum conseillé', 'claira-tkd-parcours' ); ?></label></th>
+                            <td>
+                                <input type="text" id="claira_tkd_min_age" name="claira_tkd_min_age" value="<?php echo esc_attr( $min_age ); ?>" placeholder="7" style="width:80px;" /> <?php esc_html_e( 'ans', 'claira-tkd-parcours' ); ?>
+                                <p class="description"><?php esc_html_e( 'Affiché sur le schéma des grades. Indication seulement : après examen, les entraîneurs peuvent autoriser ce grade plus tôt. Exemples : 7, 14+.', 'claira-tkd-parcours' ); ?></p>
                             </td>
                         </tr>
                         <tr>
@@ -262,6 +270,7 @@ function claira_tkd_render_admin_page() {
                             <th><?php esc_html_e( 'Titre', 'claira-tkd-parcours' ); ?></th>
                             <th><?php esc_html_e( 'Tranche d’âge', 'claira-tkd-parcours' ); ?></th>
                             <th><?php esc_html_e( 'Rang keup', 'claira-tkd-parcours' ); ?></th>
+                            <th><?php esc_html_e( 'Âge min.', 'claira-tkd-parcours' ); ?></th>
                             <th><?php esc_html_e( 'Actions', 'claira-tkd-parcours' ); ?></th>
                         </tr>
                     </thead>
@@ -313,6 +322,10 @@ function claira_tkd_render_admin_page() {
                                     </td>
                                     <td><?php echo esc_html( $age ? $age[0]->name : '' ); ?></td>
                                     <td><?php echo esc_html( $keup_rank ); ?></td>
+                                    <td><?php
+                                        $grade_min_age = get_post_meta( $grade->ID, '_claira_tkd_min_age', true );
+                                        echo esc_html( '' !== (string) $grade_min_age ? $grade_min_age . ' ' . __( 'ans', 'claira-tkd-parcours' ) : '—' );
+                                    ?></td>
                                     <td>
                                         <div class="claira-tkd-admin-actions">
                                             <a class="button button-small" href="<?php echo esc_url( add_query_arg( 'edit_grade', $grade->ID ) ); ?>" title="<?php esc_attr_e( 'Éditer', 'claira-tkd-parcours' ); ?>">✏️</a>
@@ -328,7 +341,7 @@ function claira_tkd_render_admin_page() {
                             <?php endforeach; ?>
                         <?php else : ?>
                             <tr>
-                                <td colspan="4" class="sp-muted"><?php esc_html_e( 'Aucun grade créé pour le moment. Utilisez l’import ou le formulaire ci-dessus.', 'claira-tkd-parcours' ); ?></td>
+                                <td colspan="5" class="sp-muted"><?php esc_html_e( 'Aucun grade créé pour le moment. Utilisez l’import ou le formulaire ci-dessus.', 'claira-tkd-parcours' ); ?></td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -447,6 +460,8 @@ function claira_tkd_handle_frontend_admin_form() {
     $video_file_id = isset( $_POST['claira_tkd_video_file_id'] ) ? absint( wp_unslash( $_POST['claira_tkd_video_file_id'] ) ) : 0;
     $age_group = isset( $_POST['claira_tkd_age_group'] ) ? absint( wp_unslash( $_POST['claira_tkd_age_group'] ) ) : 0;
     $keup_rank = isset( $_POST['claira_tkd_keup_rank'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_keup_rank'] ) ) : '';
+    $min_age = isset( $_POST['claira_tkd_min_age'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_min_age'] ) ) : '';
+    $min_age = trim( preg_replace( '/\s*ans?\s*$/i', '', $min_age ) );
 
     if ( empty( $title ) ) {
         return '<div class="notice notice-error"><p>' . esc_html__( 'Le titre du grade est requis.', 'claira-tkd-parcours' ) . '</p></div>';
@@ -474,6 +489,7 @@ function claira_tkd_handle_frontend_admin_form() {
     update_post_meta( $new_grade_id, '_claira_tkd_download_urls', $download_urls );
     update_post_meta( $new_grade_id, '_claira_tkd_video_url', $video_url );
     update_post_meta( $new_grade_id, '_claira_tkd_keup_rank', $keup_rank );
+    update_post_meta( $new_grade_id, '_claira_tkd_min_age', $min_age );
 
     // Action de suppression du fichier vidéo si coché
     if ( isset( $_POST['claira_tkd_delete_video_file'] ) && '1' === $_POST['claira_tkd_delete_video_file'] ) {

@@ -38,8 +38,8 @@ function claira_tkd_get_keup_options_by_age() {
             '3e' => '3e',
             '2e' => '2e',
             '1e' => '1e',
-            'Poom' => 'Poom',
-            'Y Poom' => 'Y Poom',
+            'Il Poom' => 'Il Poom',
+            'Yi Poom' => 'Yi Poom',
             'Sam Poom' => 'Sam Poom',
         ),
         'Adolescent' => array(
@@ -53,7 +53,7 @@ function claira_tkd_get_keup_options_by_age() {
             '3e' => '3e',
             '2e' => '2e',
             '1e' => '1e',
-            'II Poom' => 'II Poom',
+            'Il Poom' => 'Il Poom',
             '1er Dan' => '1er Dan',
         ),
         'Adulte' => array(
@@ -67,7 +67,7 @@ function claira_tkd_get_keup_options_by_age() {
             '3e' => '3e',
             '2e' => '2e',
             '1e' => '1e',
-            'II Poom' => 'II Poom',
+            'Il Poom' => 'Il Poom',
             '1er Dan' => '1er Dan',
         ),
     );
@@ -76,13 +76,63 @@ function claira_tkd_get_keup_options_by_age() {
 /**
  * Référentiel de progression technique (extrait des tableaux Enfant et Ado/Adulte).
  * Sert de source pour l'import en masse déclenché depuis la page d'administration TKD Parcours.
+ *
+ * `min_age` : âge minimum conseillé (repris de l'ancienne page « Schéma des
+ * grades »), affiché par [claira_tkd_schema_grades]. Une entrée sans clé
+ * tech_bras / tech_jambes / poomsae (grades Baby, Il Poom Ado/Adulte) ne
+ * touche pas à ces champs : ils restent tels que saisis dans l'admin.
  */
 function claira_tkd_get_import_data() {
     return array(
+        // --- Baby : 19e à 13e (pas de référentiel technique pour l'instant) ---
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '19e',
+            'min_age'     => '3',
+            'title'       => 'Blanche',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '18e',
+            'min_age'     => '3',
+            'title'       => 'Blanche / Jaune',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '17e',
+            'min_age'     => '4',
+            'title'       => 'Jaune',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '16e',
+            'min_age'     => '4',
+            'title'       => 'Jaune (*)',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '15e',
+            'min_age'     => '4',
+            'title'       => 'Jaune / Orange',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '14e',
+            'min_age'     => '5',
+            'title'       => 'Orange',
+        ),
+        array(
+            'age_groups'  => array( 'Baby' ),
+            'keup_rank'   => '13e',
+            'min_age'     => '5',
+            'title'       => 'Orange (*)',
+        ),
+
         // --- Enfant : 16e à Sam Poom ---
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '16e',
+            'min_age'     => '7',
             'title'       => 'Blanche',
             'tech_bras'   => 'Montonn Jireugui - Poing niveau moyen',
             'tech_jambes' => 'Ap paldolegui - Levée de jambe',
@@ -91,6 +141,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '15e',
+            'min_age'     => '7',
             'title'       => 'Jaune',
             'tech_bras'   => 'Arae Makki - Blocage bas',
             'tech_jambes' => 'Ap Tchagui - Coup de pied de face niveau visage',
@@ -99,6 +150,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '14e',
+            'min_age'     => '7',
             'title'       => 'Jaune / Orange',
             'tech_bras'   => 'Momtong Makki - Blocage moyen vers intérieur',
             'tech_jambes' => 'Neryo Tchagui - Coup de pied marteau',
@@ -107,6 +159,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '13e',
+            'min_age'     => '7',
             'title'       => 'Orange',
             'tech_bras'   => 'Olgoul Makki - Blocage visage',
             'tech_jambes' => 'Yop Tchagui - Coup de pied latéral',
@@ -115,6 +168,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '12e',
+            'min_age'     => '7',
             'title'       => 'Orange (*)',
             'tech_bras'   => 'Montonn Doubonn Jireugui - Enchaînement de deux coups de poing',
             'tech_jambes' => 'Bandal Tchagui - Semi-circulaire ventre',
@@ -123,6 +177,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '11e',
+            'min_age'     => '7',
             'title'       => 'Orange / Verte',
             'tech_bras'   => 'Sonnal Mok Tchigui - Frappe tranchant cou',
             'tech_jambes' => 'Dollyo Tchagui - Circulaire niveau visage',
@@ -131,6 +186,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '10e',
+            'min_age'     => '8',
             'title'       => 'Verte',
             'tech_bras'   => "Bakkat Makki - Blocage vers l'extérieur avant-bras",
             'tech_jambes' => 'Dwit Tchagui - Coup de pied arrière',
@@ -139,6 +195,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '9e',
+            'min_age'     => '8',
             'title'       => 'Verte (*)',
             'tech_bras'   => 'Sonnal montonn Makki - Blocage double tranchant',
             'tech_jambes' => 'Twi-o Ap Tchagui - Coup de pied sauté de face',
@@ -147,6 +204,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '8e',
+            'min_age'     => '8',
             'title'       => 'Violette',
             'tech_bras'   => 'Pyon Son Kkeut Jireugui - Pique de doigts',
             'tech_jambes' => 'Furyot Tchagui - Coup de pied fouetté',
@@ -155,6 +213,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '7e',
+            'min_age'     => '8',
             'title'       => 'Violette (*)',
             'tech_bras'   => 'Jebi Poom Mok Tchigui - Bloc. haut + frappe cou',
             'tech_jambes' => 'Momdolyo Tchagui - Retourné circulaire',
@@ -163,6 +222,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '6e',
+            'min_age'     => '9',
             'title'       => 'Bleue',
             'tech_bras'   => 'Palkoup Tchigui - Frappe du coude',
             'tech_jambes' => 'Twi-o Yop Tchagui - Sauté latéral',
@@ -171,6 +231,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '5e',
+            'min_age'     => '9',
             'title'       => 'Bleue (*)',
             'tech_bras'   => 'Me Joomok Tchigui - Frappe marteau poing',
             'tech_jambes' => 'Twi-o Dollyo Tchagui - Sauté circulaire',
@@ -179,6 +240,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '4e',
+            'min_age'     => '9',
             'title'       => 'Bleue (**)',
             'tech_bras'   => 'Eotgoreo Makki - Blocage croisé bas/haut',
             'tech_jambes' => 'Nare Tchagui - Double coup de pied',
@@ -187,6 +249,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '3e',
+            'min_age'     => '11',
             'title'       => 'Rouge',
             'tech_bras'   => 'Batangson Montonn Makki - Blocage paume niveau moyen',
             'tech_jambes' => 'Twi-o Dwit Tchagui - Sauté arrière',
@@ -195,6 +258,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '2e',
+            'min_age'     => '11',
             'title'       => 'Rouge (*)',
             'tech_bras'   => 'Kawi Makki - Blocage en ciseaux',
             'tech_jambes' => 'Twi-o Mondolyo Tchagui - Sauté retourné',
@@ -203,6 +267,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => '1e',
+            'min_age'     => '11',
             'title'       => 'Rouge (**)',
             'tech_bras'   => 'Maîtrise des enchaînements cibles et combinaisons',
             'tech_jambes' => '',
@@ -210,7 +275,8 @@ function claira_tkd_get_import_data() {
         ),
         array(
             'age_groups'  => array( 'Enfant' ),
-            'keup_rank'   => 'Poom',
+            'keup_rank'   => 'Il Poom',
+            'min_age'     => '12',
             'title'       => 'Rouge / Noire',
             'tech_bras'   => 'Techniques spécifiques Koryo & Cibles Multiples',
             'tech_jambes' => '',
@@ -218,7 +284,8 @@ function claira_tkd_get_import_data() {
         ),
         array(
             'age_groups'  => array( 'Enfant' ),
-            'keup_rank'   => 'Y Poom',
+            'keup_rank'   => 'Yi Poom',
+            'min_age'     => '12',
             'title'       => 'Rouge / Noire',
             'tech_bras'   => 'Techniques spécifiques Keumgang & Maintien équilibre',
             'tech_jambes' => '',
@@ -227,6 +294,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Enfant' ),
             'keup_rank'   => 'Sam Poom',
+            'min_age'     => '12',
             'title'       => 'Rouge / Noire',
             'tech_bras'   => 'Techniques spécifiques Taebaek & Précision raquettes',
             'tech_jambes' => '',
@@ -237,6 +305,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '10e',
+            'min_age'     => '11',
             'title'       => 'Blanche',
             'tech_bras'   => "Joomok Jireugui - Poing niveau moyen\nArae Makki - Blocage bas",
             'tech_jambes' => "Ap Cha Oligui - Levé de jambe tendue\nAp Tchagui - Coup de pied de face",
@@ -245,6 +314,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '9e',
+            'min_age'     => '11',
             'title'       => 'Jaune',
             'tech_bras'   => "Momtong Makki - Blocage moyen intérieur\nOlgoul Makki - Blocage visage",
             'tech_jambes' => "Neryo Tchagui - Coup de pied marteau\nYop Tchagui - Coup de pied latéral",
@@ -253,6 +323,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '8e',
+            'min_age'     => '11',
             'title'       => 'Jaune (*)',
             'tech_bras'   => "Momtong An Makki - Blocage moyen ext.\nSonnal Mok Tchigui - Frappe tranchant cou",
             'tech_jambes' => "Bandal Tchagui - Semi-circulaire\nDollyo Tchagui - Circulaire niveau visage",
@@ -261,6 +332,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '7e',
+            'min_age'     => '12',
             'title'       => 'Bleue',
             'tech_bras'   => "Bakkat Makki - Blocage vers l'extérieur\nSonnal Makki - Blocage double tranchant",
             'tech_jambes' => "Dwit Tchagui - Coup de pied arrière\nTwi-o Ap Tchagui - Sauté de face",
@@ -269,6 +341,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '6e',
+            'min_age'     => '12',
             'title'       => 'Bleue (*)',
             'tech_bras'   => "Pyon Son Kkeut Jireugui - Pique de doigts\nJebi Poom Mok Tchigui - Bloc. haut + frappe cou",
             'tech_jambes' => "Houryo Tchagui - Coup de pied fouetté\nMomdolyo Tchagui - Retourné circulaire",
@@ -277,6 +350,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '5e',
+            'min_age'     => '12',
             'title'       => 'Bleue (**)',
             'tech_bras'   => "Palkoup Tchigui - Frappe du coude\nMe Joomok Tchigui - Frappe marteau poing",
             'tech_jambes' => "Twi-o Yop Tchagui - Sauté latéral\nTwi-o Dollyo Tchagui - Sauté circulaire",
@@ -285,6 +359,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '4e',
+            'min_age'     => '13',
             'title'       => 'Rouge',
             'tech_bras'   => 'Eotgoreo Makki - Blocage croisé bas/haut',
             'tech_jambes' => 'Nare Tchagui - Double coup de pied',
@@ -293,6 +368,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '3e',
+            'min_age'     => '13',
             'title'       => 'Rouge (*)',
             'tech_bras'   => 'Batangson Makki - Blocage paume',
             'tech_jambes' => 'Twi-o Dwit Tchagui - Sauté arrière',
@@ -301,6 +377,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '2e',
+            'min_age'     => '13',
             'title'       => 'Rouge (**)',
             'tech_bras'   => 'Kawi Makki - Blocage en ciseaux',
             'tech_jambes' => 'Twi-o Mondolyo Tchagui - Sauté retourné',
@@ -309,6 +386,7 @@ function claira_tkd_get_import_data() {
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '1e',
+            'min_age'     => '13',
             'title'       => 'Rouge (***)',
             'tech_bras'   => 'Maîtrise complète des enchaînements - Combinaisons cibles (Sautés + Rotation)',
             'tech_jambes' => '',
@@ -316,7 +394,14 @@ function claira_tkd_get_import_data() {
         ),
         array(
             'age_groups'  => array( 'Adolescent', 'Adulte' ),
+            'keup_rank'   => 'Il Poom',
+            'min_age'     => '14+',
+            'title'       => 'Rouge / Noire',
+        ),
+        array(
+            'age_groups'  => array( 'Adolescent', 'Adulte' ),
             'keup_rank'   => '1er Dan',
+            'min_age'     => '14+',
             'title'       => 'Noire',
             'tech_bras'   => 'Techniques spécifiques Koryo - Cibles multiples / Précision absolue',
             'tech_jambes' => '',
@@ -395,10 +480,18 @@ function claira_tkd_run_bulk_import() {
             continue;
         }
 
-        update_post_meta( $grade_id, '_claira_tkd_tech_bras', $entry['tech_bras'] );
-        update_post_meta( $grade_id, '_claira_tkd_tech_jambes', $entry['tech_jambes'] );
-        update_post_meta( $grade_id, '_claira_tkd_poomsae', $entry['poomsae'] );
+        foreach ( array( 'tech_bras', 'tech_jambes', 'poomsae' ) as $field ) {
+            if ( array_key_exists( $field, $entry ) ) {
+                update_post_meta( $grade_id, '_claira_tkd_' . $field, $entry[ $field ] );
+            }
+        }
         update_post_meta( $grade_id, '_claira_tkd_keup_rank', $entry['keup_rank'] );
+
+        // L'âge minimum n'est qu'une valeur de départ : on ne l'impose pas à un
+        // grade où il a déjà été renseigné (éventuellement ajusté dans l'admin).
+        if ( ! empty( $entry['min_age'] ) && '' === (string) get_post_meta( $grade_id, '_claira_tkd_min_age', true ) ) {
+            update_post_meta( $grade_id, '_claira_tkd_min_age', $entry['min_age'] );
+        }
 
         if ( $age_term_ids ) {
             wp_set_post_terms( $grade_id, $age_term_ids, 'tkd_age_group', false );
@@ -415,4 +508,33 @@ function claira_tkd_run_bulk_import() {
         'created' => $created,
         'updated' => $updated,
     );
+}
+
+/**
+ * Migration unique (v1.4.0) : harmonise les libellés de rang poom déjà
+ * enregistrés en base sur ceux du site (« Il Poom / Yi Poom / Sam Poom »).
+ * Sans elle, l'import en masse ne retrouverait plus les grades existants
+ * (recherche par rang keup) et les créerait en double.
+ */
+function claira_tkd_migrate_poom_labels() {
+    if ( get_option( 'claira_tkd_poom_labels_migrated' ) ) {
+        return;
+    }
+
+    global $wpdb;
+    $renames = array(
+        'Poom'    => 'Il Poom',
+        'II Poom' => 'Il Poom',
+        'Y Poom'  => 'Yi Poom',
+    );
+    foreach ( $renames as $old => $new ) {
+        $wpdb->update(
+            $wpdb->postmeta,
+            array( 'meta_value' => $new ),
+            array( 'meta_key' => '_claira_tkd_keup_rank', 'meta_value' => $old )
+        );
+    }
+    wp_cache_flush();
+
+    update_option( 'claira_tkd_poom_labels_migrated', 1 );
 }
