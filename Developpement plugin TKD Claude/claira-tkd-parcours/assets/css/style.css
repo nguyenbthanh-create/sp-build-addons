@@ -749,10 +749,8 @@ button.claira-tkd-schema-badge:focus-visible {
 
 .claira-tkd-print-cards { display: none; }
 
-@media (max-width: 700px) {
-  .claira-tkd-print-wrapper { padding: 12px; }
-  .claira-tkd-print-header h1 { font-size: 20px; }
-  .claira-tkd-print-header p { font-size: 12px; }
+/* Cartes à la place du tableau sur téléphone et tablette en portrait */
+@media (max-width: 900px) {
   .claira-tkd-print-responsive { display: none; }
   .claira-tkd-print-cards {
     display: flex;
@@ -760,6 +758,11 @@ button.claira-tkd-schema-badge:focus-visible {
     gap: 10px;
     margin-top: 16px;
   }
+}
+@media (max-width: 700px) {
+  .claira-tkd-print-wrapper { padding: 12px; }
+  .claira-tkd-print-header h1 { font-size: 20px; }
+  .claira-tkd-print-header p { font-size: 12px; }
 }
 
 .claira-tkd-print-card {

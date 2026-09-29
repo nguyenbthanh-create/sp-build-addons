@@ -3,7 +3,7 @@
  * Plugin Name: Claira TKD Parcours
  * Plugin URI:  https://example.com/
  * Description: Interface ludique de suivi des grades TKD avec contenu texte, ressources téléchargeables et vidéos URL.
- * Version:     1.6.0
+ * Version:     1.6.1
  * Author:      Claira
  * Text Domain: claira-tkd-parcours
  * Domain Path: /languages
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'CLAIRA_TKD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLAIRA_TKD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.6.0' );
+define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.6.1' );
 
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/post-types.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/shortcodes.php';

@@ -262,7 +262,7 @@ function claira_tkd_progression_table_shortcode( $atts ) {
             </table>
         </div>
 
-        <?php // Version téléphone : une carte par grade (affichée à la place du tableau sous 700 px). ?>
+        <?php // Version téléphone : une carte par grade (affichée à la place du tableau sous 900 px). ?>
         <div class="claira-tkd-print-cards">
             <?php foreach ( $rows as $row ) : ?>
                 <div class="claira-tkd-print-card">

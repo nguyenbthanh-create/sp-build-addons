@@ -1,5 +1,9 @@
 # Evolution log
 
+## 2026-09-29 — Cahier de révision : cartes jusqu'à 900 px (v1.6.1)
+
+- Les cartes remplacent le tableau jusqu'à 900 px de large (au lieu de 700 px), pour couvrir les tablettes en portrait où le tableau obligeait à défiler horizontalement. Les réductions de marges et de titre restent réservées aux téléphones (moins de 700 px).
+
 ## 2026-09-29 — Cahier de révision : vidéos et version téléphone (v1.6.0)
 
 - `[claira_tkd_parcours_tableau]` : un bouton « ▶ Vidéo » (ou « Ressources » s'il n'y a que des fichiers) apparaît sous la pastille des grades qui ont une vidéo ou un téléchargement ; il ouvre la fiche du grade (`claira_tkd_render_grade_modal()`, thème clair). Les lignes elles-mêmes ne sont pas cliquables : le texte est déjà dans le tableau.
