@@ -1,5 +1,10 @@
 # Evolution log
 
+## 2026-09-29 — Impression du tableau de progression sur une feuille A3 (v1.6.2)
+
+- `[claira_tkd_parcours_tableau]` : bouton « Imprimer / PDF (une feuille A3) » au-dessus de chaque tableau ; à l'impression, format A3 paysage, reste de la page masqué, tableau mis à l'échelle pour remplir la feuille (détail dans `CORRECTIONS.md` §10).
+- Numéro de version relevé pour forcer les navigateurs à recharger `style.css` : avec l'ancien fichier en cache (même `?ver=1.6.1`), les règles `.is-printing` manquaient — bouton imprimé, tableau limité à 1200 px de large, donc étriqué sur la feuille.
+
 ## 2026-09-29 — Cahier de révision : cartes jusqu'à 900 px (v1.6.1)
 
 - Les cartes remplacent le tableau jusqu'à 900 px de large (au lieu de 700 px), pour couvrir les tablettes en portrait où le tableau obligeait à défiler horizontalement. Les réductions de marges et de titre restent réservées aux téléphones (moins de 700 px).

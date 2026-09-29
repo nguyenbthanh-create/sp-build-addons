@@ -354,6 +354,7 @@ function claira_tkd_progression_table_shortcode( $atts ) {
                 // Ajuste le facteur d'échelle (zoom) pour remplir la feuille sans la dépasser :
                 // recherche par dichotomie, la hauteur du tableau dépendant de sa largeur
                 // (largeur de mise en page = largeur de feuille / zoom).
+                wrap.style.setProperty('max-width', 'none', 'important');
                 var lo = 0.4, hi = 2.5, target = PAGE_H * 0.97;
                 for (var i = 0; i < 9; i++) {
                     var mid = (lo + hi) / 2;
@@ -374,6 +375,7 @@ function claira_tkd_progression_table_shortcode( $atts ) {
                 wrap.classList.remove('is-printing');
                 wrap.style.zoom = '';
                 wrap.style.width = '';
+                wrap.style.maxWidth = '';
                 wrap = null;
             }
 
