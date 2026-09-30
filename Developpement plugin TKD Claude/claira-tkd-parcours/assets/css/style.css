@@ -382,25 +382,33 @@
   margin-bottom: 20px;
 }
 
+/* Titre = tranche d'âge, charte du site : Montserrat fin en majuscules espacées + trait rouge */
 .claira-tkd-print-header h1 {
-  color: #222222;
-  font-size: 28px;
-  font-weight: 900;
+  color: #111111;
+  font-family: Montserrat, sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1.3;
   text-transform: uppercase;
-  margin: 0 0 10px 0;
-  letter-spacing: 1px;
+  letter-spacing: .12em;
+  margin: 0;
+}
+.claira-tkd-print-header h1::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: #D4000F;
+  margin: 12px auto;
 }
 
 .claira-tkd-print-header p {
-  color: #6b6b6b;
-  font-size: 14px;
-  margin: 0 0 15px 0;
-}
-
-.claira-tkd-print-divider {
-  border: none;
-  height: 3px;
-  background-color: #c0392b;
+  color: #7a7a7a;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .15em;
   margin: 0;
 }
 
@@ -851,17 +859,31 @@ button.claira-tkd-schema-badge:focus-visible {
   text-align: right;
   margin-bottom: 8px;
 }
-.claira-tkd-print-btn {
-  background: #DC143C;
-  color: #ffffff;
-  border: 0;
-  border-radius: 4px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: bold;
+/* Bouton d'impression A3 : pastille à contour noir (charte du site) */
+.claira-tkd-print-wrapper .claira-tkd-print-btn,
+.claira-tkd-print-wrapper .claira-tkd-print-btn:focus {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid #111111;
+  border-radius: 20px;
+  box-shadow: none;
+  margin: 0;
+  padding: 7px 16px;
+  font-family: Montserrat, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: .12em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.claira-tkd-print-btn:hover { background: #b80f30; }
+.claira-tkd-print-wrapper .claira-tkd-print-btn:hover,
+.claira-tkd-print-wrapper .claira-tkd-print-btn:focus-visible {
+  background: #111111;
+  color: #ffffff;
+  border-color: #111111;
+}
 
 /* Le format de page (@page) et le facteur de réduction (zoom) sont posés par le script du
    shortcode au moment de l'impression, pour ne pas imposer l'A3 à toutes les autres pages du

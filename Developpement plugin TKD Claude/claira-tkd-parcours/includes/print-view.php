@@ -5,24 +5,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * En-têtes affichés au-dessus du tableau, par tranche d'âge. Reproduit les
- * deux "cahiers de révision" HTML d'origine (technique_enfant.html /
- * technique_adoadulte.html), désormais générés en direct depuis la base au
- * lieu d'être des fichiers figés à maintenir à la main.
+ * En-têtes affichés au-dessus du tableau, par tranche d'âge : la tranche
+ * d'âge en titre, l'âge concerné en sous-titre (charte du site, 30/09/2026).
+ * Modifiables page par page via les attributs titre / sous_titre du shortcode.
  */
 function claira_tkd_get_print_view_headers() {
     return array(
         'Enfant' => array(
-            'title'    => 'Programme de progression technique',
-            'subtitle' => 'Grades & Ceintures • Taekwondo Claira • tkdclaira.fr',
+            'title'    => 'Enfant',
+            'subtitle' => 'De 7 à 11 ans',
         ),
         'Adolescent' => array(
-            'title'    => 'Progression technique : Ado & Adulte',
-            'subtitle' => 'Grades & Ceintures • À partir de 11 ans révolus • Taekwondo Claira',
+            'title'    => 'Ado / adulte',
+            'subtitle' => 'À partir de 11 ans révolus',
         ),
         'Adulte' => array(
-            'title'    => 'Progression technique : Ado & Adulte',
-            'subtitle' => 'Grades & Ceintures • À partir de 11 ans révolus • Taekwondo Claira',
+            'title'    => 'Ado / adulte',
+            'subtitle' => 'À partir de 11 ans révolus',
         ),
     );
 }
@@ -142,7 +141,9 @@ function claira_tkd_render_technique_lines( $text ) {
  */
 function claira_tkd_progression_table_shortcode( $atts ) {
     $atts = shortcode_atts( array(
-        'age' => 'Enfant',
+        'age'        => 'Enfant',
+        'titre'      => '', // vide = titre par défaut de la tranche d'âge
+        'sous_titre' => '', // vide = sous-titre par défaut de la tranche d'âge
     ), $atts, 'claira_tkd_parcours_tableau' );
 
     $age_name = trim( $atts['age'] );
@@ -171,9 +172,15 @@ function claira_tkd_progression_table_shortcode( $atts ) {
     $grades  = claira_tkd_sort_grades_by_keup( $query->posts, $age_name );
     $headers = claira_tkd_get_print_view_headers();
     $header  = isset( $headers[ $age_name ] ) ? $headers[ $age_name ] : array(
-        'title'    => 'Programme de progression technique',
-        'subtitle' => 'Grades & Ceintures • Taekwondo Claira',
+        'title'    => $age_name,
+        'subtitle' => '',
     );
+    if ( '' !== trim( $atts['titre'] ) ) {
+        $header['title'] = trim( $atts['titre'] );
+    }
+    if ( '' !== trim( $atts['sous_titre'] ) ) {
+        $header['subtitle'] = trim( $atts['sous_titre'] );
+    }
 
     // Données de chaque ligne, calculées une fois pour le tableau (écran large
     // et impression) et pour les cartes (téléphone).
@@ -222,13 +229,14 @@ function claira_tkd_progression_table_shortcode( $atts ) {
     <div class="claira-tkd-print-wrapper">
         <div class="claira-tkd-print-toolbar">
             <button type="button" class="claira-tkd-print-btn" onclick="window.clairaTkdPrint(this)">
-                <?php esc_html_e( '🖨️ Imprimer / PDF (une feuille A3)', 'claira-tkd-parcours' ); ?>
+                <?php esc_html_e( 'Imprimer / PDF (A3)', 'claira-tkd-parcours' ); ?>
             </button>
         </div>
         <div class="claira-tkd-print-header">
             <h1><?php echo esc_html( $header['title'] ); ?></h1>
-            <p><?php echo esc_html( $header['subtitle'] ); ?></p>
-            <hr class="claira-tkd-print-divider">
+            <?php if ( '' !== $header['subtitle'] ) : ?>
+                <p><?php echo esc_html( $header['subtitle'] ); ?></p>
+            <?php endif; ?>
         </div>
 
         <div class="claira-tkd-print-responsive">

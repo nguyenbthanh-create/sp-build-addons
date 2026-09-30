@@ -1,5 +1,11 @@
 # Evolution log
 
+## 2026-09-30 — Cahier de révision : titres par tranche d'âge et bouton A3 selon la charte (v1.10.0)
+
+- `[claira_tkd_parcours_tableau]` : le titre devient la seule tranche d'âge (« Enfant », « Ado / adulte ») en Montserrat fin majuscules avec le trait rouge du site ; le sous-titre précise l'âge concerné (« De 7 à 11 ans », « À partir de 11 ans révolus »). Le filet rouge sous l'en-tête est remplacé par le trait de la charte.
+- Nouveaux attributs facultatifs `titre` et `sous_titre` pour changer ces textes page par page sans toucher au code, ex. `[claira_tkd_parcours_tableau age="Enfant" sous_titre="De 7 à 10 ans"]`.
+- Bouton d'impression : « Imprimer / PDF (A3) », pastille à contour noir (charte du site) au lieu du bouton rouge avec émoji ; fonctionnement de l'impression A3 inchangé.
+
 ## 2026-09-30 — Modification d'un grade directement depuis sa fiche (v1.9.0)
 
 - Page « Apprendre par grade » (`[claira_tkd_parcours]`) : pour les comptes autorisés, le bouton « Modifier ce grade » de la fiche (v1.8.0) passe la fiche en mode édition au lieu d'ouvrir l'administration. Champs modifiables sur place : techniques bras, techniques jambes, poomsae (une technique par ligne, « coréen - français »), âge minimum conseillé, lien vidéo. « Enregistrer » recharge la page et rouvre la fiche avec « Modifications enregistrées. » ; « Annuler » (ou fermer la fiche) demande confirmation s'il y a des changements non enregistrés. Titre, rang, tranche d'âge, fichier vidéo et téléchargements restent dans l'administration (lien en bas du formulaire, avec retour vers la page).
