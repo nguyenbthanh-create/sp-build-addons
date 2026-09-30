@@ -3,7 +3,7 @@
  * Plugin Name: Claira TKD Parcours
  * Plugin URI:  https://example.com/
  * Description: Interface ludique de suivi des grades TKD avec contenu texte, ressources téléchargeables et vidéos URL.
- * Version:     1.7.0
+ * Version:     1.9.0
  * Author:      Claira
  * Text Domain: claira-tkd-parcours
  * Domain Path: /languages
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'CLAIRA_TKD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLAIRA_TKD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.7.0' );
+define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.9.0' );
 
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/post-types.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/shortcodes.php';
@@ -23,6 +23,7 @@ require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/import.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/print-view.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/schema-view.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/admin-page.php';
+require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/front-edit.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/enqueue.php';
 
 add_action( 'init', 'claira_tkd_register_post_types' );
@@ -31,6 +32,8 @@ add_action( 'init', 'claira_tkd_migrate_poom_labels', 20 );
 add_action( 'wp_enqueue_scripts', 'claira_tkd_enqueue_assets' );
 add_action( 'admin_enqueue_scripts', 'claira_tkd_admin_assets' );
 add_action( 'admin_menu', 'claira_tkd_register_admin_menu' );
+// Modification d'un grade depuis sa fiche sur le site (comptes connectés uniquement).
+add_action( 'wp_ajax_claira_tkd_front_save_grade', 'claira_tkd_ajax_front_save_grade' );
 
 add_shortcode( 'claira_tkd_parcours', 'claira_tkd_parcours_shortcode' );
 add_shortcode( 'claira_tkd_parcours_tableau', 'claira_tkd_progression_table_shortcode' );

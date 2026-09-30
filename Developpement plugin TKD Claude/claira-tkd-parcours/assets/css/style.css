@@ -941,3 +941,130 @@ button.claira-tkd-schema-badge:focus-visible {
   color: #111111;
 }
 .claira-tkd-modal--light .claira-tkd-modal-close:hover { background: #D4000F; }
+
+/* Bouton « Modifier ce grade » (visible uniquement pour les comptes autorisés) */
+.claira-tkd-modal .claira-tkd-modal-edit {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 6px 14px;
+  border: 1px solid currentColor;
+  border-radius: 20px;
+  color: #ffffff;
+  font-family: Montserrat, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.claira-tkd-modal--light .claira-tkd-modal-edit { color: #111111; }
+.claira-tkd-modal .claira-tkd-modal-edit:hover,
+.claira-tkd-modal .claira-tkd-modal-edit:focus-visible {
+  background: #111111;
+  border-color: #111111;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+/* ==========================================================================
+   Modification d'un grade depuis sa fiche (comptes autorisés, v1.9.0)
+   ========================================================================== */
+button.claira-tkd-modal-edit { background: transparent; cursor: pointer; line-height: 1.4; box-shadow: none; }
+.claira-tkd-modal.is-editing .claira-tkd-modal-details,
+.claira-tkd-modal.is-editing .claira-tkd-modal-body,
+.claira-tkd-modal.is-editing .claira-tkd-modal-edit,
+.claira-tkd-modal.is-editing .claira-tkd-modal-saved { display: none; }
+
+.claira-tkd-modal-saved {
+  display: inline-block;
+  margin: 14px 0 0 10px;
+  padding: 5px 12px;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  background: #f0fdf4;
+  color: #15803d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.claira-tkd-modal-form {
+  padding: 1.5rem 2rem 2rem;
+  color: #222222;
+  font-size: 14px;
+}
+.claira-tkd-modal-form[hidden] { display: none; }
+.claira-tkd-modal-form label {
+  display: block;
+  margin: 16px 0 6px;
+  font-family: Montserrat, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #111111;
+}
+.claira-tkd-modal-form textarea,
+.claira-tkd-modal-form input[type="text"],
+.claira-tkd-modal-form input[type="url"] {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  border: 1px solid #d6d2ce;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #222222;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.claira-tkd-modal-form textarea { resize: vertical; min-height: 60px; }
+.claira-tkd-modal-form textarea:focus,
+.claira-tkd-modal-form input:focus {
+  outline: none;
+  border-color: #111111;
+  box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.12);
+}
+.claira-tkd-modal-form .claira-tkd-form-age { width: 80px; }
+.claira-tkd-form-help { margin: 0; color: #7a7a7a; font-size: 13px; }
+.claira-tkd-form-row { display: flex; flex-wrap: wrap; gap: 0 24px; align-items: flex-end; }
+.claira-tkd-form-grow { flex: 1; min-width: 220px; }
+
+.claira-tkd-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+.claira-tkd-modal-form .claira-tkd-form-save,
+.claira-tkd-modal-form .claira-tkd-form-cancel {
+  margin: 0;
+  padding: 8px 18px;
+  border-radius: 20px;
+  box-shadow: none;
+  cursor: pointer;
+  font-family: Montserrat, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.claira-tkd-modal-form .claira-tkd-form-save,
+.claira-tkd-modal-form .claira-tkd-form-save:hover,
+.claira-tkd-modal-form .claira-tkd-form-save:focus { background: #D4000F; border: 1px solid #D4000F; color: #ffffff; }
+.claira-tkd-modal-form .claira-tkd-form-save:hover { background: #a8000c; border-color: #a8000c; }
+.claira-tkd-modal-form .claira-tkd-form-cancel,
+.claira-tkd-modal-form .claira-tkd-form-cancel:hover,
+.claira-tkd-modal-form .claira-tkd-form-cancel:focus { background: #ffffff; border: 1px solid #111111; color: #111111; }
+.claira-tkd-modal-form .claira-tkd-form-cancel:hover { background: #f5f3f1; }
+.claira-tkd-modal-form button:disabled { opacity: .5; cursor: default; }
+.claira-tkd-form-msg { font-size: 13px; color: #7a7a7a; }
+.claira-tkd-form-msg.is-error { color: #b91c1c; }
+.claira-tkd-form-more { margin: 18px 0 0; font-size: 13px; }
+.claira-tkd-form-more a { color: #7a7a7a; text-decoration: underline; }
+
+@media (max-width: 768px) {
+  .claira-tkd-modal-form { padding: 1rem 1.25rem 1.5rem; }
+}

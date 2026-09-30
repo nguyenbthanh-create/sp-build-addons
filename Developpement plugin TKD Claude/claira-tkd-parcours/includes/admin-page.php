@@ -140,6 +140,15 @@ function claira_tkd_render_admin_page() {
                 <?php echo wp_kses_post( $message ); ?>
             <?php endif; ?>
 
+            <?php
+            // Arrivée depuis le bouton « Modifier ce grade » d'une page du site : le
+            // paramètre retour (conservé après l'enregistrement) permet d'y revenir.
+            // wp_validate_redirect() n'accepte que des adresses de ce site.
+            $back_url = isset( $_GET['retour'] ) ? wp_validate_redirect( esc_url_raw( wp_unslash( $_GET['retour'] ) ), '' ) : '';
+            if ( $back_url ) : ?>
+                <p><a class="button" href="<?php echo esc_url( $back_url ); ?>">← <?php esc_html_e( 'Revenir à la page du site', 'claira-tkd-parcours' ); ?></a></p>
+            <?php endif; ?>
+
             <div class="sp-box">
                 <h2><?php esc_html_e( 'Import du référentiel', 'claira-tkd-parcours' ); ?></h2>
                 <p><?php esc_html_e( 'Crée ou met à jour en une fois tous les grades du programme de progression (Baby, Enfant, Ado, Adulte) à partir du référentiel du club. Les âges minimums déjà renseignés ne sont pas modifiés.', 'claira-tkd-parcours' ); ?></p>
@@ -450,18 +459,12 @@ function claira_tkd_handle_frontend_admin_form() {
     }
 
     $title = isset( $_POST['claira_tkd_title'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_title'] ) ) : '';
-    $tech_bras = isset( $_POST['claira_tkd_tech_bras'] ) ? sanitize_textarea_field( wp_unslash( $_POST['claira_tkd_tech_bras'] ) ) : '';
-    $tech_jambes = isset( $_POST['claira_tkd_tech_jambes'] ) ? sanitize_textarea_field( wp_unslash( $_POST['claira_tkd_tech_jambes'] ) ) : '';
-    $poomsae = isset( $_POST['claira_tkd_poomsae'] ) ? sanitize_textarea_field( wp_unslash( $_POST['claira_tkd_poomsae'] ) ) : '';
     $download_urls = isset( $_POST['claira_tkd_download_urls'] ) && is_array( $_POST['claira_tkd_download_urls'] ) ? $_POST['claira_tkd_download_urls'] : array();
     $download_urls = array_filter( array_map( 'sanitize_text_field', array_map( 'wp_unslash', $download_urls ) ) );
     $download_urls = array_values( $download_urls );
-    $video_url = isset( $_POST['claira_tkd_video_url'] ) ? esc_url_raw( wp_unslash( $_POST['claira_tkd_video_url'] ) ) : '';
     $video_file_id = isset( $_POST['claira_tkd_video_file_id'] ) ? absint( wp_unslash( $_POST['claira_tkd_video_file_id'] ) ) : 0;
     $age_group = isset( $_POST['claira_tkd_age_group'] ) ? absint( wp_unslash( $_POST['claira_tkd_age_group'] ) ) : 0;
     $keup_rank = isset( $_POST['claira_tkd_keup_rank'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_keup_rank'] ) ) : '';
-    $min_age = isset( $_POST['claira_tkd_min_age'] ) ? sanitize_text_field( wp_unslash( $_POST['claira_tkd_min_age'] ) ) : '';
-    $min_age = trim( preg_replace( '/\s*ans?\s*$/i', '', $min_age ) );
 
     if ( empty( $title ) ) {
         return '<div class="notice notice-error"><p>' . esc_html__( 'Le titre du grade est requis.', 'claira-tkd-parcours' ) . '</p></div>';
@@ -483,13 +486,14 @@ function claira_tkd_handle_frontend_admin_form() {
         return '<div class="notice notice-error"><p>' . esc_html__( 'Une erreur est survenue lors de la sauvegarde du grade.', 'claira-tkd-parcours' ) . '</p></div>';
     }
 
-    update_post_meta( $new_grade_id, '_claira_tkd_tech_bras', $tech_bras );
-    update_post_meta( $new_grade_id, '_claira_tkd_tech_jambes', $tech_jambes );
-    update_post_meta( $new_grade_id, '_claira_tkd_poomsae', $poomsae );
+    // Champs texte : même nettoyage que l'enregistrement depuis le site (includes/front-edit.php).
+    $text_fields = array();
+    foreach ( claira_tkd_get_grade_text_fields() as $field ) {
+        $text_fields[ $field ] = isset( $_POST[ 'claira_tkd_' . $field ] ) ? wp_unslash( $_POST[ 'claira_tkd_' . $field ] ) : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput -- nettoyé dans claira_tkd_save_grade_text_fields().
+    }
+    claira_tkd_save_grade_text_fields( $new_grade_id, $text_fields );
     update_post_meta( $new_grade_id, '_claira_tkd_download_urls', $download_urls );
-    update_post_meta( $new_grade_id, '_claira_tkd_video_url', $video_url );
     update_post_meta( $new_grade_id, '_claira_tkd_keup_rank', $keup_rank );
-    update_post_meta( $new_grade_id, '_claira_tkd_min_age', $min_age );
 
     // Action de suppression du fichier vidéo si coché
     if ( isset( $_POST['claira_tkd_delete_video_file'] ) && '1' === $_POST['claira_tkd_delete_video_file'] ) {

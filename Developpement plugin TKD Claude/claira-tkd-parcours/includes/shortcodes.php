@@ -104,14 +104,29 @@ function claira_tkd_get_video_embed_html( $video_url ) {
  * $args :
  * - 'tags'  : libellés affichés sous le titre (rang keup, tranche d'âge…) ;
  * - 'title' : titre à afficher (par défaut, le titre du grade) ;
- * - 'class' : classe(s) CSS ajoutée(s) à la modale (ex. thème clair).
+ * - 'class' : classe(s) CSS ajoutée(s) à la modale (ex. thème clair) ;
+ * - 'edit_link' : true pour afficher, aux seuls comptes autorisés à gérer les
+ *   grades, un bouton « Modifier ce grade » vers le formulaire d'administration
+ *   (avec un lien de retour vers la page d'où l'on vient).
  */
 function claira_tkd_render_grade_modal( $post, $modal_id, $args = array() ) {
     $args = wp_parse_args( $args, array(
-        'tags'  => array(),
-        'title' => claira_tkd_get_grade_display_label( get_the_title( $post ) ),
-        'class' => '',
+        'tags'      => array(),
+        'title'     => claira_tkd_get_grade_display_label( get_the_title( $post ) ),
+        'class'     => '',
+        'edit_link' => false,
     ) );
+
+    $edit_url = '';
+    // Même droit que la page d'administration « TKD Parcours » (edit_posts).
+    if ( $args['edit_link'] && current_user_can( 'edit_posts' ) ) {
+        $back_url = get_permalink( get_queried_object_id() );
+        $edit_url = add_query_arg( array(
+            'page'       => 'claira-tkd-parcours',
+            'edit_grade' => $post->ID,
+            'retour'     => $back_url ? rawurlencode( $back_url ) : false,
+        ), admin_url( 'admin.php' ) );
+    }
 
     $grade_id      = $post->ID;
     $tech_bras     = get_post_meta( $grade_id, '_claira_tkd_tech_bras', true );
@@ -139,6 +154,9 @@ function claira_tkd_render_grade_modal( $post, $modal_id, $args = array() ) {
                 <h2 id="<?php echo esc_attr( $modal_id ); ?>-title"><?php echo esc_html( $args['title'] ); ?></h2>
                 <?php if ( $tags ) : ?>
                     <p class="claira-tkd-modal-tags"><?php echo esc_html( implode( ' · ', $tags ) ); ?></p>
+                <?php endif; ?>
+                <?php if ( $edit_url ) : ?>
+                    <button type="button" class="claira-tkd-modal-edit" data-edit-toggle><?php esc_html_e( 'Modifier ce grade', 'claira-tkd-parcours' ); ?></button>
                 <?php endif; ?>
             </header>
             <div class="claira-tkd-modal-details">
@@ -203,6 +221,49 @@ function claira_tkd_render_grade_modal( $post, $modal_id, $args = array() ) {
                     </div>
                 <?php endif; ?>
             </div>
+
+            <?php if ( $edit_url ) :
+                // Modification sur place des champs texte (includes/front-edit.php).
+                $form_id = $modal_id . '-form';
+                ?>
+                <form class="claira-tkd-modal-form" hidden
+                      data-ajax="<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>">
+                    <input type="hidden" name="action" value="claira_tkd_front_save_grade" />
+                    <input type="hidden" name="grade_id" value="<?php echo esc_attr( $grade_id ); ?>" />
+                    <input type="hidden" name="nonce" value="<?php echo esc_attr( wp_create_nonce( 'claira_tkd_front_edit' ) ); ?>" />
+
+                    <p class="claira-tkd-form-help"><?php esc_html_e( 'Une technique par ligne, sous la forme « nom coréen - traduction française ».', 'claira-tkd-parcours' ); ?></p>
+
+                    <label for="<?php echo esc_attr( $form_id ); ?>-bras"><?php esc_html_e( 'Techniques bras', 'claira-tkd-parcours' ); ?></label>
+                    <textarea id="<?php echo esc_attr( $form_id ); ?>-bras" name="tech_bras" rows="4"><?php echo esc_textarea( $tech_bras ); ?></textarea>
+
+                    <label for="<?php echo esc_attr( $form_id ); ?>-jambes"><?php esc_html_e( 'Techniques jambes', 'claira-tkd-parcours' ); ?></label>
+                    <textarea id="<?php echo esc_attr( $form_id ); ?>-jambes" name="tech_jambes" rows="4"><?php echo esc_textarea( $tech_jambes ); ?></textarea>
+
+                    <label for="<?php echo esc_attr( $form_id ); ?>-poomsae"><?php esc_html_e( 'Poomsae', 'claira-tkd-parcours' ); ?></label>
+                    <textarea id="<?php echo esc_attr( $form_id ); ?>-poomsae" name="poomsae" rows="2"><?php echo esc_textarea( $poomsae ); ?></textarea>
+
+                    <div class="claira-tkd-form-row">
+                        <div>
+                            <label for="<?php echo esc_attr( $form_id ); ?>-age"><?php esc_html_e( 'Âge minimum conseillé', 'claira-tkd-parcours' ); ?></label>
+                            <input type="text" id="<?php echo esc_attr( $form_id ); ?>-age" name="min_age" value="<?php echo esc_attr( get_post_meta( $grade_id, '_claira_tkd_min_age', true ) ); ?>" placeholder="7" class="claira-tkd-form-age" /> <?php esc_html_e( 'ans', 'claira-tkd-parcours' ); ?>
+                        </div>
+                        <div class="claira-tkd-form-grow">
+                            <label for="<?php echo esc_attr( $form_id ); ?>-video"><?php esc_html_e( 'Lien vidéo (YouTube, Vimeo)', 'claira-tkd-parcours' ); ?></label>
+                            <input type="url" id="<?php echo esc_attr( $form_id ); ?>-video" name="video_url" value="<?php echo esc_attr( $video_url ); ?>" placeholder="https://youtu.be/..." />
+                        </div>
+                    </div>
+
+                    <div class="claira-tkd-form-actions">
+                        <button type="submit" class="claira-tkd-form-save"><?php esc_html_e( 'Enregistrer', 'claira-tkd-parcours' ); ?></button>
+                        <button type="button" class="claira-tkd-form-cancel" data-edit-cancel><?php esc_html_e( 'Annuler', 'claira-tkd-parcours' ); ?></button>
+                        <span class="claira-tkd-form-msg" role="status" aria-live="polite"></span>
+                    </div>
+                    <p class="claira-tkd-form-more">
+                        <a href="<?php echo esc_url( $edit_url ); ?>"><?php esc_html_e( "Titre, rang, fichier vidéo, téléchargements : dans l'administration", 'claira-tkd-parcours' ); ?></a>
+                    </p>
+                </form>
+            <?php endif; ?>
         </div>
         <div class="claira-tkd-modal-backdrop"></div>
     </div>
@@ -304,6 +365,7 @@ function claira_tkd_parcours_shortcode( $atts ) {
                                     'title' => $display_title,
                                     'tags'  => $pill_meta,
                                     'class' => 'claira-tkd-modal--light',
+                                    'edit_link' => true,
                                 ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction. ?>
                                 <?php endforeach; wp_reset_postdata(); ?>
                 </div>

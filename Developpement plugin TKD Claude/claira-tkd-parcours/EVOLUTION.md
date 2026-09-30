@@ -1,5 +1,18 @@
 # Evolution log
 
+## 2026-09-30 — Modification d'un grade directement depuis sa fiche (v1.9.0)
+
+- Page « Apprendre par grade » (`[claira_tkd_parcours]`) : pour les comptes autorisés, le bouton « Modifier ce grade » de la fiche (v1.8.0) passe la fiche en mode édition au lieu d'ouvrir l'administration. Champs modifiables sur place : techniques bras, techniques jambes, poomsae (une technique par ligne, « coréen - français »), âge minimum conseillé, lien vidéo. « Enregistrer » recharge la page et rouvre la fiche avec « Modifications enregistrées. » ; « Annuler » (ou fermer la fiche) demande confirmation s'il y a des changements non enregistrés. Titre, rang, tranche d'âge, fichier vidéo et téléchargements restent dans l'administration (lien en bas du formulaire, avec retour vers la page).
+- Nouveau fichier `includes/front-edit.php` : `claira_tkd_save_grade_text_fields()`, nettoyage/enregistrement des champs texte partagé avec le formulaire d'administration (les deux chemins produisent les mêmes données), et `claira_tkd_ajax_front_save_grade()` (admin-ajax, comptes connectés uniquement ; jeton `claira_tkd_front_edit`, droits `edit_posts` + `edit_post` sur le grade, vérification du type `tkd_grade`).
+- Testé hors WordPress : gestionnaire d'enregistrement (nettoyage, droits, jeton, mauvais identifiant) et interface (mode édition, annulation, confirmation, message d'erreur, rechargement avec fiche rouverte, affichage mobile). Le premier enregistrement réel se fera sur le site.
+- Rappel : les grades Ado et Adulte sont partagés ; modifier un grade depuis l'onglet Ado modifie aussi l'onglet Adulte (ainsi que le schéma et le cahier de révision).
+
+## 2026-09-30 — Bouton « Modifier ce grade » depuis le site (v1.8.0)
+
+- Dans la fiche d'un grade ouverte depuis `[claira_tkd_parcours]` (page « Apprendre par grade »), un bouton « Modifier ce grade » s'affiche pour les seuls comptes autorisés à gérer les grades (droit `edit_posts`, le même que la page d'administration). Il ouvre le formulaire d'administration directement sur ce grade. Les visiteurs ne le voient pas ; il n'apparaît pas dans les fiches du schéma ni du cahier de révision (option `edit_link` de `claira_tkd_render_grade_modal()`).
+- La page d'administration affiche alors un bouton « ← Revenir à la page du site » (paramètre `retour`, conservé après l'enregistrement, limité aux adresses du site par `wp_validate_redirect()`).
+- Pas de cache de pages sur le site (vérifié le 30/09/2026) : le bouton peut être ajouté côté serveur sans risque d'être servi aux visiteurs. À revoir si un plugin de cache est installé un jour (il doit ignorer les utilisateurs connectés).
+
 ## 2026-09-30 — Parcours par grade selon la charte du site (v1.7.0)
 
 - `[claira_tkd_parcours]` (page « Apprendre par grade ») quitte le thème sombre pour la charte des pages de sp-build (Palmarès, Top 5, Événements) : carte blanche à liseré rouge, une ligne par grade séparée par un filet, nom en Montserrat majuscules espacées, pastille de ceinture, rang et tranche d'âge en gris, chevron « › » invitant à ouvrir la fiche. Les étoiles s'affichent en ★ (« Orange ★ » au lieu de « Orange (*) »).
