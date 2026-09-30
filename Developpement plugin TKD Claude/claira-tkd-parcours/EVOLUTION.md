@@ -1,5 +1,12 @@
 # Evolution log
 
+## 2026-09-30 — Parcours par grade selon la charte du site (v1.7.0)
+
+- `[claira_tkd_parcours]` (page « Apprendre par grade ») quitte le thème sombre pour la charte des pages de sp-build (Palmarès, Top 5, Événements) : carte blanche à liseré rouge, une ligne par grade séparée par un filet, nom en Montserrat majuscules espacées, pastille de ceinture, rang et tranche d'âge en gris, chevron « › » invitant à ouvrir la fiche. Les étoiles s'affichent en ★ (« Orange ★ » au lieu de « Orange (*) »).
+- La fiche d'un grade s'y ouvre désormais en version claire (`claira-tkd-modal--light`), comme depuis le schéma et le cahier de révision.
+- Fiche claire (toutes pages) : titre et intertitres en Montserrat, petit trait rouge sous le titre, rouge du site (#D4000F).
+- Accessibilité : retrait du `role="img"` qui englobait les boutons de la liste (les rendait invisibles aux lecteurs d'écran).
+
 ## 2026-09-29 — Impression du tableau de progression sur une feuille A3 (v1.6.2)
 
 - `[claira_tkd_parcours_tableau]` : bouton « Imprimer / PDF (une feuille A3) » au-dessus de chaque tableau ; à l'impression, format A3 paysage, reste de la page masqué, tableau mis à l'échelle pour remplir la feuille (détail dans `CORRECTIONS.md` §10).

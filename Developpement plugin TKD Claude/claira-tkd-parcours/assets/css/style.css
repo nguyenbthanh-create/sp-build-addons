@@ -1,83 +1,116 @@
+/* ==========================================================================
+   Parcours par grade ([claira_tkd_parcours])
+   Charte du site (30/09/2026, comme Palmarès / Top 5 / Événements de sp-build) :
+   carte blanche à liseré rouge, lignes séparées par un filet, noms en Montserrat
+   majuscules espacées, pastille de ceinture, rang et tranche d'âge en gris.
+   Les règles de bouton neutralisent le style de bouton du thème.
+   ========================================================================== */
 .claira-tkd-parcours {
-  font-family: 'Arial', sans-serif;
+  --sp-red: #D4000F; --sp-ink: #222; --sp-muted: #7a7a7a; --sp-line: #e8e5e2;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 0;
+  font-family: inherit;
+  color: var(--sp-ink);
+  text-align: left;
 }
 
 .claira-tkd-parcours-wrapper {
   position: relative;
-  border-radius: 12px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
-  background: #111111; /* Dark background inspired by PDF */
+  background: #ffffff;
+  border: 1px solid var(--sp-line);
+  border-radius: 6px;
+  box-shadow: inset 3px 0 0 var(--sp-red);
   overflow: hidden;
-  color: #f1f5f9;
 }
 
 .claira-tkd-parcours-hero {
-  background: transparent;
-  position: relative;
-  padding: 1.5rem;
+  padding: 4px 0;
 }
 
 .claira-tkd-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  max-width: 900px;
-  margin: 0 auto;
 }
 
-/* Belt Cards (Rows) */
-.claira-tkd-card {
+/* Une ligne par grade */
+.claira-tkd-parcours .claira-tkd-card,
+.claira-tkd-parcours .claira-tkd-card:hover,
+.claira-tkd-parcours .claira-tkd-card:focus {
   align-items: center;
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 8px;
-  color: #f8fafc;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid #f0edea;
+  border-radius: 0;
+  box-shadow: none;
+  color: var(--sp-ink);
   cursor: pointer;
   display: flex;
-  justify-content: space-between;
   flex-wrap: nowrap;
-  min-height: 56px;
-  padding: 0.75rem 1rem 0.75rem 3.5rem;
+  gap: 12px;
+  margin: 0;
+  min-height: 54px;
+  padding: 12px 22px 12px 62px;
   position: relative;
   text-align: left;
-  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  font-family: inherit;
   width: 100%;
+  transition: background 0.15s ease;
+}
+.claira-tkd-parcours .claira-tkd-card:last-child { border-bottom: 0; }
+.claira-tkd-parcours .claira-tkd-card:hover,
+.claira-tkd-parcours .claira-tkd-card:focus-visible {
+  background: #faf9f7;
+}
+.claira-tkd-parcours .claira-tkd-card:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: -2px;
 }
 
+/* Pastille de ceinture */
 .claira-tkd-card::before {
   content: '';
   position: absolute;
-  left: 0.75rem;
+  left: 24px;
   top: 50%;
   transform: translateY(-50%);
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  border: 2px solid #000000;
+  border: 1px solid rgba(0, 0, 0, 0.18);
   box-sizing: border-box;
   background: var(--belt-color, #64748b);
 }
 
-.claira-tkd-card-meta {
-  color: #94a3b8;
-  font-size: 0.85rem;
-  margin-left: auto;
-}
-
-.claira-tkd-card:hover,
-.claira-tkd-card:focus {
-  background: #2a2a2a;
-  border-color: #555;
-  transform: translateX(4px);
-}
-
 .claira-tkd-card-title {
-  font-size: 1rem;
-  font-weight: bold;
+  font-family: Montserrat, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .1em;
   text-transform: uppercase;
+  color: #111;
 }
+
+.claira-tkd-card-meta {
+  color: var(--sp-muted);
+  font-size: 13px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Chevron : invite à ouvrir la fiche */
+.claira-tkd-card-chevron {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-top: 1.5px solid #b5b0ab;
+  border-right: 1.5px solid #b5b0ab;
+  transform: rotate(45deg);
+  margin-left: 4px;
+}
+.claira-tkd-card:hover .claira-tkd-card-chevron { border-color: var(--sp-red); }
 
 /* Belt Colors matching PDF */
 .claira-tkd-belt-default { --belt-color: #94a3b8; }
@@ -90,11 +123,9 @@
 .claira-tkd-belt-red { --belt-color: #ed1c24; }
 .claira-tkd-belt-black { --belt-color: #000000; }
 
-/* In case black blends with card background */
 .claira-tkd-belt-black::before,
 .claira-tkd-card.claira-tkd-belt-black::before {
-  background: #000000 !important;
-  border-right: 1px solid #555555 !important;
+  background: #111111 !important;
 }
 
 /* Bicolor Belts Gradient Pastille */
@@ -302,15 +333,19 @@
 }
 
 @media (max-width: 768px) {
-  .claira-tkd-parcours {
-    padding: 0.5rem;
-  }
-  .claira-tkd-card {
-    padding: 0.75rem 1rem 0.75rem 3rem;
+  .claira-tkd-parcours .claira-tkd-card,
+  .claira-tkd-parcours .claira-tkd-card:hover,
+  .claira-tkd-parcours .claira-tkd-card:focus {
+    padding: 12px 14px 12px 50px;
+    gap: 8px;
   }
   .claira-tkd-card::before {
-    width: 24px;
+    left: 16px;
+    width: 22px;
+    height: 22px;
   }
+  .claira-tkd-card-title { font-size: 13px; letter-spacing: .06em; }
+  .claira-tkd-card-meta { font-size: 12px; }
   .claira-tkd-modal-panel {
     width: 100%;
     margin: 0;
@@ -872,3 +907,37 @@ button.claira-tkd-schema-badge:focus-visible {
 .claira-tkd-print-wrapper.is-printing .claira-tkd-print-table tbody tr:nth-child(even) { background-color: #f5f5f5 !important; }
 .claira-tkd-print-wrapper.is-printing .claira-tkd-print-table tbody tr:nth-child(odd)  { background-color: #ffffff !important; }
 .claira-tkd-print-wrapper.is-printing .claira-tkd-print-pill { border: 1px solid rgba(0,0,0,0.25); }
+
+/* Fiche claire : titres selon la charte du site (Montserrat, rouge du site) — 30/09/2026 */
+.claira-tkd-modal--light .claira-tkd-modal-header h2 {
+  font-family: Montserrat, sans-serif;
+  font-weight: 500;
+  font-size: 1.5rem;
+  letter-spacing: .1em;
+}
+.claira-tkd-modal--light .claira-tkd-modal-header h2::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: #D4000F;
+  margin-top: 12px;
+}
+.claira-tkd-modal--light .claira-tkd-modal-tags {
+  font-family: Montserrat, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .04em;
+  color: #7a7a7a;
+}
+.claira-tkd-modal--light .claira-tkd-section { border-top-color: #D4000F; }
+.claira-tkd-modal--light .claira-tkd-section h3,
+.claira-tkd-modal--light .claira-tkd-resources h3,
+.claira-tkd-modal--light .claira-tkd-video h3 {
+  font-family: Montserrat, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: #111111;
+}
+.claira-tkd-modal--light .claira-tkd-modal-close:hover { background: #D4000F; }

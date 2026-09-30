@@ -278,7 +278,7 @@ function claira_tkd_parcours_shortcode( $atts ) {
     ?>
     <div class="claira-tkd-parcours">
         <div class="claira-tkd-parcours-wrapper">
-            <div class="claira-tkd-parcours-hero" role="img" aria-label="<?php esc_attr_e( 'Visuel du parcours Taekwondo', 'claira-tkd-parcours' ); ?>">
+            <div class="claira-tkd-parcours-hero">
                 <div class="claira-tkd-list" role="list">
                     <?php foreach ( $posts as $post ) : setup_postdata( $post );
                                     $grade_id = $post->ID;
@@ -287,7 +287,8 @@ function claira_tkd_parcours_shortcode( $atts ) {
                                     $keup_rank = get_post_meta( $grade_id, '_claira_tkd_keup_rank', true );
                                     $belt_class = claira_tkd_get_belt_color_class( get_the_title( $post ) );
                                     $bicolor_class = claira_tkd_get_bicolor_class( get_the_title( $post ) );
-                                    $display_title = claira_tkd_get_grade_display_label( get_the_title( $post ) );
+                                    list( $belt_name, $stars ) = claira_tkd_split_grade_stars( get_the_title( $post ) );
+                                    $display_title = trim( $belt_name . ' ' . $stars );
                                     $modal_id = 'claira-tkd-grade-' . $grade_id;
                                 ?>
                                 <?php $pill_meta = array_filter( array( $keup_rank, $age_label ) ); ?>
@@ -296,9 +297,14 @@ function claira_tkd_parcours_shortcode( $atts ) {
                                     <?php if ( ! empty( $pill_meta ) ) : ?>
                                         <span class="claira-tkd-card-meta"><?php echo esc_html( implode( ' · ', $pill_meta ) ); ?></span>
                                     <?php endif; ?>
+                                    <span class="claira-tkd-card-chevron" aria-hidden="true"></span>
                                 </button>
 
-                                <?php echo claira_tkd_render_grade_modal( $post, $modal_id, array( 'tags' => $pill_meta ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction. ?>
+                                <?php echo claira_tkd_render_grade_modal( $post, $modal_id, array(
+                                    'title' => $display_title,
+                                    'tags'  => $pill_meta,
+                                    'class' => 'claira-tkd-modal--light',
+                                ) ); // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans la fonction. ?>
                                 <?php endforeach; wp_reset_postdata(); ?>
                 </div>
             </div>
