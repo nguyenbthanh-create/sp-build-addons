@@ -3,7 +3,7 @@
  * Plugin Name: TKD Cotisations
  * Plugin URI:  https://tkdclaira.fr
  * Description: Gestion des cotisations, paiements et reçus pour TKD Claira.
- * Version:     1.1.0
+ * Version:     1.2.0
  * Author:      TKD Claira
  * Text Domain: tkd-cotisations
  *
@@ -868,7 +868,9 @@ function tkd_page_params() {
         <h2>Accès bureau</h2>
         <p style="color:#666; font-size:13px;">
             Cochez les comptes WordPress qui doivent voir le menu <strong>Cotisations</strong> dans le back-office
-            et pouvoir l'utiliser, en plus des administrateurs (accès automatique, toujours conservé).
+            et pouvoir l'utiliser, en plus des administrateurs (accès automatique, toujours conservé).<br>
+            Ces comptes sont aussi les <strong>seuls destinataires du rappel de dépôt des chèques</strong>
+            (un administrateur non coché ne le reçoit pas).
         </p>
         <?php if ( isset($_GET['acces_bureau_saved']) ) : ?>
         <div class="updated"><p>✅ Accès bureau mis à jour.</p></div>
@@ -888,6 +890,10 @@ function tkd_page_params() {
             <?php endforeach; ?>
             <p><button type="submit" class="button button-primary">Enregistrer l'accès bureau</button></p>
         </form>
+
+        <hr style="margin:30px 0;">
+
+        <?php tkd_render_historique_rappel_depots(); ?>
 
         <hr style="margin:30px 0;">
 
@@ -2306,13 +2312,19 @@ function tkd_do_rappel_depots_cheques() {
          ORDER BY p.date_depot_prevue ASC",
         $today
     ) );
-    if ( empty( $rows ) ) return;
+    if ( empty( $rows ) ) {
+        tkd_log_rappel_depots( 'aucun_cheque', 0, array() );
+        return;
+    }
 
     $emails = array_filter( array_map( function( $user_id ) {
         $user = get_user_by( 'id', $user_id );
         return $user ? $user->user_email : '';
     }, tkd_cot_bureau_users() ) );
-    if ( empty( $emails ) ) return;
+    if ( empty( $emails ) ) {
+        tkd_log_rappel_depots( 'aucun_destinataire', count( $rows ), array() );
+        return;
+    }
 
     $mode_labels = array( 'cheque' => 'Chèque', 'cheque_ancv' => 'Chèque ANCV' );
 
@@ -2325,7 +2337,85 @@ function tkd_do_rappel_depots_cheques() {
     }
     $corps .= "\nUne fois déposé, pensez à cocher la case \"Déposé\" sur la fiche cotisation de l'adhérent.\n\nL'équipe TKD Claira";
 
-    wp_mail( $emails, $sujet, $corps, array( 'Content-Type: text/plain; charset=UTF-8' ) );
+    // Capture le message d'erreur SMTP éventuel pour l'historique (cf. panne
+    // d'authentification SMTP du 30/09/2026 passée inaperçue)
+    $erreur_mail   = '';
+    $capture_echec = function( $wp_error ) use ( &$erreur_mail ) {
+        $erreur_mail = $wp_error->get_error_message();
+    };
+    add_action( 'wp_mail_failed', $capture_echec );
+    $envoye = wp_mail( $emails, $sujet, $corps, array( 'Content-Type: text/plain; charset=UTF-8' ) );
+    remove_action( 'wp_mail_failed', $capture_echec );
+
+    tkd_log_rappel_depots( $envoye ? 'envoye' : 'echec', count( $rows ), $emails, $erreur_mail );
+}
+
+/**
+ * Historique des passages du rappel des dépôts de chèques, affiché dans
+ * Cotisations > Paramètres. Chaque passage du cron est tracé, même sans envoi,
+ * pour pouvoir vérifier après coup qu'il a bien tourné et à qui il a écrit.
+ */
+define( 'TKD_RAPPEL_DEPOTS_LOG_MAX', 30 );
+
+function tkd_log_rappel_depots( $statut, $nb_cheques, array $destinataires, $erreur = '' ) {
+    $log = get_option( 'tkd_rappel_depots_log', array() );
+    if ( ! is_array( $log ) ) $log = array();
+
+    array_unshift( $log, array(
+        'date'          => current_time( 'mysql' ),
+        'statut'        => $statut,
+        'nb_cheques'    => (int) $nb_cheques,
+        'destinataires' => array_values( $destinataires ),
+        'erreur'        => (string) $erreur,
+    ) );
+
+    update_option( 'tkd_rappel_depots_log', array_slice( $log, 0, TKD_RAPPEL_DEPOTS_LOG_MAX ), false );
+}
+
+function tkd_render_historique_rappel_depots() {
+    $log      = get_option( 'tkd_rappel_depots_log', array() );
+    $prochain = wp_next_scheduled( 'tkd_rappel_depots_cheques' );
+    $statuts  = array(
+        'envoye'             => array( '✅ Envoyé', '#1e7e34' ),
+        'echec'              => array( '❌ Échec d\'envoi', '#c00' ),
+        'aucun_cheque'       => array( '— Aucun chèque à déposer', '#666' ),
+        'aucun_destinataire' => array( '⚠️ Aucun destinataire (liste bureau vide)', '#b26a00' ),
+    );
+    ?>
+    <h2>Historique des rappels de dépôt de chèques</h2>
+    <p style="color:#666; font-size:13px;">
+        Le rappel passe une fois par jour (au passage d'une visite sur le site) et écrit aux comptes cochés dans
+        <strong>Accès bureau</strong> lorsqu'un chèque a atteint sa date de dépôt prévue sans être coché « Déposé ».
+        <?php if ( $prochain ) : ?>
+            Prochain passage prévu : <strong><?php echo esc_html( wp_date( 'd/m/Y à H\hi', $prochain ) ); ?></strong>.
+        <?php else : ?>
+            <strong style="color:#c00;">Aucun passage programmé.</strong>
+        <?php endif; ?>
+    </p>
+    <?php if ( empty( $log ) || ! is_array( $log ) ) : ?>
+        <p><em>Aucun passage enregistré pour l'instant.</em></p>
+    <?php else : ?>
+        <table class="widefat striped" style="max-width:900px;">
+            <thead><tr><th>Date</th><th>Résultat</th><th>Chèques</th><th>Destinataires</th></tr></thead>
+            <tbody>
+            <?php foreach ( $log as $entree ) :
+                $statut = $statuts[ $entree['statut'] ] ?? array( $entree['statut'], '#666' );
+            ?>
+                <tr>
+                    <td><?php echo esc_html( date( 'd/m/Y H:i', strtotime( $entree['date'] ) ) ); ?></td>
+                    <td style="color:<?php echo esc_attr( $statut[1] ); ?>;">
+                        <?php echo esc_html( $statut[0] ); ?>
+                        <?php if ( ! empty( $entree['erreur'] ) ) : ?>
+                            <br><small><?php echo esc_html( $entree['erreur'] ); ?></small>
+                        <?php endif; ?>
+                    </td>
+                    <td><?php echo (int) $entree['nb_cheques']; ?></td>
+                    <td><?php echo esc_html( implode( ', ', $entree['destinataires'] ) ); ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif;
 }
 
 if ( ! wp_next_scheduled( 'tkd_rappel_depots_cheques' ) ) {

@@ -44,6 +44,11 @@ Ce plugin n'a visiblement pas bénéficié du même suivi (Git + `CLAUDE.md` + j
 
 - **Colonne « Saisi par » vide** dans l'historique des paiements (Vue globale → Gérer un adhérent) : les en-têtes du tableau étaient décalés par rapport aux cellules (la colonne « Reçu » était 4ᵉ dans les lignes mais dernière dans l'en-tête), si bien que « Saisi par » affichait en fait la note. En-têtes remis dans l'ordre des cellules ; aucune donnée modifiée.
 
+## 02/10/2026
+
+- **Historique du rappel de dépôt des chèques (v1.2.0)** — contexte : le président n'a pas reçu l'alerte du 01/10 (il n'était pas coché dans « Accès bureau », pensant être avisé automatiquement), et WP Mail SMTP montrait des erreurs `SMTP Error: Could not authenticate` le 30/09 — impossible de savoir après coup si l'alerte était partie, à qui, ni si le cron avait tourné. `tkd_do_rappel_depots_cheques()` trace désormais **chaque passage** (même sans envoi) dans l'option `tkd_rappel_depots_log` (30 derniers passages, `autoload` désactivé) via `tkd_log_rappel_depots()` : date, résultat (envoyé / échec d'envoi / aucun chèque à déposer / aucun destinataire), nombre de chèques, adresses destinataires, et message d'erreur SMTP capturé via le hook `wp_mail_failed`. Affichage dans **Cotisations > Paramètres**, sous « Accès bureau » (`tkd_render_historique_rappel_depots()`), avec la date du prochain passage programmé du cron (ou une alerte si aucun n'est programmé). Le texte de la section « Accès bureau » précise aussi que les comptes cochés sont les seuls destinataires du rappel.
+- **À vérifier après déploiement** (transfert WinSCP en mode **Binaire**, cf. incident du 24/09) : la page Paramètres s'affiche, la ligne « Prochain passage prévu » est renseignée, et une première ligne apparaît dans l'historique après le prochain passage du cron.
+
 ## À partir de maintenant
 
 Ajouter une entrée datée ici à chaque modification notable, même petite (ex. « 13/09/2026 — correction du calcul du prorata sur une cotisation en cours de saison »). C'est le seul moyen de ne pas se retrouver dans la même situation dans six mois.
