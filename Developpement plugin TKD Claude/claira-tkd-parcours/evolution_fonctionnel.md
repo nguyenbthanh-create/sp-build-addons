@@ -51,3 +51,16 @@ Ce document répertorie à chaque étape de modification les fonctionnalités va
 
 
 
+---
+
+## Idée à étudier plus tard (06/10/2026) : fiches A7 de tirage au sort pour les passages de grade
+Constat : le candidat doit connaître le programme **rétroactivement** (un 5e keup qui vise le 4e doit maîtriser du 10e au 5e), mais la grille du juge (module Passages de grade de sp_build) ne montre que le programme d'un grade. Décision du 06/10/2026 : **ne pas tout numériser** — le cahier technique imprimé est posé devant le jury, qui interroge au hasard ; le téléphone sert seulement à noter (au besoin une épreuve transverse « Révision des programmes antérieurs », possible sans code).
+- [ ] **Bouton « Fiches de tirage A7 »** dans ce plugin (il a déjà le contenu, la charte et les couleurs de ceinture, bicolores comprises) : 8 cartes par A4, à plastifier (pochettes A7 80 × 111 mm), tirées au sort par le candidat.
+- Points à trancher avant de coder :
+  - **Une carte par grade, ou deux** (paquet « Poomsae » + paquet « Techniques » — préférence : deux, cartes moins chargées, correspond à la pratique « poomsae du grade + poomsae antérieur tiré au sort »).
+  - **Tirage à l'aveugle** : couleur de ceinture au recto seulement, verso identique (logo) ou blanc (évite l'alignement recto-verso) ; le jury trie face visible et retire les grades au-dessus du candidat.
+  - **Deux jeux distincts Enfant / Ado-Adulte** (programmes différents) : repère visible (pastille « E » / « A » ou bordure).
+  - **Lisibilité** : ~9 pt minimum après plastification ; vérifier la longueur réelle des contenus de chaque grade.
+  - **Grades inclus** : keups seulement (Dan hors club ; Poom à décider).
+  - En option : QR code vers la vidéo du grade, repères de coupe.
+- À vérifier au passage : la grille du juge prend le programme du **grade visé** — confirmer que le contenu d'une fiche Parcours « N keup » est bien ce qu'il faut savoir *pour obtenir* ce grade (sinon décalage d'un grade).
