@@ -131,6 +131,28 @@ git push
 - Mettre à jour `REALISATION.md` de chaque plugin à la fin de chaque session (une ligne datée suffit) — ne pas attendre d'avoir tout oublié.
 - Mettre à jour `EVOLUTION.md` dès qu'une idée ou une demande apparaît, même non urgente.
 
+## 6. Refonte ou restructuration progressive ? (avis du 06/10/2026)
+
+Question de l'utilisateur : faut-il réécrire et fusionner tous les plugins en un seul, selon les bonnes pratiques PHP (structure des fichiers, taille, tables…), ou restructurer peu à peu pour sauver le travail fait ?
+
+**Mesures au 06/10/2026** : sp_build ~35 000 lignes (PHP + JS), sp-compta ~10 800, tkd-cotisations ~2 600, claira-tkd-parcours ~2 500 ; une vingtaine de tables. Plus gros fichiers de sp_build : `class-admin.php` 4 900 lignes (menu, réglages, application mobile complète, API), `class-admin-members.php` 4 670, `class-db.php` 3 330. Défauts constatés : fonctionnalités à moitié construites (sondage — rétabli le 06/10 —, notifications push sans moteur d'envoi), doublons (pointage QR, routes d'API), sécurité inégale selon les fichiers.
+
+**Avis : pas de réécriture d'un coup — restructuration progressive, module par module, chaque étape déployable.**
+- Contre la réécriture totale : site en production pour un vrai club (des mois de double maintenance, bascule d'un coup, migration de ~20 tables) ; le code contient beaucoup de règles métier apprises sur le terrain (cf. `REALISATION.md`) qu'une réécriture perdrait en partie ; aucun environnement de test local ; une réécriture sans tests ni règles finit comme l'ancien code.
+- Fusionner les plugins n'est pas nécessaire en soi : des plugins séparés reliés par des points d'accroche (filtres / actions) sont une bonne pratique WordPress. Le problème est l'organisation **à l'intérieur** de sp_build. Tout au plus, intégrer un jour tkd-cotisations à sp_build comme module.
+
+**Étapes proposées :**
+1. **Environnement de test local** (LocalWP, ou au minimum PHP pour vérifier la syntaxe avant déploiement) — levier n°1.
+2. **Règles pour tout nouveau code** (déjà suivies depuis septembre) : un module = un fichier qui s'enregistre lui-même, ses tables avec numéro de version, contrôle des droits + nonces partout (modèle : `class-mail-queue.php`).
+3. **Découper les gros fichiers quand on y touche** : d'abord sortir l'application mobile de `class-admin.php` (JS/CSS dans de vrais fichiers), puis découper `class-db.php` par domaine.
+4. **Ménage** : supprimer les doublons ; terminer ou retirer les fonctionnalités à moitié construites (inventaire à faire).
+5. **Gestion unique des évolutions de la base** (au lieu de créations de tables dispersées).
+6. Plus tard si utile : espaces de noms + chargement automatique, tests automatiques sur les calculs sensibles (verdict des passages, IK, cotisations).
+
+**Une refonte deviendrait justifiée** si l'architecture empêchait une fonctionnalité importante (ex. plusieurs clubs), si une faille ne pouvait pas se corriger proprement, ou si une version de WordPress/PHP rendait le code incompatible — pas le cas aujourd'hui.
+
+**À faire avant de trancher** : retrouver le dossier `md/` (resté sur l'autre ordinateur, cf. étape 7) — il contient une proposition de refonte déjà rédigée (`03-proposition-refonte.md`, `07-refonte-init.md`) à confronter à cet avis.
+
 ---
 
-*Créé le 11/09/2026.*
+*Créé le 11/09/2026. Section 6 ajoutée le 06/10/2026.*
