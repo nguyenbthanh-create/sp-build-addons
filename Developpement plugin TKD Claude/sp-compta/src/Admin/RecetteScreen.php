@@ -11,6 +11,7 @@ use SpCompta\Media\AttachmentLink;
 use SpCompta\Media\AttachmentUploader;
 use SpCompta\Repository\ClientRepository;
 use SpCompta\Repository\ExerciceRepository;
+use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 
 final class RecetteScreen implements AdminScreen
@@ -25,8 +26,14 @@ final class RecetteScreen implements AdminScreen
         private RecetteRepository $repository,
         private ExerciceRepository $exerciceRepository,
         private ClientRepository $clientRepository,
-        private AttachmentUploader $attachmentUploader
+        private AttachmentUploader $attachmentUploader,
+        private ?ProjetRepository $projetRepository = null
     ) {
+    }
+
+    public function projetRepository(): ?ProjetRepository
+    {
+        return $this->projetRepository;
     }
 
     public function registerHooks(): void
@@ -107,6 +114,7 @@ final class RecetteScreen implements AdminScreen
         $detail = $recette !== null ? (string) $recette->detail() : '';
         $modePaiement = $recette !== null ? $recette->modePaiement() : '';
         $justificatif = $recette !== null ? $recette->justificatif() : '';
+        $projetId = $recette !== null ? $recette->projetId() : null;
 
         echo '<h2>' . ($recette !== null ? 'Modifier' : 'Ajouter') . ' une recette</h2>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" enctype="multipart/form-data">';
@@ -128,6 +136,15 @@ final class RecetteScreen implements AdminScreen
             echo '<option value="' . esc_attr((string) $client->id()) . '"' . $selected . '>' . esc_html($client->nom()) . '</option>';
         }
         echo '</select></td></tr>';
+        $selectProjet = ProjetChamp::select(
+            ProjetChamp::options($this->projetRepository, $exerciceId, $projetId),
+            $projetId,
+            'sp-compta-projet'
+        );
+        if ($selectProjet !== '') {
+            echo '<tr><th><label for="sp-compta-projet">Projet (facultatif)</label></th><td>' . $selectProjet
+                . '<p class="description">Pour isoler ce que rapporte un projet de la saison (fête de Noël, stage…) — voir l\'onglet Projets.</p></td></tr>';
+        }
         echo '<tr><th><label for="sp-compta-sous-categorie">Categorie</label></th><td><select id="sp-compta-sous-categorie" name="sous_categorie">';
         echo '<option value="">--</option>';
         foreach (Categories::RECETTE as $code => $definition) {
@@ -164,14 +181,17 @@ final class RecetteScreen implements AdminScreen
     {
         echo '<h2>Recettes de l\'exercice en cours</h2>';
         echo '<table class="widefat striped"><thead><tr>';
-        echo '<th>Date</th><th>Montant</th><th>Provenance</th><th>Categorie</th><th>Mode</th><th>Justificatif</th><th></th>';
+        echo '<th>Date</th><th>Montant</th><th>Provenance</th><th>Categorie</th><th>Projet</th><th>Mode</th><th>Justificatif</th><th></th>';
         echo '</tr></thead><tbody>';
+
+        $projetNoms = ProjetChamp::noms($this->projetRepository, $exerciceId);
 
         foreach ($this->repository->forExercice($exerciceId) as $recette) {
             $categorieLabel = $recette->categorie() !== ''
                 ? Categories::libelleCategorie(Categories::RECETTE, $recette->categorie())
                     . ' · ' . Categories::libelleSousCategorie(Categories::RECETTE, $recette->categorie(), $recette->sousCategorie())
                 : '';
+            $projetNom = $recette->projetId() !== null ? ($projetNoms[$recette->projetId()] ?? '') : '';
 
             if (!Search::matches($searchTerm, [
                 $recette->date(),
@@ -179,6 +199,7 @@ final class RecetteScreen implements AdminScreen
                 $recette->provenance(),
                 $categorieLabel,
                 $recette->detail(),
+                $projetNom,
             ])) {
                 continue;
             }
@@ -197,6 +218,7 @@ final class RecetteScreen implements AdminScreen
             echo '<td>' . esc_html(number_format($recette->montant(), 2)) . '</td>';
             echo '<td>' . esc_html($recette->provenance()) . '</td>';
             echo '<td>' . esc_html($categorieLabel) . '</td>';
+            echo '<td>' . esc_html($projetNom) . '</td>';
             echo '<td>' . esc_html($recette->modePaiement()) . '</td>';
             echo '<td>' . AttachmentLink::render($recette->justificatif()) . '</td>';
             echo '<td><a href="' . esc_url($editUrl) . '">Modifier</a> | ';
@@ -254,17 +276,20 @@ final class RecetteScreen implements AdminScreen
         $categorie = $categorieCode ?? '';
 
         $existingJustificatif = '';
+        $existingProjetId = null;
         if ($id !== null) {
             $existing = $this->repository->find($id);
             if ($existing !== null) {
                 $existingJustificatif = $existing->justificatif();
+                $existingProjetId = $existing->projetId();
             }
         }
         $justificatif = $this->attachmentUploader->handle($files, 'justificatif', $existingJustificatif);
+        $exerciceId = (int) ($request['exercice_id'] ?? 0);
 
         $recette = new Recette(
             $id,
-            (int) ($request['exercice_id'] ?? 0),
+            $exerciceId,
             sanitize_text_field(wp_unslash($request['date'] ?? '')),
             isset($request['montant']) ? (float) $request['montant'] : 0.0,
             sanitize_text_field(wp_unslash($request['provenance'] ?? '')),
@@ -273,7 +298,8 @@ final class RecetteScreen implements AdminScreen
             sanitize_textarea_field(wp_unslash($request['detail'] ?? '')),
             $modePaiement,
             $justificatif,
-            $sousCategorie
+            $sousCategorie,
+            ProjetChamp::resoudre($this->projetRepository, $request, $exerciceId, $existingProjetId)
         );
 
         return $this->repository->save($recette);

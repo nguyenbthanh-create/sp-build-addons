@@ -10,6 +10,7 @@ use SpCompta\Admin\FournisseurScreen;
 use SpCompta\Admin\IkScreen;
 use SpCompta\Admin\Menu;
 use SpCompta\Admin\ParametresScreen;
+use SpCompta\Admin\ProjetScreen;
 use SpCompta\Admin\RapportExerciceScreen;
 use SpCompta\Admin\RecetteScreen;
 use SpCompta\Admin\SoldeScreen;
@@ -33,6 +34,7 @@ use SpCompta\Repository\FactureRepository;
 use SpCompta\Repository\FournisseurRepository;
 use SpCompta\Repository\IkPaiementRepository;
 use SpCompta\Repository\ParametresRepository;
+use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 use SpCompta\Repository\SponsorRepository;
 
@@ -89,19 +91,21 @@ final class Plugin
         $exerciceRepository = new ExerciceRepository($this->database->tableExercice());
         $fournisseurRepository = new FournisseurRepository($this->database->tableFournisseur());
         $clientRepository = new ClientRepository($this->database->tableClient());
+        $projetRepository = new ProjetRepository($this->database->tableProjet());
         $attachmentUploader = new AttachmentUploader();
 
         $depenseScreen = new DepenseScreen(
             $depenseRepository,
             $exerciceRepository,
             $fournisseurRepository,
-            $attachmentUploader
+            $attachmentUploader,
+            $projetRepository
         );
 
         $saisieRapide = new SaisieRapideShortcode($depenseScreen, $exerciceRepository, $fournisseurRepository);
         $saisieRapide->registerHooks();
 
-        $recetteScreen = new RecetteScreen($recetteRepository, $exerciceRepository, $clientRepository, $attachmentUploader);
+        $recetteScreen = new RecetteScreen($recetteRepository, $exerciceRepository, $clientRepository, $attachmentUploader, $projetRepository);
 
         $saisieRapideRecette = new SaisieRapideRecetteShortcode($recetteScreen, $exerciceRepository, $clientRepository);
         $saisieRapideRecette->registerHooks();
@@ -125,6 +129,7 @@ final class Plugin
         $depenseRepository = new DepenseRepository($this->database->tableDepense());
         $recetteRepository = new RecetteRepository($this->database->tableRecette());
         $sponsorRepository = new SponsorRepository($this->database->tableSponsor());
+        $projetRepository = new ProjetRepository($this->database->tableProjet());
 
         $sequences = new SequenceGenerator($this->database->tableSequence());
         $devisRepository = new DevisRepository(
@@ -144,7 +149,8 @@ final class Plugin
             $recetteRepository,
             $sponsorRepository,
             $devisRepository,
-            $factureRepository
+            $factureRepository,
+            $projetRepository
         );
 
         $attachmentUploader = new AttachmentUploader();
@@ -153,8 +159,8 @@ final class Plugin
         $spBuildReader = new SpBuildReader();
 
         $screens = [
-            new DepenseScreen($depenseRepository, $exerciceRepository, $fournisseurRepository, $attachmentUploader),
-            new RecetteScreen($recetteRepository, $exerciceRepository, $clientRepository, $attachmentUploader),
+            new DepenseScreen($depenseRepository, $exerciceRepository, $fournisseurRepository, $attachmentUploader, $projetRepository),
+            new RecetteScreen($recetteRepository, $exerciceRepository, $clientRepository, $attachmentUploader, $projetRepository),
             new SponsorScreen(
                 $sponsorRepository,
                 $exerciceRepository,
@@ -167,6 +173,7 @@ final class Plugin
                 new IkPaiementSync($ikRepository, $depenseRepository, $exerciceRepository),
                 $exerciceRepository
             ),
+            new ProjetScreen($projetRepository, $exerciceRepository, $depenseRepository, $recetteRepository),
             new SoldeScreen($depenseRepository, $recetteRepository, $exerciceRepository),
             new RapportExerciceScreen(
                 $exerciceRepository,
@@ -177,7 +184,8 @@ final class Plugin
                 $factureRepository,
                 $clientRepository,
                 $fournisseurRepository,
-                $parametresRepository
+                $parametresRepository,
+                $projetRepository
             ),
             new ClientScreen($clientRepository),
             new FournisseurScreen($fournisseurRepository),

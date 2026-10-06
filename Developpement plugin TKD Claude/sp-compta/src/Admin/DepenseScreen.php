@@ -12,6 +12,7 @@ use SpCompta\Media\AttachmentUploader;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\FournisseurRepository;
+use SpCompta\Repository\ProjetRepository;
 
 final class DepenseScreen implements AdminScreen
 {
@@ -25,8 +26,14 @@ final class DepenseScreen implements AdminScreen
         private DepenseRepository $repository,
         private ExerciceRepository $exerciceRepository,
         private FournisseurRepository $fournisseurRepository,
-        private AttachmentUploader $attachmentUploader
+        private AttachmentUploader $attachmentUploader,
+        private ?ProjetRepository $projetRepository = null
     ) {
+    }
+
+    public function projetRepository(): ?ProjetRepository
+    {
+        return $this->projetRepository;
     }
 
     public function registerHooks(): void
@@ -106,6 +113,7 @@ final class DepenseScreen implements AdminScreen
         $detail = $depense !== null ? (string) $depense->detail() : '';
         $modePaiement = $depense !== null ? $depense->modePaiement() : '';
         $justificatif = $depense !== null ? $depense->justificatif() : '';
+        $projetId = $depense !== null ? $depense->projetId() : null;
 
         echo '<h2>' . ($depense !== null ? 'Modifier' : 'Ajouter') . ' une depense</h2>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" enctype="multipart/form-data">';
@@ -125,6 +133,15 @@ final class DepenseScreen implements AdminScreen
             echo '<option value="' . esc_attr((string) $fournisseur->id()) . '"' . $selected . '>' . esc_html($fournisseur->nom()) . '</option>';
         }
         echo '</select></td></tr>';
+        $selectProjet = ProjetChamp::select(
+            ProjetChamp::options($this->projetRepository, $exerciceId, $projetId),
+            $projetId,
+            'sp-compta-projet'
+        );
+        if ($selectProjet !== '') {
+            echo '<tr><th><label for="sp-compta-projet">Projet (facultatif)</label></th><td>' . $selectProjet
+                . '<p class="description">Pour isoler le coût d\'un projet de la saison (fête de Noël, matériel…) — voir l\'onglet Projets.</p></td></tr>';
+        }
         echo '<tr><th><label for="sp-compta-sous-categorie">Categorie</label></th><td><select id="sp-compta-sous-categorie" name="sous_categorie">';
         echo '<option value="">--</option>';
         foreach (Categories::DEPENSE as $code => $definition) {
@@ -161,13 +178,14 @@ final class DepenseScreen implements AdminScreen
     {
         echo '<h2>Depenses de l\'exercice en cours</h2>';
         echo '<table class="widefat striped"><thead><tr>';
-        echo '<th>Date</th><th>Montant</th><th>Fournisseur</th><th>Categorie</th><th>Mode</th><th>Justificatif</th><th></th>';
+        echo '<th>Date</th><th>Montant</th><th>Fournisseur</th><th>Categorie</th><th>Projet</th><th>Mode</th><th>Justificatif</th><th></th>';
         echo '</tr></thead><tbody>';
 
         $fournisseurNoms = [];
         foreach ($this->fournisseurRepository->all() as $fournisseur) {
             $fournisseurNoms[$fournisseur->id()] = $fournisseur->nom();
         }
+        $projetNoms = ProjetChamp::noms($this->projetRepository, $exerciceId);
 
         foreach ($this->repository->forExercice($exerciceId) as $depense) {
             $fournisseurNom = $depense->fournisseurId() !== null
@@ -177,6 +195,7 @@ final class DepenseScreen implements AdminScreen
                 ? Categories::libelleCategorie(Categories::DEPENSE, $depense->categorie())
                     . ' · ' . Categories::libelleSousCategorie(Categories::DEPENSE, $depense->categorie(), $depense->sousCategorie())
                 : '';
+            $projetNom = $depense->projetId() !== null ? ($projetNoms[$depense->projetId()] ?? '') : '';
 
             if (!Search::matches($searchTerm, [
                 $depense->date(),
@@ -184,6 +203,7 @@ final class DepenseScreen implements AdminScreen
                 $fournisseurNom,
                 $categorieLabel,
                 $depense->detail(),
+                $projetNom,
             ])) {
                 continue;
             }
@@ -202,6 +222,7 @@ final class DepenseScreen implements AdminScreen
             echo '<td>' . esc_html(number_format($depense->montant(), 2)) . '</td>';
             echo '<td>' . esc_html($fournisseurNom) . '</td>';
             echo '<td>' . esc_html($categorieLabel) . '</td>';
+            echo '<td>' . esc_html($projetNom) . '</td>';
             echo '<td>' . esc_html($depense->modePaiement()) . '</td>';
             echo '<td>' . AttachmentLink::render($depense->justificatif()) . '</td>';
             echo '<td><a href="' . esc_url($editUrl) . '">Modifier</a> | ';
@@ -259,17 +280,20 @@ final class DepenseScreen implements AdminScreen
         $categorie = $categorieCode ?? '';
 
         $existingJustificatif = '';
+        $existingProjetId = null;
         if ($id !== null) {
             $existing = $this->repository->find($id);
             if ($existing !== null) {
                 $existingJustificatif = $existing->justificatif();
+                $existingProjetId = $existing->projetId();
             }
         }
         $justificatif = $this->attachmentUploader->handle($files, 'justificatif', $existingJustificatif);
+        $exerciceId = (int) ($request['exercice_id'] ?? 0);
 
         $depense = new Depense(
             $id,
-            (int) ($request['exercice_id'] ?? 0),
+            $exerciceId,
             sanitize_text_field(wp_unslash($request['date'] ?? '')),
             isset($request['montant']) ? (float) $request['montant'] : 0.0,
             $fournisseurId,
@@ -277,7 +301,8 @@ final class DepenseScreen implements AdminScreen
             sanitize_textarea_field(wp_unslash($request['detail'] ?? '')),
             $modePaiement,
             $justificatif,
-            $sousCategorie
+            $sousCategorie,
+            ProjetChamp::resoudre($this->projetRepository, $request, $exerciceId, $existingProjetId)
         );
 
         return $this->repository->save($depense);

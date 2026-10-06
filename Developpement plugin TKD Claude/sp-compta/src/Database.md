@@ -34,3 +34,7 @@ Toutes les tables du modèle de données sont créées : `sp_compta_exercice`, `
 ## Tests
 
 Pas de test unitaire dédié (nécessite une vraie base WP, testé indirectement par `FournisseurRepositoryTest::setUp()` qui appelle `createTables()` avant chaque test).
+
+## 1.4.0 — Projets de la saison (06/10/2026)
+
+Nouvelle table `sp_compta_projet` (`tableProjet()`, voir [Entity/Projet.md](Entity/Projet.md)) et colonne `projet_id BIGINT UNSIGNED NULL` (+ index) sur `sp_compta_depense` et `sp_compta_recette` (NULL = fonctionnement courant). Appliqué automatiquement par `maybeUpgrade()` au premier chargement d'une page wp-admin après le déploiement — **à faire avant d'utiliser la saisie rapide sur téléphone**, qui ne déclenche pas la mise à jour du schéma.

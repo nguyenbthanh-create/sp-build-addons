@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SpCompta\Admin;
 
 use SpCompta\Accounting\Categories;
+use SpCompta\Accounting\ProjetBilan;
 use SpCompta\Capabilities;
 use SpCompta\Entity\Exercice;
 use SpCompta\Repository\ClientRepository;
@@ -14,6 +15,7 @@ use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\FactureRepository;
 use SpCompta\Repository\FournisseurRepository;
 use SpCompta\Repository\ParametresRepository;
+use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 use SpCompta\Repository\SponsorRepository;
 use SpCompta\Reporting\ExerciceExportateur;
@@ -45,7 +47,8 @@ final class RapportExerciceScreen implements AdminScreen
         private FactureRepository $factureRepository,
         private ClientRepository $clientRepository,
         private FournisseurRepository $fournisseurRepository,
-        private ParametresRepository $parametresRepository
+        private ParametresRepository $parametresRepository,
+        private ?ProjetRepository $projetRepository = null
     ) {
     }
 
@@ -184,7 +187,8 @@ final class RapportExerciceScreen implements AdminScreen
             $this->depenseRepository->forExercice($exerciceId),
             $this->recetteRepository->forExercice($exerciceId),
             $this->fournisseurRepository->all(),
-            $this->clientRepository->all()
+            $this->clientRepository->all(),
+            $this->projetRepository !== null ? $this->projetRepository->forExercice($exerciceId) : []
         );
 
         nocache_headers();
@@ -211,6 +215,7 @@ final class RapportExerciceScreen implements AdminScreen
         $exerciceId = (int) $exercice->id();
         $depenses = $this->depenseRepository->forExercice($exerciceId);
         $recettes = $this->recetteRepository->forExercice($exerciceId);
+        $projets = $this->projetRepository !== null ? $this->projetRepository->forExercice($exerciceId) : [];
 
         $totalDepenses = SoldeScreen::totalMontant($depenses);
         $totalRecettes = SoldeScreen::totalMontant($recettes);
@@ -241,7 +246,10 @@ final class RapportExerciceScreen implements AdminScreen
             $labelPrecedent,
             $totalRecettesPrecedent,
             $totalDepensesPrecedent,
-            $this->parametresRepository->get()
+            $this->parametresRepository->get(),
+            // Projets de la saison : prevu / realise / ecart + separation fonctionnement / projets
+            $projets !== [] ? ProjetBilan::pourTous($projets, $depenses, $recettes) : [],
+            $projets !== [] ? ProjetBilan::repartition($depenses, $recettes) : null
         );
 
         echo $html;

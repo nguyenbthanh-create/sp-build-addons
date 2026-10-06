@@ -8,6 +8,7 @@ use SpCompta\Accounting\Categories;
 use SpCompta\Entity\Client;
 use SpCompta\Entity\Depense;
 use SpCompta\Entity\Fournisseur;
+use SpCompta\Entity\Projet;
 use SpCompta\Entity\Recette;
 
 /**
@@ -21,18 +22,20 @@ use SpCompta\Entity\Recette;
  */
 final class MouvementsCsvExportateur
 {
-    private const ENTETES = ['Date', 'Type', 'Categorie', 'Tiers', 'Mode de paiement', 'Montant', 'Detail'];
+    private const ENTETES = ['Date', 'Type', 'Categorie', 'Tiers', 'Mode de paiement', 'Montant', 'Detail', 'Projet'];
 
     /**
      * @param Depense[] $depenses
      * @param Recette[] $recettes
      * @param Fournisseur[] $fournisseurs
      * @param Client[] $clients
+     * @param Projet[] $projets Projets de la saison (colonne "Projet" : vide = fonctionnement courant)
      */
-    public static function toCsv(array $depenses, array $recettes, array $fournisseurs, array $clients): string
+    public static function toCsv(array $depenses, array $recettes, array $fournisseurs, array $clients, array $projets = []): string
     {
         $nomsFournisseurs = self::indexParId($fournisseurs);
         $nomsClients = self::indexParId($clients);
+        $nomsProjets = self::indexParId($projets);
 
         $lignes = [];
 
@@ -45,6 +48,7 @@ final class MouvementsCsvExportateur
                 'mode_paiement' => $depense->modePaiement(),
                 'montant' => -$depense->montant(),
                 'detail' => (string) $depense->detail(),
+                'projet' => $depense->projetId() !== null ? ($nomsProjets[$depense->projetId()] ?? '') : '',
             ];
         }
 
@@ -57,6 +61,7 @@ final class MouvementsCsvExportateur
                 'mode_paiement' => $recette->modePaiement(),
                 'montant' => $recette->montant(),
                 'detail' => (string) $recette->detail(),
+                'projet' => $recette->projetId() !== null ? ($nomsProjets[$recette->projetId()] ?? '') : '',
             ];
         }
 
@@ -66,7 +71,7 @@ final class MouvementsCsvExportateur
     }
 
     /**
-     * @param array<int, array{date: string, type: string, categorie: string, tiers: string, mode_paiement: string, montant: float, detail: string}> $lignes
+     * @param array<int, array{date: string, type: string, categorie: string, tiers: string, mode_paiement: string, montant: float, detail: string, projet: string}> $lignes
      */
     private static function assembler(array $lignes): string
     {
@@ -86,6 +91,7 @@ final class MouvementsCsvExportateur
                 $ligne['mode_paiement'],
                 number_format($ligne['montant'], 2, ',', ''),
                 self::champSecurise($ligne['detail']),
+                self::champSecurise($ligne['projet']),
             ], ';');
         }
 
@@ -128,7 +134,7 @@ final class MouvementsCsvExportateur
     }
 
     /**
-     * @param array<int, Fournisseur|Client> $entites
+     * @param array<int, Fournisseur|Client|Projet> $entites
      * @return array<int, string>
      */
     private static function indexParId(array $entites): array

@@ -7,10 +7,12 @@ namespace SpCompta\Tests\Unit\Admin;
 use SpCompta\Admin\DepenseScreen;
 use SpCompta\Database;
 use SpCompta\Entity\Depense;
+use SpCompta\Entity\Projet;
 use SpCompta\Media\AttachmentUploader;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\FournisseurRepository;
+use SpCompta\Repository\ProjetRepository;
 use WP_UnitTestCase;
 
 /**
@@ -22,6 +24,8 @@ final class DepenseScreenTest extends WP_UnitTestCase
 
     private DepenseRepository $repository;
 
+    private ProjetRepository $projets;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -30,11 +34,13 @@ final class DepenseScreenTest extends WP_UnitTestCase
         $database->createTables();
 
         $this->repository = new DepenseRepository($database->tableDepense());
+        $this->projets = new ProjetRepository($database->tableProjet());
         $this->screen = new DepenseScreen(
             $this->repository,
             new ExerciceRepository($database->tableExercice()),
             new FournisseurRepository($database->tableFournisseur()),
-            new AttachmentUploader()
+            new AttachmentUploader(),
+            $this->projets
         );
     }
 
@@ -137,5 +143,71 @@ final class DepenseScreenTest extends WP_UnitTestCase
         // Then it no longer exists
         $this->assertTrue($result);
         $this->assertNull($this->repository->find((int) $existing->id()));
+    }
+
+    /** @test */
+    public function it_attaches_the_depense_to_a_projet_of_the_same_season(): void
+    {
+        // Given a projet of season 1
+        $projet = $this->projets->save(new Projet(null, 1, 'Fete de Noel'));
+
+        // When a depense of season 1 is submitted with this projet
+        $saved = $this->screen->saveFromRequest([
+            'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '35', 'projet_id' => (string) $projet->id(),
+        ]);
+
+        // Then it is attached to the projet
+        $this->assertSame($projet->id(), $saved->projetId());
+    }
+
+    /** @test */
+    public function it_ignores_a_projet_from_another_season(): void
+    {
+        // Given a projet of season 2
+        $projet = $this->projets->save(new Projet(null, 2, 'Projet de l\'autre saison'));
+
+        // When a depense of season 1 is submitted with this projet
+        $saved = $this->screen->saveFromRequest([
+            'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '35', 'projet_id' => (string) $projet->id(),
+        ]);
+
+        // Then the depense stays in regular operations
+        $this->assertNull($saved->projetId());
+    }
+
+    /** @test */
+    public function it_keeps_the_projet_when_the_field_is_not_submitted(): void
+    {
+        // Given a depense already attached to a projet
+        $projet = $this->projets->save(new Projet(null, 1, 'Fete de Noel'));
+        $created = $this->screen->saveFromRequest([
+            'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '35', 'projet_id' => (string) $projet->id(),
+        ]);
+
+        // When it is saved again by a form that has no "projet" field
+        $resaved = $this->screen->saveFromRequest([
+            'id' => (string) $created->id(), 'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '40',
+        ]);
+
+        // Then the projet is preserved, not erased
+        $this->assertSame($projet->id(), $resaved->projetId());
+    }
+
+    /** @test */
+    public function it_detaches_the_depense_when_the_field_is_emptied(): void
+    {
+        // Given a depense attached to a projet
+        $projet = $this->projets->save(new Projet(null, 1, 'Fete de Noel'));
+        $created = $this->screen->saveFromRequest([
+            'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '35', 'projet_id' => (string) $projet->id(),
+        ]);
+
+        // When it is saved with "fonctionnement courant" chosen
+        $resaved = $this->screen->saveFromRequest([
+            'id' => (string) $created->id(), 'exercice_id' => '1', 'date' => '2026-12-05', 'montant' => '35', 'projet_id' => '',
+        ]);
+
+        // Then it is back in regular operations
+        $this->assertNull($resaved->projetId());
     }
 }

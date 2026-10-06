@@ -11,7 +11,7 @@ final class Database
      * colonne) pour que maybeUpgrade() rejoue createTables() sur les sites
      * deja actives, sans desactivation/reactivation du plugin.
      */
-    private const DB_VERSION = '1.3.0';
+    private const DB_VERSION = '1.4.0';
     private const DB_VERSION_OPTION = 'sp_compta_db_version';
 
     public function tableExercice(): string
@@ -79,6 +79,11 @@ final class Database
         return $this->prefix() . 'sp_compta_ik_paiement';
     }
 
+    public function tableProjet(): string
+    {
+        return $this->prefix() . 'sp_compta_projet';
+    }
+
     public function createTables(): void
     {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -98,6 +103,7 @@ final class Database
         dbDelta($this->factureSchema($charsetCollate));
         dbDelta($this->factureLigneSchema($charsetCollate));
         dbDelta($this->ikPaiementSchema($charsetCollate));
+        dbDelta($this->projetSchema($charsetCollate));
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION);
     }
@@ -179,9 +185,11 @@ final class Database
             detail TEXT NULL,
             mode_paiement VARCHAR(20) NOT NULL DEFAULT '',
             justificatif VARCHAR(255) NOT NULL DEFAULT '',
+            projet_id BIGINT UNSIGNED NULL,
             PRIMARY KEY (id),
             KEY exercice_id (exercice_id),
-            KEY fournisseur_id (fournisseur_id)
+            KEY fournisseur_id (fournisseur_id),
+            KEY projet_id (projet_id)
         ) {$charsetCollate};";
     }
 
@@ -201,9 +209,11 @@ final class Database
             detail TEXT NULL,
             mode_paiement VARCHAR(20) NOT NULL DEFAULT '',
             justificatif VARCHAR(255) NOT NULL DEFAULT '',
+            projet_id BIGINT UNSIGNED NULL,
             PRIMARY KEY (id),
             KEY exercice_id (exercice_id),
-            KEY client_id (client_id)
+            KEY client_id (client_id),
+            KEY projet_id (projet_id)
         ) {$charsetCollate};";
     }
 
@@ -342,6 +352,31 @@ final class Database
             depense_id BIGINT UNSIGNED NULL,
             PRIMARY KEY (id),
             UNIQUE KEY trainer_periode (trainer_id, annee, mois)
+        ) {$charsetCollate};";
+    }
+
+    /**
+     * Projets de la saison (comptabilite analytique, voir Entity/Projet.md) :
+     * les depenses/recettes s'y rattachent par leur colonne projet_id.
+     */
+    private function projetSchema(string $charsetCollate): string
+    {
+        $table = $this->tableProjet();
+
+        return "CREATE TABLE {$table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            exercice_id BIGINT UNSIGNED NOT NULL,
+            nom VARCHAR(191) NOT NULL,
+            nature VARCHAR(30) NOT NULL DEFAULT 'evenement',
+            budget_depenses DECIMAL(10,2) NOT NULL DEFAULT 0,
+            budget_recettes DECIMAL(10,2) NOT NULL DEFAULT 0,
+            responsable VARCHAR(191) NOT NULL DEFAULT '',
+            date_debut DATE NULL,
+            date_fin DATE NULL,
+            description TEXT NULL,
+            statut VARCHAR(20) NOT NULL DEFAULT 'en_cours',
+            PRIMARY KEY (id),
+            KEY exercice_id (exercice_id)
         ) {$charsetCollate};";
     }
 

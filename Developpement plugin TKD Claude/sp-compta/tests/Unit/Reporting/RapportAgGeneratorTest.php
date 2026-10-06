@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace SpCompta\Tests\Unit\Reporting;
 
+use SpCompta\Accounting\ProjetBilan;
+use SpCompta\Entity\Depense;
 use SpCompta\Entity\Exercice;
+use SpCompta\Entity\Projet;
+use SpCompta\Entity\Recette;
 use SpCompta\Reporting\RapportAgGenerator;
 use WP_UnitTestCase;
 
@@ -80,5 +84,42 @@ final class RapportAgGeneratorTest extends WP_UnitTestCase
         // Then a note replaces the comparison chart, no SVG is emitted
         $this->assertStringContainsString('Aucun exercice antérieur', $html);
         $this->assertStringNotContainsString('<svg', $html);
+    }
+
+    /** @test */
+    public function render_shows_regular_operations_and_each_projet_with_planned_and_actual(): void
+    {
+        // Given a season with a "Fete de Noel" projet planned at -200 EUR and realised at -170 EUR
+        $exercice = new Exercice(2, '2026-09-01', '2027-08-31', 100.0, true);
+        $projet = new Projet(7, 2, 'Fete de Noel', 'evenement', 300.0, 100.0);
+        $bilans = ProjetBilan::pourTous(
+            [$projet],
+            [new Depense(1, 2, '2026-12-05', 250.0, null, '', null, '', '', '', 7)],
+            [new Recette(1, 2, '2026-12-05', 80.0, '', null, '', null, '', '', '', 7)]
+        );
+        $repartition = ['fonctionnement_net' => 500.0, 'projets_net' => -170.0];
+
+        // When the report is rendered with these projets
+        $html = RapportAgGenerator::render($exercice, 1000.0, 670.0, 430.0, [], [], [], null, null, null, null, $bilans, $repartition);
+
+        // Then the regular result, the projets result, the projet line and its gap all appear
+        $this->assertStringContainsString('fonctionnement courant (hors projets)', $html);
+        $this->assertStringContainsString('500,00 €', $html);
+        $this->assertStringContainsString('Fete de Noel', $html);
+        $this->assertStringContainsString('-170,00 €', $html);
+        $this->assertStringContainsString('+30,00 €', $html);
+    }
+
+    /** @test */
+    public function render_has_no_projet_section_when_the_season_has_no_projet(): void
+    {
+        // Given a season without projet
+        $exercice = new Exercice(2, '2026-09-01', '2027-08-31', 100.0, true);
+
+        // When the report is rendered without projets
+        $html = RapportAgGenerator::render($exercice, 1000.0, 800.0, 300.0, [], [], [], null, null, null, null);
+
+        // Then no projet section is printed
+        $this->assertStringNotContainsString('Détail des projets', $html);
     }
 }

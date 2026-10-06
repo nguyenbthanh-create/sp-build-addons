@@ -23,6 +23,8 @@ final class RapportAgGenerator
      * @param array<string, array{label: string, total: float, sous: array<string, array{label: string, total: float}>}> $repartitionDepenses
      * @param array<string, array{label: string, total: float, sous: array<string, array{label: string, total: float}>}> $repartitionRecettes
      * @param Sponsor[] $sponsors
+     * @param array<int, array<string, mixed>> $bilansProjets Bilans de Accounting\ProjetBilan::pourTous() (vide = pas de section projets)
+     * @param array<string, float>|null $repartitionProjets Accounting\ProjetBilan::repartition() (fonctionnement courant / projets)
      */
     public static function render(
         Exercice $exercice,
@@ -35,7 +37,9 @@ final class RapportAgGenerator
         ?string $labelExercicePrecedent,
         ?float $totalRecettesPrecedent,
         ?float $totalDepensesPrecedent,
-        ?Parametres $parametres
+        ?Parametres $parametres,
+        array $bilansProjets = [],
+        ?array $repartitionProjets = null
     ): string {
         $nomAssociation = $parametres !== null && $parametres->nomAssociation() !== ''
             ? $parametres->nomAssociation()
@@ -65,6 +69,10 @@ final class RapportAgGenerator
         $html .= self::ligneResume('Résultat net de l\'exercice', $resultatNet, true);
         $html .= self::ligneResume('Solde de clôture', $solde, true);
         $html .= '</div>';
+
+        if ($bilansProjets !== [] && $repartitionProjets !== null) {
+            $html .= self::sectionProjets($bilansProjets, $repartitionProjets);
+        }
 
         if ($totalRecettesPrecedent !== null && $totalDepensesPrecedent !== null && $labelExercicePrecedent !== null) {
             $html .= '<h2>Évolution par rapport à l\'exercice précédent</h2>';
@@ -135,6 +143,65 @@ final class RapportAgGenerator
         }
 
         return $html . '</tbody></table>';
+    }
+
+    /**
+     * Section "Fonctionnement courant et projets" : d'abord la separation des
+     * resultats (le fonctionnement est-il equilibre ? combien ont coute les
+     * projets ?), puis chaque projet en prevu / realise / ecart.
+     *
+     * @param array<int, array<string, mixed>> $bilans
+     * @param array<string, float> $repartition
+     */
+    private static function sectionProjets(array $bilans, array $repartition): string
+    {
+        $html = '<h2>Fonctionnement courant et projets de la saison</h2><div class="resume">';
+        $html .= self::ligneResume('Résultat du fonctionnement courant (hors projets)', (float) $repartition['fonctionnement_net']);
+        $html .= self::ligneResume('Résultat des projets', (float) $repartition['projets_net']);
+        $html .= self::ligneResume('Résultat net de l\'exercice', (float) $repartition['fonctionnement_net'] + (float) $repartition['projets_net'], true);
+        $html .= '</div>';
+
+        $avecBudget = array_filter($bilans, static fn (array $b): bool => (bool) $b['a_un_budget']) !== [];
+
+        $html .= '<h2>Détail des projets</h2><table class="tbl projets"><thead><tr><th>Projet</th>'
+            . '<th>Recettes</th><th>Dépenses</th><th>Résultat</th>'
+            . ($avecBudget ? '<th>Résultat prévu</th><th>Écart</th>' : '')
+            . '</tr></thead><tbody>';
+
+        foreach ($bilans as $b) {
+            $projet = $b['projet'];
+            $html .= '<tr><td>' . esc_html($projet->nom()) . '<span class="nature">' . esc_html($projet->natureLabel()) . '</span></td>'
+                . '<td>' . self::euros((float) $b['recettes']) . self::prevu($b, 'budget_recettes') . '</td>'
+                . '<td>' . self::euros((float) $b['depenses']) . self::prevu($b, 'budget_depenses') . '</td>'
+                . '<td><strong>' . self::euros((float) $b['net']) . '</strong></td>';
+            if ($avecBudget) {
+                $html .= '<td>' . ($b['a_un_budget'] ? self::euros((float) $b['budget_net']) : '—') . '</td>'
+                    . '<td>' . ($b['a_un_budget'] ? self::euros((float) $b['ecart_net'], true) : '—') . '</td>';
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody></table>';
+        $html .= '<p class="note">Résultat = recettes − dépenses du projet (négatif : coût pour le club). '
+            . ($avecBudget ? 'Écart = résultat réalisé − résultat prévu. Sous chaque montant réalisé : le montant prévu.' : '')
+            . '</p>';
+
+        return $html;
+    }
+
+    /**
+     * @param array<string, mixed> $bilan
+     */
+    private static function prevu(array $bilan, string $cle): string
+    {
+        return $bilan['a_un_budget'] ? '<span class="prevu">prévu ' . self::euros((float) $bilan[$cle]) . '</span>' : '';
+    }
+
+    private static function euros(float $montant, bool $signe = false): string
+    {
+        $texte = esc_html(number_format($montant, 2, ',', ' ')) . ' €';
+
+        return $signe && $montant > 0.005 ? '+' . $texte : $texte;
     }
 
     /**
@@ -229,6 +296,11 @@ final class RapportAgGenerator
             . 'table.tbl tr.categorie td{font-weight:700;background:#f8fafc;}'
             . 'table.tbl td.sous{padding-left:26px;color:#4b5563;}'
             . 'table.tbl td:last-child{text-align:right;white-space:nowrap;}'
+            . 'table.projets th{font-size:12px;color:#1e3a5f;text-align:right;padding:6px 10px;border-bottom:2px solid #e2e8f0;}'
+            . 'table.projets th:first-child{text-align:left;}'
+            . 'table.projets td{text-align:right;white-space:nowrap;}'
+            . 'table.projets td:first-child{text-align:left;white-space:normal;}'
+            . 'table.projets .nature,table.projets .prevu{display:block;font-size:11px;color:#6b7280;font-weight:400;}'
             . '.fait{font-size:11px;color:#94a3b8;text-align:center;margin-top:28px;font-style:italic;}'
             . '@media print{ * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } '
             . 'body{background:#fff;} .wrap{box-shadow:none;margin:0;border-radius:0;max-width:100%;} .no-print{display:none!important;} }';

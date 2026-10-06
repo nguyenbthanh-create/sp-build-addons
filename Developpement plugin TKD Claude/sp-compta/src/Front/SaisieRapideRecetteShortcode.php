@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SpCompta\Front;
 
 use SpCompta\Accounting\Categories;
+use SpCompta\Admin\ProjetChamp;
 use SpCompta\Admin\RecetteScreen;
 use SpCompta\Capabilities;
 use SpCompta\Repository\ClientRepository;
@@ -102,6 +103,16 @@ final class SaisieRapideRecetteShortcode
             echo '</optgroup>';
         }
         echo '</select></div>';
+
+        // Projet de la saison (facultatif) : affiche seulement s'il existe des projets en cours.
+        $selectProjet = ProjetChamp::select(
+            ProjetChamp::options($this->recetteScreen->projetRepository(), $exerciceId),
+            null,
+            'sp-compta-sr-projet-recette'
+        );
+        if ($selectProjet !== '') {
+            echo '<div class="champ"><label for="sp-compta-sr-projet-recette">Projet (facultatif)</label>' . $selectProjet . '</div>';
+        }
 
         echo '<div class="champ"><label for="sp-compta-sr-mode">Mode de paiement</label>';
         echo '<select id="sp-compta-sr-mode" name="mode_paiement">';

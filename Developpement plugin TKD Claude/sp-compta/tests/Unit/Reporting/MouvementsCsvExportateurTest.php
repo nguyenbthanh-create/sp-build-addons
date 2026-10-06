@@ -7,6 +7,7 @@ namespace SpCompta\Tests\Unit\Reporting;
 use SpCompta\Entity\Client;
 use SpCompta\Entity\Depense;
 use SpCompta\Entity\Fournisseur;
+use SpCompta\Entity\Projet;
 use SpCompta\Entity\Recette;
 use SpCompta\Reporting\MouvementsCsvExportateur;
 use WP_UnitTestCase;
@@ -42,7 +43,7 @@ final class MouvementsCsvExportateurTest extends WP_UnitTestCase
 
         // Then it starts with the UTF-8 BOM (Excel needs it for accents) and the header row
         $this->assertStringStartsWith("\xEF\xBB\xBF", $csv);
-        $this->assertSame(['Date', 'Type', 'Categorie', 'Tiers', 'Mode de paiement', 'Montant', 'Detail'], $this->lignes($csv)[0]);
+        $this->assertSame(['Date', 'Type', 'Categorie', 'Tiers', 'Mode de paiement', 'Montant', 'Detail', 'Projet'], $this->lignes($csv)[0]);
     }
 
     /** @test */
@@ -121,5 +122,32 @@ final class MouvementsCsvExportateurTest extends WP_UnitTestCase
         // Then the earliest movement comes first
         $this->assertSame('01/09/2026', $lignes[1][0]);
         $this->assertSame('10/09/2026', $lignes[2][0]);
+    }
+
+    /** @test */
+    public function it_writes_the_project_name_in_the_last_column(): void
+    {
+        // Given a depense attached to project 4 "Fete de Noel 2026"
+        $depense = new Depense(1, 1, '2026-12-10', 80.0, null, '', null, '', '', '', 4);
+        $projet = new Projet(4, 1, 'Fete de Noel 2026');
+
+        // When the CSV is built with the season's projects
+        $ligne = $this->lignes(MouvementsCsvExportateur::toCsv([$depense], [], [], [], [$projet]))[1];
+
+        // Then the "Projet" column carries the project name
+        $this->assertSame('Fete de Noel 2026', $ligne[7]);
+    }
+
+    /** @test */
+    public function it_leaves_the_project_column_empty_for_regular_operations(): void
+    {
+        // Given a recette not attached to any project
+        $recette = new Recette(1, 1, '2026-09-10', 100.0, 'Cotisation');
+
+        // When the CSV is built
+        $ligne = $this->lignes(MouvementsCsvExportateur::toCsv([], [$recette], [], []))[1];
+
+        // Then the "Projet" column is empty (fonctionnement courant)
+        $this->assertSame('', $ligne[7]);
     }
 }

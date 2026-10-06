@@ -56,6 +56,63 @@ final class DepenseRepository
         return array_map([$this, 'hydrate'], $rows);
     }
 
+    /**
+     * Depenses rattachees a un projet (voir Entity/Projet.md).
+     *
+     * @return Depense[]
+     */
+    public function forProjet(int $projetId): array
+    {
+        $rows = $this->wpdb()->get_results(
+            $this->wpdb()->prepare(
+                "SELECT * FROM {$this->table} WHERE projet_id = %d ORDER BY date DESC",
+                $projetId
+            ),
+            ARRAY_A
+        );
+
+        return array_map([$this, 'hydrate'], $rows);
+    }
+
+    /**
+     * Rattache d'un coup plusieurs depenses deja saisies a un projet (null =
+     * les remettre en fonctionnement courant). Limite aux depenses de
+     * l'exercice donne, pour ne jamais deplacer une ligne d'une autre saison.
+     *
+     * @param int[] $ids
+     * @return int nombre de lignes modifiees
+     */
+    public function rattacherAuProjet(array $ids, ?int $projetId, int $exerciceId): int
+    {
+        $ids = array_values(array_unique(array_filter(array_map('intval', $ids), static fn (int $id): bool => $id > 0)));
+
+        if ($ids === []) {
+            return 0;
+        }
+
+        $placeholders = implode(',', array_fill(0, count($ids), '%d'));
+        $valeur = $projetId === null ? 'NULL' : '%d';
+        $args = $projetId === null ? [...$ids, $exerciceId] : [$projetId, ...$ids, $exerciceId];
+
+        return (int) $this->wpdb()->query(
+            $this->wpdb()->prepare(
+                "UPDATE {$this->table} SET projet_id = {$valeur} WHERE id IN ({$placeholders}) AND exercice_id = %d",
+                ...$args
+            )
+        );
+    }
+
+    /**
+     * Remet en fonctionnement courant toutes les depenses d'un projet (a la
+     * suppression du projet : les montants ne disparaissent jamais).
+     */
+    public function detacherDuProjet(int $projetId): int
+    {
+        return (int) $this->wpdb()->query(
+            $this->wpdb()->prepare("UPDATE {$this->table} SET projet_id = NULL WHERE projet_id = %d", $projetId)
+        );
+    }
+
     private function insert(Depense $depense): Depense
     {
         $this->wpdb()->insert($this->table, $this->columns($depense), $this->formats());
@@ -91,6 +148,7 @@ final class DepenseRepository
             'detail' => $depense->detail(),
             'mode_paiement' => $depense->modePaiement(),
             'justificatif' => $depense->justificatif(),
+            'projet_id' => $depense->projetId(),
         ];
     }
 
@@ -99,7 +157,7 @@ final class DepenseRepository
      */
     private function formats(): array
     {
-        return ['%d', '%s', '%f', '%d', '%s', '%s', '%s', '%s', '%s'];
+        return ['%d', '%s', '%f', '%d', '%s', '%s', '%s', '%s', '%s', '%d'];
     }
 
     /**
@@ -117,7 +175,8 @@ final class DepenseRepository
             $row['detail'],
             $row['mode_paiement'],
             $row['justificatif'],
-            (string) ($row['sous_categorie'] ?? '')
+            (string) ($row['sous_categorie'] ?? ''),
+            isset($row['projet_id']) && $row['projet_id'] !== null ? (int) $row['projet_id'] : null
         );
     }
 

@@ -64,3 +64,7 @@ Scenario: tri chronologique tous types confondus
 - Accents corrompus à l'ouverture Excel → vérifier que le BOM (`"\xEF\xBB\xBF"`) est bien le tout premier octet écrit, avant même la ligne d'en-têtes.
 - Montants qu'Excel traite comme du texte (pas de somme automatique possible) → vérifier le séparateur décimal (`,` attendu par Excel-FR) et l'absence de séparateur de milliers dans `number_format()`.
 - Une ligne "Tiers" vide pour une recette qui a pourtant une provenance saisie → vérifier que `clientId()` ne retourne pas un id qui ne correspond à aucun client connu (résolution silencieuse en chaîne vide dans ce cas, volontaire — voir [ExerciceExportateur.md](ExerciceExportateur.md) pour la même convention).
+
+## Colonne « Projet » (ajoutée le 06/10/2026)
+
+8ᵉ et dernière colonne : nom du projet de la saison auquel la ligne est rattachée, vide pour le fonctionnement courant. `toCsv()` prend un 5ᵉ paramètre facultatif `$projets` (projets de la saison) ; champ protégé contre l'injection de formule comme `Tiers` et `Detail`. Scénarios : `it_writes_the_project_name_in_the_last_column`, `it_leaves_the_project_column_empty_for_regular_operations`.

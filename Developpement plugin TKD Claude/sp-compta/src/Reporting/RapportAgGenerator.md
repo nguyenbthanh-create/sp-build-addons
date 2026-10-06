@@ -49,3 +49,11 @@ Scenario: note affichee a la place du graphique en l'absence d'exercice preceden
 ## En cas de bug
 
 Un montant manquant/faux dans le rapport → vérifier le calcul en amont dans [RapportExerciceScreen](../Admin/RapportExerciceScreen.md) (totaux, répartition), pas cette classe qui ne fait qu'afficher ce qu'on lui donne. Un graphique visuellement écrasé (toutes les barres à la même hauteur) → vérifier que `$max` n'est pas resté à sa valeur plancher alors que de vrais montants existent (indiquerait un calcul en amont incorrect, tous les montants passés à zéro par erreur).
+
+## Projets de la saison (ajouté le 06/10/2026)
+
+Deux paramètres facultatifs en fin de `render()` : `$bilansProjets` (`ProjetBilan::pourTous()`) et `$repartitionProjets` (`ProjetBilan::repartition()`), passés par `RapportExerciceScreen::handleRapportAg()` quand la saison a au moins un projet. Le rapport ajoute alors, après le résumé :
+- **« Fonctionnement courant et projets de la saison »** : résultat du fonctionnement courant (hors projets), résultat des projets, résultat net (leur somme) ;
+- **« Détail des projets »** : par projet, recettes et dépenses réalisées (avec « prévu » en dessous), résultat, et — si au moins un projet a un budget — résultat prévu et écart.
+
+Sans projet, rien ne change (section absente). Scénarios : `render_shows_regular_operations_and_each_projet_with_planned_and_actual`, `render_has_no_projet_section_when_the_season_has_no_projet`.

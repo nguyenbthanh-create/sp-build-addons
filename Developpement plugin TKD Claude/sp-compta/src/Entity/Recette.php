@@ -17,7 +17,8 @@ final class Recette
         private ?string $detail = null,
         private string $modePaiement = '',
         private string $justificatif = '',
-        private string $sousCategorie = ''
+        private string $sousCategorie = '',
+        private ?int $projetId = null
     ) {
     }
 
@@ -76,6 +77,15 @@ final class Recette
         return $this->justificatif;
     }
 
+    /**
+     * Projet de la saison auquel la recette est rattachee (null =
+     * fonctionnement courant), voir Entity/Projet.md.
+     */
+    public function projetId(): ?int
+    {
+        return $this->projetId;
+    }
+
     public function withId(int $id): self
     {
         return new self(
@@ -89,7 +99,8 @@ final class Recette
             $this->detail,
             $this->modePaiement,
             $this->justificatif,
-            $this->sousCategorie
+            $this->sousCategorie,
+            $this->projetId
         );
     }
 }

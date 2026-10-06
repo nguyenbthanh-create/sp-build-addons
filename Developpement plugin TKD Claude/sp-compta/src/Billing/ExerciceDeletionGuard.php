@@ -8,6 +8,7 @@ use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\DevisRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\FactureRepository;
+use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 use SpCompta\Repository\SponsorRepository;
 
@@ -19,7 +20,8 @@ final class ExerciceDeletionGuard
         private RecetteRepository $recetteRepository,
         private SponsorRepository $sponsorRepository,
         private DevisRepository $devisRepository,
-        private FactureRepository $factureRepository
+        private FactureRepository $factureRepository,
+        private ?ProjetRepository $projetRepository = null
     ) {
     }
 
@@ -43,6 +45,7 @@ final class ExerciceDeletionGuard
             || $this->recetteRepository->forExercice($exerciceId) !== []
             || $this->sponsorRepository->forExercice($exerciceId) !== []
             || $this->devisRepository->forExercice($exerciceId) !== []
-            || $this->factureRepository->forExercice($exerciceId) !== [];
+            || $this->factureRepository->forExercice($exerciceId) !== []
+            || ($this->projetRepository !== null && $this->projetRepository->forExercice($exerciceId) !== []);
     }
 }
