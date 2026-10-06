@@ -22,8 +22,8 @@ use SpCompta\Repository\ExerciceRepository;
  */
 final class SaisieRapideRecetteShortcode
 {
-    private const ACTION_SAVE = 'sp_compta_saisie_rapide_recette_save';
-    private const NONCE = 'sp_compta_saisie_rapide_recette_nonce';
+    public const ACTION_SAVE = 'sp_compta_saisie_rapide_recette_save';
+    public const NONCE = 'sp_compta_saisie_rapide_recette_nonce';
 
     public function __construct(
         private RecetteScreen $recetteScreen,

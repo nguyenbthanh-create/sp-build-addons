@@ -15,6 +15,7 @@ use SpCompta\Admin\RapportExerciceScreen;
 use SpCompta\Admin\RecetteScreen;
 use SpCompta\Admin\SoldeScreen;
 use SpCompta\Admin\SponsorScreen;
+use SpCompta\Auth\SessionLongue;
 use SpCompta\Billing\ExerciceDeletionGuard;
 use SpCompta\Billing\IkPaiementSync;
 use SpCompta\Billing\SponsorPaiementSync;
@@ -69,6 +70,10 @@ final class Plugin
     public function boot(): void
     {
         add_action('init', [$this->capabilities, 'register']);
+
+        // Session de 1 an pour les comptes bureau (saisie rapide installee
+        // sur le telephone) - doit agir sur wp-login.php, donc hors bootAdmin().
+        (new SessionLongue())->registerHooks();
 
         $this->bootFront();
 

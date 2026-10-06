@@ -38,3 +38,13 @@ Scenario: l'onglet Recette se rouvre apres l'enregistrement d'une recette
 - Les deux formulaires apparaissent superposés/mal alignés → CSS du bascule (`.sp-compta-tabs*`) dans cette classe, CSS de chaque formulaire (`.sp-compta-saisie-rapide`) dans les deux classes d'origine — vérifier lequel des deux est en cause avant de corriger.
 - Cliquer sur un onglet ne fait rien → vérifier dans la console navigateur que le script inline s'est bien exécuté (pas d'erreur JS ailleurs sur la page qui l'aurait interrompu) ; ce script ne dépend d'aucune librairie externe.
 - Message de confirmation invisible après un enregistrement pourtant réussi → voir la section "Onglet actif après enregistrement" ci-dessus, et vérifier que la redirection porte bien la bonne valeur `sp_compta_saved`.
+
+## Saisie jamais perdue et reconnexion (06/10/2026)
+
+Suite aux déconnexions de l'application installée (voir [Auth/SessionLongue.md](../Auth/SessionLongue.md)) :
+- **Non connecté** : `render()` n'affiche plus les deux formulaires mais un écran « Connexion nécessaire » avec un bouton vers `wp_login_url()` qui **ramène à la page de saisie**.
+- **Brouillon** (JavaScript) : chaque champ (montant, catégorie, projet, mode, date, fournisseur/client, détail…) est mémorisé dans le `localStorage` du téléphone pendant la saisie (clé `sp_compta_brouillon_depense` / `_recette`) et remis en place au rechargement, avec un message et un bouton « Effacer » ; l'onglet Recette se rouvre si c'est une recette. Brouillon effacé quand l'enregistrement est confirmé (`sp_compta_saved=depense|recette`). La **photo** ne peut pas être conservée par un navigateur.
+- **Avant chaque envoi** : appel AJAX `sp_compta_saisie_jeton` (`ajaxJeton()` / `jetons()`) qui renvoie des jetons de formulaire neufs si la session est ouverte (la page a pu rester ouverte des heures : un jeton expiré faisait échouer l'envoi). Session fermée → rien n'est envoyé, message « Session expirée : votre saisie est gardée… Se reconnecter ». Compte sans accès → message dédié. Réponse illisible / réseau incertain → envoi classique (le serveur tranche).
+- Constantes `NONCE` / `ACTION_SAVE` de `SaisieRapideShortcode` et `SaisieRapideRecetteShortcode` rendues publiques pour cela.
+
+Scénarios ajoutés : `it_shows_a_login_button_instead_of_the_forms_when_logged_out`, `it_hands_out_fresh_form_tokens_to_a_treasury_account`, `it_refuses_tokens_to_an_account_without_treasury_access`. Le comportement JavaScript (brouillon, restauration, session expirée, envoi avec jeton neuf, effacement après confirmation) a été vérifié dans un navigateur avec un serveur simulé.

@@ -23,8 +23,8 @@ use SpCompta\Repository\FournisseurRepository;
  */
 final class SaisieRapideShortcode
 {
-    private const ACTION_SAVE = 'sp_compta_saisie_rapide_save';
-    private const NONCE = 'sp_compta_saisie_rapide_nonce';
+    public const ACTION_SAVE = 'sp_compta_saisie_rapide_save';
+    public const NONCE = 'sp_compta_saisie_rapide_nonce';
 
     public function __construct(
         private DepenseScreen $depenseScreen,

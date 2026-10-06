@@ -89,4 +89,43 @@ final class SaisieRapideCombineeShortcodeTest extends WP_UnitTestCase
 
         unset($_GET['sp_compta_saved']);
     }
+
+    /** @test */
+    public function it_shows_a_login_button_instead_of_the_forms_when_logged_out(): void
+    {
+        // Given nobody is logged in (session expired on the phone)
+        wp_set_current_user(0);
+
+        // When the combined shortcode is rendered
+        $html = $this->shortcode->render();
+
+        // Then a single login screen is shown, with a button leading to the login page, and no form
+        $this->assertStringContainsString('Connexion nécessaire', $html);
+        $this->assertStringContainsString('wp-login.php', $html);
+        $this->assertStringNotContainsString('Nouvelle depense', $html);
+    }
+
+    /** @test */
+    public function it_hands_out_fresh_form_tokens_to_a_treasury_account(): void
+    {
+        // Given the logged-in administrator of setUp (treasury access)
+        // When fresh tokens are requested just before sending a form
+        $jetons = $this->shortcode->jetons();
+
+        // Then both forms get a valid token
+        $this->assertNotNull($jetons);
+        $this->assertSame(1, wp_verify_nonce($jetons['depense'], SaisieRapideShortcode::NONCE));
+        $this->assertSame(1, wp_verify_nonce($jetons['recette'], SaisieRapideRecetteShortcode::NONCE));
+    }
+
+    /** @test */
+    public function it_refuses_tokens_to_an_account_without_treasury_access(): void
+    {
+        // Given a logged-in user without treasury access
+        wp_set_current_user(self::factory()->user->create(['role' => 'subscriber']));
+
+        // When fresh tokens are requested
+        // Then none are given
+        $this->assertNull($this->shortcode->jetons());
+    }
 }
