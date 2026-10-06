@@ -160,7 +160,13 @@ Sur cette machine (Windows 11), installés via `winget` et la méthode officiell
 - **Composer 2.10.3** (`composer.phar` + `composer.bat` dans le dossier de PHP, donc déjà dans le PATH).
 - **Node.js 24 LTS** : vérifier la syntaxe des fichiers JavaScript (`node --check`).
 - ⚠️ **Le réseau filaire de cet ordinateur bloque `downloads.php.net` / `windows.php.net`** (redirection vers la page de blocage DNS4EU) : l'installation de PHP s'est faite via le partage de connexion du téléphone. Même chose à prévoir pour une mise à jour de PHP.
-- Pas encore installé : **Local** (WordPress local, ~600 Mo) — pour plus tard, avec une copie du site de **test**.
+- Pas encore installé : **Local** (WordPress local, ~600 Mo) — seulement si une étape le justifie (migrations de base, gros découpages). Décision du 06/10/2026 : **on travaille avec le site de test OVH (staging)** + les outils ci-dessous.
+
+**Site de test OVH (staging) — état au 06/10/2026 :**
+- C'est le « site de test » de `sp_build/CLAUDE.md` (pas un troisième environnement).
+- Sa base **n'est pas une copie à jour de la prod** : données anciennes, à rafraîchir avant les gros chantiers (export de la base de prod → import sur le test, en ajustant l'adresse du site — `siteurl` / `home` et liens internes).
+- **Envoi d'emails non vérifié** : avant tout test, et obligatoirement après une copie de la prod (vraies adresses des familles), couper les envois réels sur le test (WP Mail SMTP → Réglages → Divers → « Ne pas envoyer », ou redirection vers une adresse de l'utilisateur) — sinon vœux d'anniversaire, rappels entraîneurs et file d'envoi écriraient à de vrais adhérents. À prévoir dans le script de copie : remplacer les adresses des adhérents par des adresses factices.
+- Accès : l'utilisateur se connectera (navigateur intégré, console OVH ou phpMyAdmin) quand une étape le demandera — ne jamais lui demander ses mots de passe.
 
 Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/` non versionné — refaire `composer install` dans `outils/` sur un autre ordinateur) :
 - `composer.json` : PHP_CodeSniffer + règles WordPress (WPCS) + PHPCompatibilityWP, PHPStan + extension WordPress.
