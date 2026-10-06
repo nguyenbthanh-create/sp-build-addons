@@ -153,6 +153,26 @@ Question de l'utilisateur : faut-il réécrire et fusionner tous les plugins en 
 
 **À faire avant de trancher** : retrouver le dossier `md/` (resté sur l'autre ordinateur, cf. étape 7) — il contient une proposition de refonte déjà rédigée (`03-proposition-refonte.md`, `07-refonte-init.md`) à confronter à cet avis.
 
+## 7. Outils de vérification installés (06/10/2026) — étape 1 du plan
+
+Sur cette machine (Windows 11), installés via `winget` et la méthode officielle de Composer :
+- **PHP 8.4.25** (même version que la prod OVH : PHP 8.4.22, MySQL 8.0.46), avec un `php.ini` qui active openssl, mbstring, curl, zip, intl, sodium, fileinfo (dans le dossier du paquet winget `PHP.PHP.8.4`). Sert à vérifier la syntaxe (`php -l`) et à lancer les outils.
+- **Composer 2.10.3** (`composer.phar` + `composer.bat` dans le dossier de PHP, donc déjà dans le PATH).
+- **Node.js 24 LTS** : vérifier la syntaxe des fichiers JavaScript (`node --check`).
+- ⚠️ **Le réseau filaire de cet ordinateur bloque `downloads.php.net` / `windows.php.net`** (redirection vers la page de blocage DNS4EU) : l'installation de PHP s'est faite via le partage de connexion du téléphone. Même chose à prévoir pour une mise à jour de PHP.
+- Pas encore installé : **Local** (WordPress local, ~600 Mo) — pour plus tard, avec une copie du site de **test**.
+
+Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/` non versionné — refaire `composer install` dans `outils/` sur un autre ordinateur) :
+- `composer.json` : PHP_CodeSniffer + règles WordPress (WPCS) + PHPCompatibilityWP, PHPStan + extension WordPress.
+- `phpcs.xml.dist` : règles de **sécurité** WordPress + **compatibilité PHP 8.4** (le style complet viendra plus tard, module par module).
+- `phpstan.neon.dist` (niveau 1 : erreurs franches) + `phpstan-constantes.php` (constantes des plugins).
+- **`verifier.ps1`** : à lancer avant chaque déploiement (`.\verifier.ps1`, ou `.\verifier.ps1 -Rapide` pour la seule syntaxe).
+
+**Premier état des lieux (06/10/2026) :**
+- Syntaxe : **133 fichiers PHP et 4 fichiers JavaScript sans erreur** (y compris tout le code écrit le 06/10, jusque-là jamais vérifié).
+- PHPStan : 17 remarques, dont **un vrai reste de code mort** — `sp_build/includes/class-pdf.php` : l'impression `?sp_cal_print=liste_groupe` appelle `render_liste_groupe()` qui n'existe pas (aucun bouton ne l'utilise ; à supprimer lors du ménage). Le reste : faux positifs (variables des gabarits `templates/`, `$msg` de `class-passages.php`) ou détails (`DOING_AJAX` → `wp_doing_ajax()`, variables inutilisées dans `tkd-cotisations/TkdPDF.php`).
+- PHP_CodeSniffer : **aucune incompatibilité PHP 8.4** ; **1 937 remarques de sécurité** à trier, pas autant de failles : 538 noms de table insérés dans les requêtes (faux positifs le plus souvent), 435 affichages non échappés, 503 traitements de formulaire sans vérification de nonce signalée (souvent vérifiée ailleurs), 274 entrées non nettoyées / non « unslash », 97 requêtes non préparées, 57 `wp_redirect` (préférer `wp_safe_redirect`). Ce sera la matière des étapes de ménage, en commençant par les requêtes non préparées et les formulaires sans nonce.
+
 ---
 
-*Créé le 11/09/2026. Section 6 ajoutée le 06/10/2026.*
+*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026.*

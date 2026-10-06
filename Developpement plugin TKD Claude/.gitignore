@@ -1,3 +1,7 @@
 # sp_build a son propre depot Git independant (voir JOURNAL.md) : on ne le
 # suit pas ici pour eviter le piege des depots Git imbriques.
 /sp_build/
+
+# Outils de verification : dependances Composer installees en local, jamais versionnees
+/outils/vendor/
+/outils/.cache/

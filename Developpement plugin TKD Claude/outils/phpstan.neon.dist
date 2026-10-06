@@ -1,0 +1,19 @@
+# Analyse PHPStan des plugins TKD Claira (06/10/2026).
+# Niveau 1 pour commencer : erreurs franches (fonction / méthode / classe inexistante,
+# variable non définie…). À relever progressivement, module par module.
+# Lancer depuis ce dossier :  vendor\bin\phpstan analyse   (ou  verifier.ps1)
+parameters:
+    level: 1
+    paths:
+        - ../sp_build
+        - ../sp-compta
+        - ../tkd-cotisations
+        - ../claira-tkd-parcours
+    excludePaths:
+        analyse:
+            - ../*/vendor/*
+            - ../*/tests/*
+    bootstrapFiles:
+        - phpstan-constantes.php
+    tmpDir: .cache/phpstan
+    reportUnmatchedIgnoredErrors: false

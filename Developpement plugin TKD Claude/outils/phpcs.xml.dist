@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+  Vérifications PHP_CodeSniffer des plugins TKD Claira (06/10/2026).
+  Point de départ volontairement ciblé : sécurité + compatibilité PHP 8.4 (version de la prod OVH).
+  Les règles de style WordPress complètes viendront plus tard, module par module.
+  Lancer depuis ce dossier :  vendor\bin\phpcs  (ou  verifier.ps1)
+-->
+<ruleset name="TKD Claira - securite et compatibilite">
+    <file>../sp_build</file>
+    <file>../sp-compta</file>
+    <file>../tkd-cotisations</file>
+    <file>../claira-tkd-parcours</file>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+    <exclude-pattern>*.min.js</exclude-pattern>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+
+    <!-- Sécurité : échappement de l'affichage, nonces, données entrantes, SQL préparé -->
+    <rule ref="WordPress.Security"/>
+    <rule ref="WordPress.DB.PreparedSQL"/>
+    <rule ref="WordPress.DB.PreparedSQLPlaceholders"/>
+
+    <!-- Compatibilité avec la version de PHP de la production -->
+    <config name="testVersion" value="8.4-"/>
+    <rule ref="PHPCompatibilityWP"/>
+</ruleset>
