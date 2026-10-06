@@ -1,4 +1,4 @@
-# Vérification du code des plugins TKD Claira avant déploiement (06/10/2026).
+﻿# Vérification du code des plugins TKD Claira avant déploiement (06/10/2026).
 #
 # Usage (depuis ce dossier « outils ») :
 #   .\verifier.ps1                 tout vérifier
