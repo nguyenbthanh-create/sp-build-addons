@@ -4,7 +4,9 @@
 // AVANT et APRÈS un déplacement. Usage : php comparer-fonctions.php "<avant1;avant2>" "<apres1;apres2;…>"
 // (version « avant » : git show HEAD:includes/fichier.php > avant.php)
 function fonctions( string $fichier ): array {
-	$code = file_get_contents( $fichier ); $t = token_get_all( $code ); $out = [];
+	// Fins de ligne normalisées : une copie tirée de Git (\n) et le fichier de travail sous
+	// Windows (\r\n) ne doivent pas apparaître comme « modifiés ».
+	$code = str_replace( "\r\n", "\n", file_get_contents( $fichier ) ); $t = token_get_all( $code ); $out = [];
 	$n = count( $t );
 	for ( $i = 0; $i < $n; $i++ ) {
 		if ( ! is_array( $t[ $i ] ) || $t[ $i ][0] !== T_FUNCTION ) continue;
