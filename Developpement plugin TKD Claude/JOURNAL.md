@@ -162,6 +162,10 @@ Sur cette machine (Windows 11), installés via `winget` et la méthode officiell
 - ⚠️ **Le réseau filaire de cet ordinateur bloque `downloads.php.net` / `windows.php.net`** (redirection vers la page de blocage DNS4EU) : l'installation de PHP s'est faite via le partage de connexion du téléphone. Même chose à prévoir pour une mise à jour de PHP.
 - Pas encore installé : **Local** (WordPress local, ~600 Mo) — seulement si une étape le justifie (migrations de base, gros découpages). Décision du 06/10/2026 : **on travaille avec le site de test OVH (staging)** + les outils ci-dessous.
 
+**Hébergement OVH — passage de STARTUP à PERFORMANCE le 07/10/2026** (`tkdclad.cluster021.hosting.ovh.net`, même hébergement pour la prod, le site de test `dev.tkdclaira.fr` et 3 autres sites) :
+- Cause : l'éditeur Elementor ne s'ouvrait plus (« Impossible de modifier ? »). Mesuré : l'offre STARTUP ne traitait qu'environ 2 requêtes PHP à la fois (~0,7 s chacune) ; l'éditeur en envoie une trentaine d'un coup → file d'attente, erreurs 500 (Apache), aperçu de la page en échec. Configuration déjà optimale (PHP 8.4, moteur FPM, mode production) : seule l'offre limitait.
+- Après passage en PERFORMANCE (2 vCores, 4 Go garantis) : 20 requêtes simultanées en 5,5 s sans erreur (avant : 14 s dont 4 erreurs 500) ; éditeur Elementor de l'accueil ouvert en ~20 s. IP inchangée (188.165.53.185, zone DNS à jour). Option CDN incluse dans l'offre mais non activée (« Option CDN : Non »).
+
 **Site de test OVH (staging) — état au 06/10/2026 :**
 - C'est le « site de test » de `sp_build/CLAUDE.md` (pas un troisième environnement).
 - Sa base **n'est pas une copie à jour de la prod** : données anciennes, à rafraîchir avant les gros chantiers (export de la base de prod → import sur le test, en ajustant l'adresse du site — `siteurl` / `home` et liens internes).
