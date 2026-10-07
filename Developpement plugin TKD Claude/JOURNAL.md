@@ -193,4 +193,34 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 
 ---
 
-*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité le 07/10/2026.*
+## 8. Avancement de la restructuration au 07/10/2026 (sp_build)
+
+| Étape du plan (section 6) | État | Détail (voir `sp_build/REALISATION.md`, 07/10/2026) |
+|---|---|---|
+| 1. Outils de vérification | ✅ | PHP 8.4, Composer, Node, PHPStan, PHPCS ; `outils/verifier.ps1`, `audit-actions.php`, `preparer-deploiement.ps1`, `deplacer-methodes.php`, `comparer-fonctions.php` |
+| 2. Règles pour le nouveau code | ✅ | modules autonomes, nonces + droits, tables via `class-schema.php` (règle dans `sp_build/CLAUDE.md`) |
+| 3. Découper les gros fichiers | ✅ | phases A (pages admin), C (adhérents), D (requêtes par domaine), B (application de pointage + `assets/pwa/`) — `class-admin.php` 4 934 → 307 lignes, `class-admin-members.php` 4 665 → 396, `class-db.php` 3 334 → 918 ; déplacement pur en *traits*, 0 fonction modifiée |
+| 4. Ménage et sécurité | ✅ | fuite des anniversaires corrigée, PIN bloqué après 10 essais (y compris routes de l'extension « SP Pointage QR »), code mort, doublons, calendrier public retiré, 457 affichages triés (aucune faille, 3 oublis corrigés) |
+| 5. Gestion unique de la base | ✅ | `class-schema.php` : vérification des tables une fois après chaque déploiement au lieu de ~95 requêtes par page |
+| 6. Tests automatiques, espaces de noms | ⏳ plus tard | |
+
+**Tout est en production** (dernière version déployée : `710f384`, vérifiée le 07/10/2026 à 15h55 — pages d'administration, application en mode PIN, hors connexion). Restent à essayer en conditions réelles : le **scan d'une carte QR** et le **lien personnel d'un entraîneur** dans l'application.
+
+**Leçons de déploiement (07/10/2026)** :
+- Une panne (« erreur critique ») a été causée par un `class-admin.php` arrivé incomplet sur le serveur → toujours utiliser `outils/preparer-deploiement.ps1` (dossier + tailles exactes), FTP en mode **binaire**, comparer les tailles après l'envoi ; garder un dossier `RESTAURATION_…` le temps de vérifier.
+- Copier le **contenu** du dossier de déploiement à sa place, jamais le dossier lui-même sur le serveur.
+- La prod et le site de test partagent le même hébergement / FTP : **vérifier le dossier distant** (un envoi est parti sur le site de test au lieu de la prod).
+- Les fichiers de restauration se créent avec Git Bash (`git show … > fichier`), pas avec PowerShell 5.1 (`>` ajoute un BOM UTF-8 qui casse le PHP).
+
+**Hébergement** : passé de STARTUP à **PERFORMANCE** (section 7) — l'éditeur Elementor fonctionne de nouveau.
+
+**Site de test (`dev.tkdclaira.fr`)** : protégé par une authentification HTTP (« Staging - Accès restreint ») que le navigateur intégré de l'application ne sait pas ouvrir → vérifications par **Claude in Chrome** (extension installée et reliée le 07/10/2026). Il a reçu le plugin complet `710f384`. Sa base date de la saison précédente (pas de cours en octobre 2026) et sa table `mod237_sp_adhesions_pending` n'a pas les colonnes récentes (ajout impossible, signalé par `class-schema.php`) → à régler lors du rafraîchissement de sa base (copie de la prod avec adresses neutralisées). Emails du site de test : désactivés (« ENVOI DÉSACTIVÉ » de WP Mail SMTP).
+
+**En attente** :
+- Désactiver l'extension séparée « SP Pointage QR » (test sur le site de test, puis prod ; réactivation en un clic si besoin) — sp_build contient déjà un pointage complet et plus à jour.
+- Rafraîchir la base du site de test.
+- Étape 6 du plan.
+
+---
+
+*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité et section 8 le 07/10/2026.*
