@@ -5,3 +5,7 @@
 # Outils de verification : dependances Composer installees en local, jamais versionnees
 /outils/vendor/
 /outils/.cache/
+
+# Dossiers de deploiement / restauration prepares localement (outils/preparer-deploiement.ps1)
+/DEPLOIEMENT_*/
+/RESTAURATION_*/
