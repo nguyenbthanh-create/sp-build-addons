@@ -216,8 +216,9 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 
 **Site de test (`dev.tkdclaira.fr`)** : protégé par une authentification HTTP (« Staging - Accès restreint ») que le navigateur intégré de l'application ne sait pas ouvrir → vérifications par **Claude in Chrome** (extension installée et reliée le 07/10/2026). Il a reçu le plugin complet `710f384`. Sa base date de la saison précédente (pas de cours en octobre 2026) et sa table `mod237_sp_adhesions_pending` n'a pas les colonnes récentes (ajout impossible, signalé par `class-schema.php`) → à régler lors du rafraîchissement de sa base (copie de la prod avec adresses neutralisées). Emails du site de test : désactivés (« ENVOI DÉSACTIVÉ » de WP Mail SMTP).
 
+**Extension « SP Pointage QR » désactivée en prod le 07/10/2026** (pointage pas encore utilisé en ce début de saison, donc directement en prod). Avant : code de prod relu (292 lignes, mêmes 4 routes et même format de réponse que sp_build ; elle contenait un PIN de secours écrit en dur et le préfixe `mod237_` en dur) et aucune autre extension (sp-compta, tkd-cotisations, claira-tkd-parcours) ne l'utilise. Après : routes `/pointage/*` testées (cours du jour, mauvais PIN refusé, scan / rattrapage / lot avec carte inconnue → messages accentués de sp_build), page `/app/` sans erreur, aucune présence enregistrée. **Reste** : confirmer au premier vrai scan d'une carte, puis supprimer l'extension (réactivation en un clic d'ici là si besoin).
+
 **En attente** :
-- Désactiver l'extension séparée « SP Pointage QR » (test sur le site de test, puis prod ; réactivation en un clic si besoin) — sp_build contient déjà un pointage complet et plus à jour.
 - Rafraîchir la base du site de test.
 - Étape 6 du plan.
 
