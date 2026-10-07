@@ -218,6 +218,8 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 
 **Extension « SP Pointage QR » désactivée en prod le 07/10/2026** (pointage pas encore utilisé en ce début de saison, donc directement en prod). Avant : code de prod relu (292 lignes, mêmes 4 routes et même format de réponse que sp_build ; elle contenait un PIN de secours écrit en dur et le préfixe `mod237_` en dur) et aucune autre extension (sp-compta, tkd-cotisations, claira-tkd-parcours) ne l'utilise. Après : routes `/pointage/*` testées (cours du jour, mauvais PIN refusé, scan / rattrapage / lot avec carte inconnue → messages accentués de sp_build), page `/app/` sans erreur, aucune présence enregistrée. **Reste** : confirmer au premier vrai scan d'une carte, puis supprimer l'extension (réactivation en un clic d'ici là si besoin).
 
+**Extension « SP Member Cards (Add-on) » désactivée en prod le 07/10/2026** : premier essai jamais terminé (5 fichiers, ~230 lignes, auteur « Ton Nom »). Sa page `/carte-interactive/?token=` ne montrait jamais de carte (sp_build redirige tout lien `?token=` valide vers la fiche membre) et sa génération de carte PDF + QR ne pouvait pas marcher (bibliothèques `vendor/` jamais installées, aucun lien dans l'administration). sp_build imprime déjà les cartes avec QR (« 🖨️ Cartes membres »). Page « carte-interactive » retirée par l'utilisateur, puis extension désactivée. Vérifié : accueil sans erreur, `/carte-interactive/` en 404, fiche membre complète, anciens liens `/?token=` et `/carte-interactive/?token=` redirigés vers `/fiche-membre/`. **Reste** : supprimer les deux extensions ensemble après un premier vrai scan de carte.
+
 **En attente** :
 - Rafraîchir la base du site de test.
 - Étape 6 du plan.
