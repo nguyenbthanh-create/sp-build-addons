@@ -179,6 +179,14 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 - PHPStan : 17 remarques, dont **un vrai reste de code mort** — `sp_build/includes/class-pdf.php` : l'impression `?sp_cal_print=liste_groupe` appelle `render_liste_groupe()` qui n'existe pas (aucun bouton ne l'utilise ; à supprimer lors du ménage). Le reste : faux positifs (variables des gabarits `templates/`, `$msg` de `class-passages.php`) ou détails (`DOING_AJAX` → `wp_doing_ajax()`, variables inutilisées dans `tkd-cotisations/TkdPDF.php`).
 - PHP_CodeSniffer : **aucune incompatibilité PHP 8.4** ; **1 937 remarques de sécurité** à trier, pas autant de failles : 538 noms de table insérés dans les requêtes (faux positifs le plus souvent), 435 affichages non échappés, 503 traitements de formulaire sans vérification de nonce signalée (souvent vérifiée ailleurs), 274 entrées non nettoyées / non « unslash », 97 requêtes non préparées, 57 `wp_redirect` (préférer `wp_safe_redirect`). Ce sera la matière des étapes de ménage, en commençant par les requêtes non préparées et les formulaires sans nonce.
 
+**Audit de sécurité du 07/10/2026 (tri des remarques ci-dessus) :**
+- **SQL : aucune faille d'injection.** Les 97 requêtes « non préparées » et les 538 variables insérées dans les requêtes ont été vérifiées : noms de tables, listes d'identifiants forcées en entiers, colonnes écrites en dur, ou requêtes construites par morceaux puis passées dans `prepare()`. Ce sont des faux positifs de l'outil.
+- **Actions AJAX et formulaires** : nouveau script `outils/audit-actions.php` (`php audit-actions.php ..`), qui vérifie pour chacune des **114 actions** déclarées si elle contrôle un jeton (nonce) et les droits. Toutes les actions réservées aux utilisateurs connectés sont protégées. Les actions publiques (pointage QR, application entraîneur, réponse aux inscriptions) sont protégées par le PIN du club ou le jeton personnel de l'adhérent (64 caractères aléatoires).
+- **API REST (`/wp-json/…`)** : testée en anonyme sur le site réel → toutes les routes refusent sans jeton, PIN ou clé (401 / 403).
+- **Un vrai problème trouvé et corrigé** : le calendrier (`sp_cal_get_events`, ouvert aux visiteurs) renvoyait à n'importe qui les anniversaires des adhérents avec nom complet et âge, mineurs compris (cf. `sp_build/REALISATION.md`, 07/10/2026).
+- **Un point faible à traiter** : le PIN du pointage (4 chiffres, 5 040 combinaisons, aucune limite d'essais) — cf. `sp_build/EVOLUTION.md`, 07/10/2026.
+- Reste à trier : les 435 affichages non échappés (risque de script injecté, surtout là où s'affichent des textes saisis par les familles) — prochaine étape.
+
 ---
 
-*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026.*
+*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité le 07/10/2026.*
