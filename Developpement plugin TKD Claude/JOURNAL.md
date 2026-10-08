@@ -202,7 +202,7 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 | 3. Découper les gros fichiers | ✅ | phases A (pages admin), C (adhérents), D (requêtes par domaine), B (application de pointage + `assets/pwa/`) — `class-admin.php` 4 934 → 307 lignes, `class-admin-members.php` 4 665 → 396, `class-db.php` 3 334 → 918 ; déplacement pur en *traits*, 0 fonction modifiée |
 | 4. Ménage et sécurité | ✅ | fuite des anniversaires corrigée, PIN bloqué après 10 essais (y compris routes de l'extension « SP Pointage QR »), code mort, doublons, calendrier public retiré, 457 affichages triés (aucune faille, 3 oublis corrigés) |
 | 5. Gestion unique de la base | ✅ | `class-schema.php` : vérification des tables une fois après chaque déploiement au lieu de ~95 requêtes par page |
-| 6. Tests automatiques, espaces de noms | ⏳ plus tard | |
+| 6. Tests automatiques, espaces de noms | ✅ tests (08/10) | PHPUnit, 32 tests (passages, IK, catégories d'âge) ; espaces de noms non retenus — détail plus bas |
 
 **Tout est en production** (dernière version déployée : `710f384`, vérifiée le 07/10/2026 à 15h55 — pages d'administration, application en mode PIN, hors connexion). Restent à essayer en conditions réelles : le **scan d'une carte QR** et le **lien personnel d'un entraîneur** dans l'application.
 
@@ -227,10 +227,21 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 - **Supprimées ensuite (08/10)** : Insert PHP Code Snippet, Pricing Table by Supsystic, Widget Importer & Exporter, WPForms Lite. Il ne reste que les 10 extensions actives + **SP Pointage QR** (désactivée, à supprimer après le premier vrai scan). Revérifié après : pages publiques, `/app/`, éditeur Elementor, pages d'administration sp_build, fiche membre, pointage — tout fonctionne.
 - Vérifié le 08/10 : pages publiques, `/app/`, éditeur Elementor (1,4 s), 9 pages d'administration sp_build, fiche membre, pointage (cours du soir listé), WP Mail SMTP → Brevo : tout fonctionne.
 
+**Étape 6 — tests automatiques (08/10/2026)** :
+- **PHPUnit 12** ajouté à `outils/` (`composer.json`, `phpunit.xml.dist`, dossier `outils/tests/`, jamais déployé), lancé par `verifier.ps1` ou `vendor\bin\phpunit`. Les tests chargent les vrais fichiers des plugins **sans WordPress** : `tests/bootstrap.php` remplace les quelques fonctions WordPress utilisées et `$wpdb` (`FauxWpdb`, résultats préparés d'avance, écritures notées) ; méthodes privées appelées par réflexion — **aucune ligne des plugins modifiée pour les tests**.
+- **32 tests, 0,1 s** : verdict des passages de grade (18 — keup : majorité, égalité, arbitrage, seuils de notes et mesures ; Poom : moyenne, seuil, plancher, mesure ramenée sur 10), indemnités kilométriques (8 — tarif × km × allers-retours, km exceptionnels, bureau exclu, arrondis), catégories d'âge (6).
+- **Défaut trouvé par les tests** : l'âge était calculé en divisant des jours par 365,25 → un enfant né un 1er septembre était classé un an trop jeune certaines années (ex. né le 01/09/2020 : Baby au lieu d'Enfant en 2026), dans sp_build **et** dans TKD Cotisations.
+- **Nouvelle règle des catégories (décision de l'utilisateur, 08/10/2026)** : la **classe scolaire à la rentrée**, d'après la seule année de naissance — **Baby = maternelle, Enfant = primaire (CP → CM2), Ado/adulte = collège et plus** ; « Tout âge » pour le Renfo inchangé ; la tranche **« Adulte » (15 ans et plus) n'est plus attribuée** (aucun tarif ne la visait, le reste du site la traitait déjà comme Ado/adulte). Appliquée aux trois endroits : formulaire d'adhésion / renouvellement, bascule de rentrée (sp_build `SpCalPro_DB::categorie_scolaire()` + `annee_saison_categories()` : à partir de juin, la rentrée de septembre suivante), bouton « Recalculer » de TKD Cotisations. Vérifiée par les tests sur 30 rentrées.
+- **Déployé en prod le 08/10/2026** : sp_build `75666d1` (3 fichiers) + TKD Cotisations **v1.2.0** (qui contenait aussi, jamais déployé jusque-là, l'historique des rappels de dépôt de chèques du 02/10 — la prod était restée en v1.1.0). Tailles vérifiées, formulaires, page Adhérents, Cotisations → Paramètres, fiche membre : OK.
+- **Aucune fiche modifiée par le déploiement** : 16 adhérents de Taekwondo changeront de catégorie quand l'utilisateur lancera la bascule (avec aperçu) ou le recalcul — 8 Baby → Enfant (nés en 2019-2020), 6 Enfant → Ado/adulte (nés en 2014-2015), les 2 « Adulte » → Ado/adulte.
+- **Espaces de noms + chargement automatique : non retenus** — renommer toutes les classes des 4 plugins, beaucoup de risque et aucun gain pour le club ; à réserver à du code entièrement nouveau.
+- **Leçon** : avant de déployer un fichier d'une autre extension, comparer avec la version **en ligne** (éditeur d'extensions, en lecture) et pas seulement avec git — TKD Cotisations en prod était plus ancienne que le dépôt.
+
 **En attente** :
 - Rafraîchir la base du site de test.
-- Étape 6 du plan.
+- Lancer la bascule des catégories (Adhérents → Prévisualiser, puis confirmer).
+- Tests à ajouter si utile : statut d'une cotisation (soldée / partielle / en attente), calculs de SP Compta.
 
 ---
 
-*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité et section 8 le 07/10/2026.*
+*Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité et section 8 le 07/10/2026, étape 6 le 08/10/2026.*
