@@ -34,6 +34,7 @@ function update_option( $nom, $valeur, ...$a ) { $GLOBALS['tests_options'][ $nom
 function esc_html( $t ) { return htmlspecialchars( (string) $t, ENT_QUOTES, 'UTF-8' ); }
 function esc_attr( $t ) { return htmlspecialchars( (string) $t, ENT_QUOTES, 'UTF-8' ); }
 function wp_json_encode( $v, ...$a ) { return json_encode( $v ); }
+function wp_parse_url( $url, $composant = -1 ) { return parse_url( $url, $composant ); }
 /** Date « du site » : réglable par les tests ($GLOBALS['tests_maintenant'], ex. '2027-03-15'), sinon aujourd'hui. */
 function current_time( $format, ...$a ) {
 	$ts = isset( $GLOBALS['tests_maintenant'] ) ? strtotime( $GLOBALS['tests_maintenant'] . ' 12:00:00' ) : time();
@@ -87,3 +88,4 @@ require TESTS_RACINE . 'sp_build/includes/class-passages.php';
 require TESTS_RACINE . 'sp_build/includes/class-ik-cloture.php';
 require TESTS_RACINE . 'sp_build/includes/trait-db-membres.php';
 require TESTS_RACINE . 'tkd-cotisations/cotisations.php';
+require TESTS_RACINE . 'sp_build/includes/class-docs-adhesion.php';
