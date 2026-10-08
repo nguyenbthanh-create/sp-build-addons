@@ -899,8 +899,9 @@ function tkd_page_params() {
 
         <h2>Recalcul automatique des catégories d'âge</h2>
         <p style="color:#666; font-size:13px;">
-            Recalcule la catégorie d'âge (Baby / Enfant / Ado-adulte) de chaque élève actif
-            en fonction de leur date de naissance au <strong>1er septembre</strong> de la saison courante.<br>
+            Recalcule la catégorie d'âge de chaque élève actif selon sa <strong>classe scolaire</strong> à la rentrée
+            de la saison courante (année de naissance, comme à l'école) : Baby = maternelle, Enfant = primaire,
+            Ado/adulte = collège et plus.<br>
             Les élèves en <strong>RENFO</strong> sont ignorés. Vous pouvez toujours modifier manuellement sur chaque fiche.
         </p>
 
@@ -908,7 +909,7 @@ function tkd_page_params() {
         <div class="updated"><p>
             ✅ <?php echo intval($_GET['recalc_ok']); ?> élève(s) mis à jour —
             <?php echo intval($_GET['recalc_ign']); ?> inchangé(s) —
-            <?php echo intval($_GET['recalc_err']); ?> ignoré(s) (date manquante).
+            <?php echo intval($_GET['recalc_err']); ?> ignoré(s) (année de naissance manquante).
         </p></div>
         <?php endif; ?>
 
@@ -916,7 +917,7 @@ function tkd_page_params() {
             <?php wp_nonce_field('tkd_recalc_nonce'); ?>
             <input type="hidden" name="action" value="tkd_recalculer_categories">
             <button type="submit" class="button button-secondary"
-                    onclick="return confirm('Recalculer les catégories d\'âge de tous les élèves actifs au 1er septembre <?php echo explode('/', tkd_get_saison_courante())[0]; ?> ?')">
+                    onclick="return confirm('Recalculer les catégories d\'âge de tous les élèves actifs selon leur classe à la rentrée <?php echo explode('/', tkd_get_saison_courante())[0]; ?> ?')">
                 🔄 Recalculer les catégories d'âge
             </button>
         </form>
@@ -1668,26 +1669,18 @@ function tkd_cloturer_saison() {
 
 function tkd_calculer_categorie_age( $date_naissance_jj_mm, $annee_naissance, $saison ) {
     if ( empty($annee_naissance) || ! is_numeric($annee_naissance) ) return null;
-    if ( empty($date_naissance_jj_mm) ) return null;
 
-    $parts = explode('/', $date_naissance_jj_mm);
-    if ( count($parts) < 2 ) return null;
-    $jour = intval($parts[0]);
-    $mois = intval($parts[1]);
-
-    $annee_saison = intval( explode('/', $saison)[0] );
-    $ref = mktime(0, 0, 0, 9, 1, $annee_saison);
-
-    $naissance = mktime(0, 0, 0, $mois, $jour, intval($annee_naissance));
-    $age = (int) floor( ($ref - $naissance) / (365.25 * 24 * 3600) );
-
-    // 4 tranches, alignées sur la règle fédérale codée côté sp_build
-    // (SpCalPro_DB::bascule_categories_septembre()) — avant cette correction, Ado/adulte et
-    // Adulte étaient fusionnés ici en une seule tranche "Ado/adulte" (cf. échange du 18/09/2026).
-    if ( $age < 6 )       return 'Baby';
-    if ( $age <= 10 )     return 'Enfant';
-    if ( $age <= 14 )     return 'Ado/adulte';
-    return 'Adulte';
+    // Classe scolaire à la rentrée de la saison (règle du club, 08/10/2026) : seule l'ANNÉE de
+    // naissance compte, comme à l'école — Baby = maternelle, Enfant = primaire (CP → CM2),
+    // Ado/adulte = collège et plus. Même règle que SpCalPro_DB::categorie_scolaire() (sp_build),
+    // vérifiée par les tests (outils/tests/CategoriesAgeTest.php). $date_naissance_jj_mm n'est
+    // plus utilisé (paramètre gardé pour les appels existants). Avant : âge exact au 1er septembre
+    // et 4e tranche « Adulte » (15 ans et plus), sans tarif propre.
+    $annee_saison     = intval( explode('/', $saison)[0] );
+    $age_dans_l_annee = $annee_saison - intval($annee_naissance);
+    if ( $age_dans_l_annee <= 5 )  return 'Baby';
+    if ( $age_dans_l_annee <= 10 ) return 'Enfant';
+    return 'Ado/adulte';
 }
 
 add_action( 'admin_post_tkd_recalculer_categories', 'tkd_recalculer_categories' );

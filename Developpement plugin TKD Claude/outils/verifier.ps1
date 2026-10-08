@@ -44,6 +44,10 @@ if ( -not $Rapide ) {
     & .\vendor\bin\phpstan.bat analyse --no-progress --memory-limit=1G
     if ( $LASTEXITCODE -ne 0 ) { $problemes++ }
 
+    Titre 'Tests automatiques des calculs (verdict des passages, IK, catégories d''âge) — tests\'
+    & .\vendor\bin\phpunit.bat --no-progress
+    if ( $LASTEXITCODE -ne 0 ) { $problemes++ }
+
     Titre 'PHP_CodeSniffer (sécurité + compatibilité PHP 8.4) — résumé par fichier'
     & .\vendor\bin\phpcs.bat --report=summary
     if ( $LASTEXITCODE -ne 0 ) { $problemes++ }
