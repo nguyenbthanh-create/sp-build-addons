@@ -1,46 +1,30 @@
 <?php
 /**
- * Documents d'adhésion protégés — SP_Cal_Docs_Adhesion::chemin_relatif() (sp_build/includes/
- * class-docs-adhesion.php) décide quels fichiers passent par le lien réservé au bureau, et
- * refuse toute adresse qui sortirait du dossier des documents.
+ * Dossier par adhérent — SP_Cal_Docs_Adhesion (sp_build/includes/class-docs-adhesion.php) :
+ * chemins acceptés (et piégés refusés), photo à adresse signée, rangement d'une fiche
+ * (copie dans le dossier de l'adhérent, mise à jour des adresses, retrait de l'original).
  */
 
 use PHPUnit\Framework\TestCase;
 
 final class DocsAdhesionTest extends TestCase {
 
-	private const BASE = 'https://tkdclaira.fr/wp-content/uploads/sp-adhesions-docs/';
-
-	public function test_documents_sensibles_reconnus(): void {
-		$this->assertSame( 'certificats-medicaux/2026/IMG_2026-1.jpg', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . 'certificats-medicaux/2026/IMG_2026-1.jpg' ) );
-		$this->assertSame( 'attestations-rc/2026/attestation.pdf', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . 'attestations-rc/2026/attestation.pdf' ) );
-		$this->assertSame( 'decharges/2025/decharge-1.pdf', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . 'decharges/2025/decharge-1.pdf' ) );
-		$this->assertSame( 'bons-caf/2026/bon.png', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . 'bons-caf/2026/bon.png' ) );
-	}
-
-	public function test_meme_adresse_quel_que_soit_le_domaine(): void {
-		// La base du site de test garde les adresses de la prod : seul le chemin compte.
-		$this->assertSame( 'decharges/2026/d.pdf', SP_Cal_Docs_Adhesion::chemin_relatif( 'https://dev.tkdclaira.fr/wp-content/uploads/sp-adhesions-docs/decharges/2026/d.pdf' ) );
-	}
-
-	public function test_photos_et_autres_fichiers_non_concernes(): void {
-		$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . 'photos/2026/photo.jpg' ) );
-		$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( 'https://tkdclaira.fr/wp-content/uploads/2026/09/certificat.pdf' ) );
-		$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( '' ) );
-	}
-
-	// ── Documents choisis dans la médiathèque depuis la fiche élève ──
+	private const ANCIEN = 'https://tkdclaira.fr/wp-content/uploads/sp-adhesions-docs/';
+	private const BASE   = 'https://tkdclaira.fr/wp-content/uploads/sp-adherents/';
 
 	private string $dir;
 
 	protected function setUp(): void {
 		$this->dir = sys_get_temp_dir() . '/tkd-tests-' . uniqid();
 		mkdir( $this->dir . '/2026/09', 0777, true );
+		mkdir( $this->dir . '/sp-adhesions-docs/certificats-medicaux/2026', 0777, true );
 		file_put_contents( $this->dir . '/2026/09/IMG_2026.jpg', 'image' );
 		file_put_contents( $this->dir . '/2026/09/script.php', '<?php' );
+		file_put_contents( $this->dir . '/sp-adhesions-docs/certificats-medicaux/2026/certif.pdf', '%PDF' );
 		$GLOBALS['tests_uploads']    = [ 'basedir' => $this->dir, 'baseurl' => 'https://tkdclaira.fr/wp-content/uploads' ];
 		$GLOBALS['tests_pieces']     = [ 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg' => 42 ];
 		$GLOBALS['tests_supprimees'] = [];
+		$GLOBALS['tests_options']    = [];
 		$GLOBALS['wpdb']             = new FauxWpdb();
 	}
 
@@ -51,57 +35,106 @@ final class DocsAdhesionTest extends TestCase {
 		unset( $GLOBALS['tests_uploads'], $GLOBALS['tests_pieces'], $GLOBALS['tests_supprimees'] );
 	}
 
-	public function test_document_de_la_mediatheque_mis_a_l_abri(): void {
-		$GLOBALS['wpdb']->valeurs = [ 0, 0, 1 ]; // contenus, métadonnées, fiches (celle-ci seulement)
-		$info = [];
-		$url  = SP_Cal_Docs_Adhesion::securiser_url( 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg', 'certificat_medical', $info );
-		$annee = gmdate( 'Y' );
-		$this->assertSame( "https://tkdclaira.fr/wp-content/uploads/sp-adhesions-docs/certificats-medicaux/$annee/IMG_2026.jpg", $url );
-		$this->assertSame( 'copie', $info['action'] );
-		$this->assertFileExists( $this->dir . "/sp-adhesions-docs/certificats-medicaux/$annee/IMG_2026.jpg" );
-		$this->assertFileExists( $this->dir . '/sp-adhesions-docs/certificats-medicaux/.htaccess' );
-		$this->assertSame( [ 42 ], $GLOBALS['tests_supprimees'], 'La copie publique est retirée de la médiathèque.' );
-		$this->assertNotSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( $url ), 'La nouvelle adresse passe par le lien protégé.' );
+	// ── Chemins ──
+
+	public function test_chemins_du_dossier_adherent(): void {
+		$this->assertSame( '123-k7f2q9ab/certificat-medical-IMG_1.jpg', SP_Cal_Docs_Adhesion::chemin_adherent( self::BASE . '123-k7f2q9ab/certificat-medical-IMG_1.jpg' ) );
+		$this->assertSame( 'demandes/x3p1abcd/photo-moi.png', SP_Cal_Docs_Adhesion::chemin_adherent( self::BASE . 'demandes/x3p1abcd/photo-moi.png' ) );
+		$photo = SP_Cal_Docs_Adhesion::url_photo( '123-k7f2q9ab/photo-moi.jpg' );
+		$this->assertStringStartsWith( 'https://tkdclaira.fr/?sp_photo=', $photo );
+		$this->assertSame( '123-k7f2q9ab/photo-moi.jpg', SP_Cal_Docs_Adhesion::chemin_adherent( $photo ) );
 	}
 
-	public function test_fichier_utilise_ailleurs_garde_dans_la_mediatheque(): void {
-		$GLOBALS['wpdb']->valeurs = [ 1, 0, 1 ]; // présent dans un contenu du site
-		$info = [];
-		SP_Cal_Docs_Adhesion::securiser_url( 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg', 'decharge_honneur', $info );
-		$this->assertSame( 'copie_gardee', $info['action'] );
-		$this->assertSame( [], $GLOBALS['tests_supprimees'] );
-	}
-
-	public function test_cas_laisses_tels_quels(): void {
-		$cas = [
-			[ self::BASE . 'decharges/2026/d.pdf', 'decharge_honneur', 'deja' ],
-			[ 'https://autre-site.fr/certificat.pdf', 'certificat_medical', 'ignore' ],
-			[ 'https://tkdclaira.fr/wp-content/uploads/2026/09/absent.pdf', 'certificat_medical', 'echec' ],
-			[ 'https://tkdclaira.fr/wp-content/uploads/2026/09/script.php', 'certificat_medical', 'echec' ],
-			[ 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg', 'photo', 'ignore' ],
-			[ '', 'bon_caf', 'ignore' ],
-		];
-		foreach ( $cas as [ $url, $cle, $attendu ] ) {
-			$info = [];
-			$this->assertSame( $url, SP_Cal_Docs_Adhesion::securiser_url( $url, $cle, $info ), $url );
-			$this->assertSame( $attendu, $info['action'], $url );
-		}
-		$this->assertSame( [], $GLOBALS['tests_supprimees'] );
-	}
-
-	public function test_adresses_dangereuses_refusees(): void {
+	public function test_chemins_pieges_refuses(): void {
 		foreach ( [
-			'certificats-medicaux/2026/../../../../wp-config.php',
-			'certificats-medicaux/../photos/2026/a.jpg',
-			'certificats-medicaux/2026/.htaccess',
-			'certificats-medicaux/2026/sous/dossier.pdf',
-			'certificats-medicaux/2026/a..pdf',
-			'certificats-medicaux/20266/a.pdf',
-			'CERTIFICATS-MEDICAUX/2026/a.pdf',
-			'certificats-medicaux/2026/a%2F..%2Fb.pdf',
-			'certificats-medicaux/2026/a\\..\\b.pdf',
+			'123-k7f2q9ab/../../../wp-config.php',
+			'123-k7f2q9ab/.htaccess',
+			'123-k7f2q9ab/sous/dossier.pdf',
+			'abc-k7f2q9ab/a.pdf',
+			'123-K7F2Q9AB/a.pdf',
+			'123-k7/a.pdf',
+			'demandes/../123-k7f2q9ab/a.pdf',
+			'123-k7f2q9ab/a b.pdf',
 		] as $rel ) {
-			$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( self::BASE . $rel ), $rel );
+			$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_adherent( self::BASE . $rel ), $rel );
 		}
+	}
+
+	public function test_signature_de_la_photo(): void {
+		$sig = new ReflectionMethod( SP_Cal_Docs_Adhesion::class, 'signature' );
+		$a   = $sig->invoke( null, '123-k7f2q9ab/photo-moi.jpg' );
+		$this->assertSame( $a, $sig->invoke( null, '123-k7f2q9ab/photo-moi.jpg' ), 'Même clé, même signature.' );
+		$this->assertNotSame( $a, $sig->invoke( null, '124-k7f2q9ab/photo-moi.jpg' ), 'Un autre fichier, une autre signature.' );
+		$this->assertSame( 24, strlen( $a ) );
+	}
+
+	public function test_ancien_rangement_par_type_toujours_lu(): void {
+		$this->assertSame( 'certificats-medicaux/2026/IMG_2026-1.jpg', SP_Cal_Docs_Adhesion::chemin_relatif( self::ANCIEN . 'certificats-medicaux/2026/IMG_2026-1.jpg' ) );
+		$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( self::ANCIEN . 'photos/2026/photo.jpg' ) );
+		$this->assertSame( '', SP_Cal_Docs_Adhesion::chemin_relatif( self::ANCIEN . 'certificats-medicaux/2026/../../../../wp-config.php' ) );
+	}
+
+	public function test_liens_de_l_administration(): void {
+		$this->assertStringContainsString( 'admin-post.php?action=sp_adh_doc&a=', SP_Cal_Docs_Adhesion::lien( self::BASE . '123-k7f2q9ab/decharge-d.pdf' ) );
+		$this->assertStringContainsString( 'admin-post.php?action=sp_adh_doc&f=', SP_Cal_Docs_Adhesion::lien( self::ANCIEN . 'decharges/2026/d.pdf' ) );
+		$photo = SP_Cal_Docs_Adhesion::url_photo( '123-k7f2q9ab/photo-moi.jpg' );
+		$this->assertSame( $photo, SP_Cal_Docs_Adhesion::lien( $photo ), 'Photo signée : déjà lisible telle quelle.' );
+		$this->assertSame( 'https://autre.fr/x.pdf', SP_Cal_Docs_Adhesion::lien( 'https://autre.fr/x.pdf' ) );
+	}
+
+	// ── Rangement d'une fiche ──
+
+	public function test_fiche_rangee_dans_le_dossier_de_l_adherent(): void {
+		$GLOBALS['wpdb']->lignes = [ (object) [
+			'id'         => 7,
+			'photo_url'  => 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg',          // médiathèque
+			'extra_data' => json_encode( [ 'sexe' => 'F', 'documents' => [
+				'certificat_medical'      => self::ANCIEN . 'certificats-medicaux/2026/certif.pdf',   // ancien rangement
+				'date_certificat_medical' => '2026-09-01',
+				'attestation_rc'          => '',
+				'bon_caf'                 => 'https://tkdclaira.fr/wp-content/uploads/2026/09/script.php', // type refusé
+			] ] ),
+		] ];
+		$bilan = SP_Cal_Docs_Adhesion::ranger_fiche( 7 );
+
+		$this->assertSame( 2, $bilan['range'] );
+		$dossiers = glob( $this->dir . '/sp-adherents/7-*', GLOB_ONLYDIR );
+		$this->assertCount( 1, $dossiers );
+		$this->assertFileExists( $dossiers[0] . '/photo-IMG_2026.jpg' );
+		$this->assertFileExists( $dossiers[0] . '/certificat-medical-certif.pdf' );
+		$this->assertFileExists( $this->dir . '/sp-adherents/.htaccess', 'Dossier fermé au web.' );
+
+		// Fiche mise à jour : photo signée, document dans le dossier, le reste intact.
+		$maj = $GLOBALS['wpdb']->ecritures[0][1];
+		$this->assertSame( 'wp_sp_cal_eleves', $maj[0] );
+		$this->assertStringContainsString( '?sp_photo=', $maj[1]['photo_url'] );
+		$extra = json_decode( $maj[1]['extra_data'], true );
+		$this->assertStringStartsWith( self::BASE . '7-', $extra['documents']['certificat_medical'] );
+		$this->assertSame( '2026-09-01', $extra['documents']['date_certificat_medical'] );
+		$this->assertSame( 'F', $extra['sexe'] );
+		$this->assertStringEndsWith( 'script.php', $extra['documents']['bon_caf'], 'Fichier non pris en charge : laissé tel quel.' );
+
+		// Originaux retirés (plus utilisés nulle part).
+		$this->assertFileDoesNotExist( $this->dir . '/sp-adhesions-docs/certificats-medicaux/2026/certif.pdf' );
+		$this->assertSame( [ 42 ], $GLOBALS['tests_supprimees'] );
+	}
+
+	public function test_original_garde_s_il_sert_ailleurs(): void {
+		$GLOBALS['wpdb']->lignes  = [ (object) [ 'id' => 8, 'photo_url' => 'https://tkdclaira.fr/wp-content/uploads/2026/09/IMG_2026.jpg', 'extra_data' => '{}' ] ];
+		$GLOBALS['wpdb']->valeurs = [ 0, 0, 1 ]; // fiches, demandes, puis un contenu du site
+		$bilan = SP_Cal_Docs_Adhesion::ranger_fiche( 8 );
+		$this->assertSame( 1, $bilan['range'] );
+		$this->assertSame( 1, $bilan['garde'] );
+		$this->assertSame( [], $GLOBALS['tests_supprimees'] );
+	}
+
+	public function test_fiche_deja_rangee_ou_fichier_absent(): void {
+		$GLOBALS['wpdb']->lignes = [ (object) [ 'id' => 9,
+			'photo_url'  => SP_Cal_Docs_Adhesion::url_photo( '9-abcdef12/photo-a.jpg' ),
+			'extra_data' => json_encode( [ 'documents' => [ 'decharge_honneur' => 'https://tkdclaira.fr/wp-content/uploads/2026/09/absent.pdf' ] ] ),
+		] ];
+		$bilan = SP_Cal_Docs_Adhesion::ranger_fiche( 9 );
+		$this->assertSame( [ 'deja' => 1, 'range' => 0, 'garde' => 0, 'absent' => 1, 'echec' => 0 ], $bilan );
+		$this->assertSame( [], $GLOBALS['wpdb']->ecritures, 'Rien à écrire.' );
 	}
 }

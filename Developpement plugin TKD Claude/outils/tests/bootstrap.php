@@ -45,6 +45,14 @@ function wp_upload_dir() { return $GLOBALS['tests_uploads'] ?? [ 'basedir' => sy
 /** Médiathèque simulée : $GLOBALS['tests_pieces'] = [ url => id ] ; suppressions notées dans $GLOBALS['tests_supprimees']. */
 function attachment_url_to_postid( $url ) { return $GLOBALS['tests_pieces'][ $url ] ?? 0; }
 function wp_delete_attachment( $id, $force = false ) { $GLOBALS['tests_supprimees'][] = $id; return true; }
+function home_url( $p = '' ) { return 'https://tkdclaira.fr' . $p; }
+function admin_url( $p = '' ) { return 'https://tkdclaira.fr/wp-admin/' . $p; }
+function add_query_arg( $args, $url ) { return $url . ( strpos( $url, '?' ) === false ? '?' : '&' ) . http_build_query( $args, '', '&', PHP_QUERY_RFC3986 ); }
+function wp_nonce_url( $url, $action = -1 ) { return $url . '&_wpnonce=jeton'; }
+function wp_generate_password( $n = 12, $s = true, $e = false ) { return substr( str_shuffle( str_repeat( 'abcdefghijklmnopqrstuvwxyz0123456789', 3 ) ), 0, $n ); }
+function current_user_can( ...$a ) { return true; }
+function get_transient( $k ) { return false; }
+function set_transient( ...$a ) { return true; }
 /** Date « du site » : réglable par les tests ($GLOBALS['tests_maintenant'], ex. '2027-03-15'), sinon aujourd'hui. */
 function current_time( $format, ...$a ) {
 	$ts = isset( $GLOBALS['tests_maintenant'] ) ? strtotime( $GLOBALS['tests_maintenant'] . ' 12:00:00' ) : time();
@@ -76,6 +84,10 @@ class FauxWpdb {
 	/** @var array résultats successifs de get_var() */
 	public array $valeurs = [];
 	public function get_var( $sql ) { $this->requetes[] = $sql; return array_shift( $this->valeurs ) ?? 0; }
+	/** @var array résultats successifs de get_row() */
+	public array $lignes = [];
+	public function get_row( $sql, ...$a ) { $this->requetes[] = $sql; return array_shift( $this->lignes ); }
+	public function get_col( $sql ) { $this->requetes[] = $sql; return array_shift( $this->resultats ) ?? []; }
 	public function esc_like( $t ) { return addcslashes( $t, '_%\\' ); }
 	public function update( ...$a ) { $this->ecritures[] = [ 'update', $a ]; return 1; }
 	public function insert( ...$a ) { $this->ecritures[] = [ 'insert', $a ]; return 1; }
