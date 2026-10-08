@@ -257,8 +257,18 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 - **Résultat prod** : 263 → **79 tables**, 68,1 → **15,3 Mo** ; données du club intactes (116 fiches, 174 présences, 27 dépenses, 61 pages). Vérifié : 8 pages publiques, éditeur Elementor, 26 pages d'administration, fiche membre, pointage, mails toujours envoyés par Brevo.
 - **Gardés volontairement** : tables d'Elementor, WP Mail SMTP, Action Scheduler, SportsPress ; les anciennes tables du jury (sp_build les recrée encore — retirer d'abord `create_jury_tables()`) ; les 12 tableaux TablePress (la page publiée « Horaires d'entraînement » affiche `[table id=7 /]` en brut, extension absente — à mettre en brouillon ou réinstaller) ; la corbeille WordPress.
 
+- `define( 'WP_POST_REVISIONS', 10 );` ajouté au `wp-config.php` de prod le 08/10 (site vérifié après).
+
+**Journal des erreurs public — corrigé le 08/10/2026** : la prod a `WP_DEBUG` + `WP_DEBUG_LOG` activés (affichage désactivé) ; le journal `wp-content/debug.log` était **téléchargeable par n'importe qui** (`https://tkdclaira.fr/wp-content/debug.log` → 200) : **78 Mo**, 279 000 lignes depuis le 15/03/2026, **118 adresses email** et les chemins du serveur. Corrigé par l'utilisateur : fichier supprimé (un nouveau repart vide) et règle ajoutée **en haut du `.htaccess` à la racine** du site (une 1re tentative dans `wp-content/.htaccess` n'avait pas pris effet) :
+```apache
+<Files "debug.log">
+    Require all denied
+</Files>
+```
+Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même règle), sites fonctionnels (pages publiques, administration, application, API, éditeur Elementor). Le journal reste lisible par FTP. **Piste** : voir ce qui le remplissait (78 Mo en 7 mois) en surveillant le nouveau fichier quelques jours.
+
 **En attente** :
-- `WP_POST_REVISIONS` dans le `wp-config.php` de prod (si pas encore fait) ; page « Horaires d'entraînement » ; anciennes tables du jury.
+- Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
 - Tests à ajouter si utile : statut d'une cotisation (soldée / partielle / en attente), calculs de SP Compta.
 
 ---
