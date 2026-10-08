@@ -35,6 +35,16 @@ function esc_html( $t ) { return htmlspecialchars( (string) $t, ENT_QUOTES, 'UTF
 function esc_attr( $t ) { return htmlspecialchars( (string) $t, ENT_QUOTES, 'UTF-8' ); }
 function wp_json_encode( $v, ...$a ) { return json_encode( $v ); }
 function wp_parse_url( $url, $composant = -1 ) { return parse_url( $url, $composant ); }
+function trailingslashit( $s ) { return rtrim( $s, '/\\' ) . '/'; }
+function sanitize_file_name( $n ) { return preg_replace( '/[^A-Za-z0-9._-]+/', '-', $n ); }
+function wp_mkdir_p( $d ) { return is_dir( $d ) || mkdir( $d, 0777, true ); }
+function wp_unique_filename( $dir, $nom ) { $i = 1; $base = pathinfo( $nom, PATHINFO_FILENAME ); $ext = pathinfo( $nom, PATHINFO_EXTENSION ); $n = $nom; while ( file_exists( "$dir/$n" ) ) { $n = $base . '-' . $i++ . '.' . $ext; } return $n; }
+function wp_check_filetype( $f, $mimes = null ) { $ext = strtolower( pathinfo( $f, PATHINFO_EXTENSION ) ); foreach ( (array) $mimes as $e => $t ) { if ( in_array( $ext, explode( '|', $e ), true ) ) return [ 'ext' => $ext, 'type' => $t ]; } return [ 'ext' => false, 'type' => false ]; }
+/** Dossier « uploads » simulé : $GLOBALS['tests_uploads'] = [ 'basedir' => …, 'baseurl' => … ]. */
+function wp_upload_dir() { return $GLOBALS['tests_uploads'] ?? [ 'basedir' => sys_get_temp_dir(), 'baseurl' => 'https://exemple.test/wp-content/uploads' ]; }
+/** Médiathèque simulée : $GLOBALS['tests_pieces'] = [ url => id ] ; suppressions notées dans $GLOBALS['tests_supprimees']. */
+function attachment_url_to_postid( $url ) { return $GLOBALS['tests_pieces'][ $url ] ?? 0; }
+function wp_delete_attachment( $id, $force = false ) { $GLOBALS['tests_supprimees'][] = $id; return true; }
 /** Date « du site » : réglable par les tests ($GLOBALS['tests_maintenant'], ex. '2027-03-15'), sinon aujourd'hui. */
 function current_time( $format, ...$a ) {
 	$ts = isset( $GLOBALS['tests_maintenant'] ) ? strtotime( $GLOBALS['tests_maintenant'] . ' 12:00:00' ) : time();
@@ -61,6 +71,12 @@ class FauxWpdb {
 		}, $sql );
 	}
 	public function get_results( $sql, $mode = null ) { $this->requetes[] = $sql; return array_shift( $this->resultats ) ?? []; }
+	public string $posts = 'wp_posts';
+	public string $postmeta = 'wp_postmeta';
+	/** @var array résultats successifs de get_var() */
+	public array $valeurs = [];
+	public function get_var( $sql ) { $this->requetes[] = $sql; return array_shift( $this->valeurs ) ?? 0; }
+	public function esc_like( $t ) { return addcslashes( $t, '_%\\' ); }
 	public function update( ...$a ) { $this->ecritures[] = [ 'update', $a ]; return 1; }
 	public function insert( ...$a ) { $this->ecritures[] = [ 'insert', $a ]; return 1; }
 }
