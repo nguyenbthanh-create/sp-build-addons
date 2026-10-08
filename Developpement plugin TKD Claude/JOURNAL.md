@@ -249,7 +249,16 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 - Vérifié (Claude in Chrome) : pages publiques avec en-tête Elementor, éditeur Elementor, 12 pages d'administration, fiche membre, pointage (cours du jour), « ENVOI DÉSACTIVÉ ». Restent quelques images (logo de l'application, affiche des événements) pointant vers la prod — sans conséquence. Le test est en WordPress 7.1 (7.1.3 proposé). **Connexion au test : identifiants de la prod** (comptes copiés). Anciennes extensions inactives encore présentes sur le test (sp_build-backup, SP Member Cards, SP Pointage QR, TKD Progression, TKD Competition Manager…) — à supprimer si l'on veut un test identique.
 - **Pour le prochain rafraîchissement** : mêmes étapes ; vérifier d'abord que les dossiers de toutes les extensions actives de la prod existent sur le test.
 
+**Nettoyage de la base (08/10/2026)** — script `outils/nettoyer-base.sql`, passé d'abord sur le site de test puis sur la prod (après sauvegarde OVH ; exécuté par l'utilisateur dans phpMyAdmin). La suppression des extensions (07–08/10) n'avait retiré que leurs fichiers : leurs données restaient en base.
+- **Lot 1** : révisions des pages — 1 558 supprimées, les 10 plus récentes de chaque page gardées (485). À compléter dans le `wp-config.php` de prod par `define( 'WP_POST_REVISIONS', 10 );`.
+- **Lot 2** : 4 vues + 160 tables d'extensions disparues (WP ERP, WooCommerce / WooPayments, Uncanny Automator — dont les vues qui avaient bloqué le 1er import du test —, All in One SEO, WPForms, MonsterInsights, Jetpack, Ultimate Member, Supsystic, Essential Blocks).
+- **Lot 3** : 20 anciennes tables de sp_build (`sp_cal_v6_*`, `sp_cal_v7_*`, `sp_cal_test_*`, `sp_cal_people`, `sp_cal_presence`, `sp_cal_categories`, `calendrier_notes`, `sp_cal_grade_correspondance`, `sp_exam_grade_progression`) — lues par aucun des 4 plugins.
+- **Lot 4** : 452 réglages et 112 données temporaires d'extensions disparues (dont une clé d'API « iwc » avec droits de création / suppression d'utilisateurs), 11 contenus orphelins, 513 tâches planifiées (+ 1 549 lignes de journal) de WooCommerce / AIOSEO / WPForms, 135 réglages d'utilisateurs, 14 037 métadonnées orphelines ; puis `OPTIMIZE TABLE`.
+- **Résultat prod** : 263 → **79 tables**, 68,1 → **15,3 Mo** ; données du club intactes (116 fiches, 174 présences, 27 dépenses, 61 pages). Vérifié : 8 pages publiques, éditeur Elementor, 26 pages d'administration, fiche membre, pointage, mails toujours envoyés par Brevo.
+- **Gardés volontairement** : tables d'Elementor, WP Mail SMTP, Action Scheduler, SportsPress ; les anciennes tables du jury (sp_build les recrée encore — retirer d'abord `create_jury_tables()`) ; les 12 tableaux TablePress (la page publiée « Horaires d'entraînement » affiche `[table id=7 /]` en brut, extension absente — à mettre en brouillon ou réinstaller) ; la corbeille WordPress.
+
 **En attente** :
+- `WP_POST_REVISIONS` dans le `wp-config.php` de prod (si pas encore fait) ; page « Horaires d'entraînement » ; anciennes tables du jury.
 - Tests à ajouter si utile : statut d'une cotisation (soldée / partielle / en attente), calculs de SP Compta.
 
 ---
