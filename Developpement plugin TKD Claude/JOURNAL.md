@@ -267,6 +267,8 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 ```
 Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même règle), sites fonctionnels (pages publiques, administration, application, API, éditeur Elementor). Le journal reste lisible par FTP. **Piste** : voir ce qui le remplissait (78 Mo en 7 mois) en surveillant le nouveau fichier quelques jours.
 
+**Documents d'adhésion protégés (08/10/2026)** — constat : les pièces déposées par le formulaire d'adhésion (`uploads/sp-adhesions-docs/` : 67 certificats médicaux, attestations RC, décharges, bons CAF, photos — 119 fichiers) étaient **téléchargeables sans connexion** par leur adresse (seule la liste du dossier était bloquée ; noms souvent devinables). Correction sp_build `249c00a` (nouveau `class-docs-adhesion.php`) : règle « accès refusé » écrite par le plugin dans les 4 dossiers sensibles, boutons « 📄 Voir le document » (demande d'adhésion, fiche élève) servis par `admin-post.php?action=sp_adh_doc` (connexion + droit « gestion des adhésions » + jeton) ; fichiers et adresses en base inchangés ; photos non concernées. 4 tests automatiques (chemins piégés refusés). Testé sur le site de test puis **déployé en prod** : accès direct → 403 sur de vrais documents, ouverture par le bureau connecté OK (PDF et photos), 88 liens sur 88 protégés. **Reste** : 9 documents ajoutés à la main depuis les fiches élèves (médiathèque générale, `uploads/2026/09|10/`) — en cours ; photos des adhérents (31) — à décider.
+
 **En attente** :
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
 - Tests à ajouter si utile : statut d'une cotisation (soldée / partielle / en attente), calculs de SP Compta.
