@@ -237,9 +237,10 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 - **Espaces de noms + chargement automatique : non retenus** — renommer toutes les classes des 4 plugins, beaucoup de risque et aucun gain pour le club ; à réserver à du code entièrement nouveau.
 - **Leçon** : avant de déployer un fichier d'une autre extension, comparer avec la version **en ligne** (éditeur d'extensions, en lecture) et pas seulement avec git — TKD Cotisations en prod était plus ancienne que le dépôt.
 
+- **Bascule lancée par l'utilisateur le 08/10/2026, vérifiée** : tous les adhérents **actifs** sont dans la catégorie de leur classe — Taekwondo : 18 Baby, 51 Enfant, 31 Ado/adulte ; Renfo : 16 « Tout âge » (non touchés) ; plus aucun « Adulte ». 6 fiches **inactives** (saison 2025/2026, non renouvelées) gardent l'ancienne catégorie, comme prévu (la bascule ne traite que les actifs) ; en cas de renouvellement, le formulaire recalcule la catégorie.
+
 **En attente** :
 - Rafraîchir la base du site de test.
-- Lancer la bascule des catégories (Adhérents → Prévisualiser, puis confirmer).
 - Tests à ajouter si utile : statut d'une cotisation (soldée / partielle / en attente), calculs de SP Compta.
 
 ---
