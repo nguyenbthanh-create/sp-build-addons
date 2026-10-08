@@ -220,6 +220,13 @@ Dossier **[outils/](outils/)** à la racine (jamais copié sur le site, `vendor/
 
 **Extension « SP Member Cards (Add-on) » désactivée en prod le 07/10/2026** : premier essai jamais terminé (5 fichiers, ~230 lignes, auteur « Ton Nom »). Sa page `/carte-interactive/?token=` ne montrait jamais de carte (sp_build redirige tout lien `?token=` valide vers la fiche membre) et sa génération de carte PDF + QR ne pouvait pas marcher (bibliothèques `vendor/` jamais installées, aucun lien dans l'administration). sp_build imprime déjà les cartes avec QR (« 🖨️ Cartes membres »). Page « carte-interactive » retirée par l'utilisateur, puis extension désactivée. Vérifié : accueil sans erreur, `/carte-interactive/` en 404, fiche membre complète, anciens liens `/?token=` et `/carte-interactive/?token=` redirigés vers `/fiche-membre/`. **Reste** : supprimer les deux extensions ensemble après un premier vrai scan de carte.
 
+**Ménage des extensions en prod (07–08/10/2026)**, pour éviter toute confusion. Avant chaque suppression : programme de désinstallation lu (aucun ne touche aux tables du club ; seuls Brevo et WPForms effacent leurs propres réglages), dépendances cherchées dans nos 4 extensions, contenus des pages contrôlés.
+- **Supprimées par l'utilisateur** : `sp_build_backup` (copie de sp_build du 01/09/2026 = commit `943a50f`, même nom « SportPress Calendar PRO » → risque d'erreur critique si activée par erreur à côté de sp_build ; sans désinstallation), SP Member Cards, Taekwondo Progression Master (« Gemini Dev », remplacée par Claira TKD Parcours), Brevo (les mails passent par WP Mail SMTP, réglé sur Brevo), Login or Logout Menu Item (doublon), SportsPress gratuit (inclus dans SportsPress Pro), Essential Addons, Essential Blocks, Templately.
+- **Pages retirées** : `/carte-interactive/` et `/progression/` (affichait le shortcode brut `[tkd_progression]`).
+- **À garder** : SportsPress Pro (accueil, 65 joueurs, 20 sponsors ; sp_build lit `sp_player` / `sp_staff`), sp_build, SP Compta, TKD Cotisations, Claira TKD Parcours, Elementor + Pro, WP Mail SMTP, Login Logout Menu, Disable XML-RPC-API.
+- **Encore présentes, désactivées, supprimables sans risque** : Insert PHP Code Snippet, Pricing Table by Supsystic, Widget Importer & Exporter, WPForms Lite. **SP Pointage QR** : à supprimer après le premier vrai scan.
+- Vérifié le 08/10 : pages publiques, `/app/`, éditeur Elementor (1,4 s), 9 pages d'administration sp_build, fiche membre, pointage (cours du soir listé), WP Mail SMTP → Brevo : tout fonctionne.
+
 **En attente** :
 - Rafraîchir la base du site de test.
 - Étape 6 du plan.
