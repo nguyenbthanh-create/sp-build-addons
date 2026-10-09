@@ -82,6 +82,15 @@ final class DocsAdhesionTest extends TestCase {
 		$this->assertSame( 'https://autre.fr/x.pdf', SP_Cal_Docs_Adhesion::lien( 'https://autre.fr/x.pdf' ) );
 	}
 
+	public function test_photos_a_trier_cochees_d_office(): void {
+		foreach ( [ 'IMG_3469', 'image', 'Image', 'IMG-20260412', '17912137973185733780728289217336', 'PXL_20260101_1200', 'DSC0042', 'WhatsApp Image 2026-04-12' ] as $t ) {
+			$this->assertTrue( SP_Cal_Adherents_A_Trier::nom_de_telephone( $t ), $t );
+		}
+		foreach ( [ 'Salle polyvalentClaira', 'cafPassLoisir', 'logo-pass-sport', 'Image-Contact.jpg', 'Article_anniversaire', 'IllustrationRenfo' ] as $t ) {
+			$this->assertFalse( SP_Cal_Adherents_A_Trier::nom_de_telephone( $t ), $t );
+		}
+	}
+
 	// ── Rangement d'une fiche ──
 
 	public function test_fiche_rangee_dans_le_dossier_de_l_adherent(): void {
