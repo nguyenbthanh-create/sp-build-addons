@@ -39,6 +39,16 @@ final class CreneauxMensuelsTest extends TestCase {
 		$this->assertSame( [ '2026-10-03', '2026-11-07' ], FauxDbCalendrier::dates_mensuelles( '2026-10-01', 6, 1, '2026-10-01', '2026-11-30' ) );
 	}
 
+	/** Planning public : fréquence écrite sur la pastille, rien pour un cours hebdomadaire. */
+	public function test_libelles_de_frequence(): void {
+		$this->assertSame( '', FauxDbCalendrier::libelle_frequence( 'weekly' ) );
+		$this->assertSame( '', FauxDbCalendrier::libelle_frequence( '' ) );
+		$this->assertSame( '1 semaine sur 2', FauxDbCalendrier::libelle_frequence( 'biweekly' ) );
+		$this->assertSame( '1 semaine sur 3', FauxDbCalendrier::libelle_frequence( '3weekly' ) );
+		$this->assertSame( '1 fois par mois', FauxDbCalendrier::libelle_frequence( 'monthly_1' ) );
+		$this->assertSame( 'tous les 2 mois', FauxDbCalendrier::libelle_frequence( 'monthly_2' ) );
+	}
+
 	public function test_cinquieme_samedi_absent_prend_le_dernier(): void {
 		// Samedi 31/10/2026 = 5e samedi ; novembre 2026 n'en a que 4 → le dernier (28/11) ; janvier 2027 en a 5 (30/01).
 		$this->assertSame(
