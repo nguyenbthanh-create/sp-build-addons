@@ -119,3 +119,4 @@ require TESTS_RACINE . 'sp_build/includes/trait-db-calendrier.php';
 require TESTS_RACINE . 'tkd-cotisations/cotisations.php';
 require TESTS_RACINE . 'sp_build/includes/class-docs-adhesion.php';
 require TESTS_RACINE . 'sp_build/includes/class-adherents-a-trier.php';
+require TESTS_RACINE . 'sp_build/includes/class-tenues.php';
