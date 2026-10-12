@@ -1,6 +1,6 @@
 <?php
 /**
- * Tenues du renforcement musculaire (sp_build/includes/class-tenues.php, 13/10/2026) :
+ * Tenues du renforcement musculaire (sp_build/includes/class-tenues.php, 12/10/2026) :
  * lecture des tailles notées sur les fiches, effet des mouvements sur le stock, besoin de commande.
  */
 
