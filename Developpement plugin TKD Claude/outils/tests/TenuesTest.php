@@ -57,6 +57,22 @@ final class TenuesTest extends TestCase {
 		$this->assertSame( [ '', 'L' ],       SP_Cal_Tenues::attendu( self::eleve( 1, '', 'L', 'L' ), 'haut', self::TAILLES ), 'sexe inconnu' );
 	}
 
+	public function test_statut_d_une_nouvelle_demande(): void {
+		$this->assertSame( 'ouverte',    SP_Cal_Tenues::statut_initial( 'taille', 1 ), 'pièce disponible : réservée' );
+		$this->assertSame( 'en_attente', SP_Cal_Tenues::statut_initial( 'taille', 0 ), 'pas de stock : en attente' );
+		$this->assertSame( 'en_attente', SP_Cal_Tenues::statut_initial( 'remplacement', -1 ) );
+		$this->assertSame( 'ouverte',    SP_Cal_Tenues::statut_initial( 'restitution', 0 ), 'une restitution ne dépend pas du stock' );
+	}
+
+	public function test_libelle_d_une_demande(): void {
+		$d = (object) [ 'nature' => 'taille', 'rendu_modele' => 'haut_f', 'rendu_taille' => 'M', 'souhait_modele' => 'haut_f', 'souhait_taille' => 'L' ];
+		$this->assertSame( 'Changement de taille : Haut femme M → Haut femme L', SP_Cal_Tenues::libelle_demande( $d ) );
+		$d = (object) [ 'nature' => 'restitution', 'rendu_modele' => 'bas_h', 'rendu_taille' => 'XL', 'souhait_modele' => '', 'souhait_taille' => '' ];
+		$this->assertSame( 'Restitution : Bas homme XL', SP_Cal_Tenues::libelle_demande( $d ) );
+		$d = (object) [ 'nature' => 'remplacement', 'rendu_modele' => 'bas_f', 'rendu_taille' => 'S', 'souhait_modele' => 'bas_f', 'souhait_taille' => 'S' ];
+		$this->assertSame( 'Remplacement (abîmé) : Bas femme S', SP_Cal_Tenues::libelle_demande( $d ) );
+	}
+
 	public function test_besoin_de_commande(): void {
 		$eleves = [
 			self::eleve( 1, 'F', 'S', 'M' ),          // rien : 1 haut femme S + 1 bas femme M
