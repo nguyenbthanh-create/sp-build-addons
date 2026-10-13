@@ -25,6 +25,11 @@
 UPDATE mod237_options SET option_value = 'https://dev.tkdclaira.fr'
  WHERE option_name IN ( 'siteurl', 'home' ) AND DATABASE() <> 'tkdclad766';
 
+-- 1 bis. Adresses de pages enregistrées dans les réglages de sp_build : sans cela, les liens
+--    « Voir la fiche » du site de test ouvrent la fiche de la PROD (constaté le 13/10/2026).
+UPDATE mod237_options SET option_value = REPLACE( option_value, 'https://tkdclaira.fr', 'https://dev.tkdclaira.fr' )
+ WHERE option_name IN ( 'sp_cal_fiche_membre_url', 'sp_cal_palmares_url', 'sp_cal_public_link' ) AND DATABASE() <> 'tkdclad766';
+
 -- 2. Adresses email des comptes WordPress et de l'administrateur : « .invalid » ajouté
 --    (domaine réservé, aucun email ne peut y arriver ; la connexion par identifiant reste possible).
 UPDATE mod237_users SET user_email = CONCAT( user_email, '.invalid' )
