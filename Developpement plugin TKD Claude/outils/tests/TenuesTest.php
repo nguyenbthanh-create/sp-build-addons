@@ -76,10 +76,10 @@ final class TenuesTest extends TestCase {
 	public function test_mail_de_demande_des_tailles(): void {
 		[ $sujet, $corps ] = SP_Cal_Tenues::texte_invitation( 'Claire DUPONT', [ 'haut', 'bas' ], 'https://exemple.test/fiche/?token=abc' );
 		$this->assertSame( 'Tenue de renforcement musculaire : vos tailles', $sujet );
-		$this->assertStringContainsString( 'Pour préparer celle de Claire DUPONT, il nous manque ses tailles de haut et de bas.', $corps );
+		$this->assertStringContainsString( 'Pour préparer la vôtre, Claire DUPONT, il nous manque vos tailles de haut et de bas.', $corps );
 		$this->assertStringContainsString( 'https://exemple.test/fiche/?token=abc', $corps );
-		$this->assertStringContainsString( 'il nous manque sa taille de bas.', SP_Cal_Tenues::texte_invitation( 'X', [ 'bas' ], 'u' )[1] );
-		$this->assertStringContainsString( 'il nous manque sa taille de haut.', SP_Cal_Tenues::texte_invitation( 'X', [ 'haut' ], 'u' )[1] );
+		$this->assertStringContainsString( 'il nous manque votre taille de bas.', SP_Cal_Tenues::texte_invitation( 'X', [ 'bas' ], 'u' )[1] );
+		$this->assertStringContainsString( 'il nous manque votre taille de haut.', SP_Cal_Tenues::texte_invitation( 'X', [ 'haut' ], 'u' )[1] );
 	}
 
 	public function test_besoin_de_commande(): void {
