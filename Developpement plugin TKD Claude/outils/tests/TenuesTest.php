@@ -50,6 +50,18 @@ final class TenuesTest extends TestCase {
 		$this->assertFalse( SP_Cal_Tenues::est_renfo( self::eleve( 1, 'M', '', '', 'TKD' ) ) );
 	}
 
+	public function test_taekwondo_qui_pratique_aussi_le_renforcement(): void {
+		$tkd = self::eleve( 1, 'M', '', '', 'TKD' );
+		$this->assertFalse( SP_Cal_Tenues::porte_tenue( $tkd ) );
+		$tkd->extra_data = json_encode( [ 'sexe' => 'M', 'pratique_renfo' => 1 ] );
+		$this->assertTrue( SP_Cal_Tenues::porte_tenue( $tkd ) );
+		// Il reste un adhérent du taekwondo (dobok, grade) : seule la tenue s'ajoute.
+		$this->assertFalse( SP_Cal_Tenues::est_renfo( $tkd ) );
+		$tkd->extra_data = json_encode( [ 'pratique_renfo' => 0 ] );
+		$this->assertFalse( SP_Cal_Tenues::porte_tenue( $tkd ) );
+		$this->assertTrue( SP_Cal_Tenues::porte_tenue( self::eleve( 2, 'F', 'M', 'M' ) ) );
+	}
+
 	public function test_piece_attendue_selon_le_sexe_et_la_fiche(): void {
 		$this->assertSame( [ 'haut_f', 'S' ], SP_Cal_Tenues::attendu( self::eleve( 1, 'F', 's', 'M' ), 'haut', self::TAILLES ) );
 		$this->assertSame( [ 'bas_f', 'M' ],  SP_Cal_Tenues::attendu( self::eleve( 1, 'F', 's', 'M' ), 'bas', self::TAILLES ) );
