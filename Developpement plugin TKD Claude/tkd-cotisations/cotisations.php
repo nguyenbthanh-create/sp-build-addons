@@ -3,7 +3,7 @@
  * Plugin Name: TKD Cotisations
  * Plugin URI:  https://tkdclaira.fr
  * Description: Gestion des cotisations, paiements et reçus pour TKD Claira.
- * Version:     1.2.0
+ * Version:     1.2.1
  * Author:      TKD Claira
  * Text Domain: tkd-cotisations
  *
@@ -285,10 +285,10 @@ add_action( 'admin_menu', function() {
 function tkd_page_tarifs() {
     global $wpdb;
     $saison = tkd_get_saison_courante();
-    // 5 catégories officielles (cohérent avec sp_build depuis le 18/09/2026) — "RENFO" est un
+    // 4 catégories officielles (« Adulte » retirée le 14/10/2026, plus attribuée depuis le 08/10) — "RENFO" est un
     // code de discipline, pas une catégorie d'âge : les élèves en Renforcement musculaire ont
     // "Tout âge" (non subdivisé par âge, contrairement au Taekwondo).
-    $cats   = [ 'Baby', 'Enfant', 'Ado/adulte', 'Adulte', 'Tout âge' ];
+    $cats   = [ 'Baby', 'Enfant', 'Ado/adulte', 'Tout âge' ];
 
     // Sauvegarde
     if ( isset( $_POST['save_tarifs'] ) ) {
@@ -357,7 +357,7 @@ function tkd_page_tarifs() {
     document.getElementById('tkd-add-tarif').addEventListener('click', function() {
         const tbody = document.querySelector('#tkd-tarifs-table tbody');
         const i = tbody.querySelectorAll('tr').length;
-        const cats = ['Baby','Enfant','Ado\/adulte','Adulte','Tout âge'];
+        const cats = ['Baby','Enfant','Ado\/adulte','Tout âge'];
         let catHTML = cats.map(c => `<label style="margin-right:10px;"><input type="checkbox" name="tarifs[${i}][categories][]" value="${c}"> ${c}</label>`).join('');
         const row = `<tr class="tkd-tarif-row">
             <td><input type="text" name="tarifs[${i}][libelle]" style="width:100%;" placeholder="ex: Cotisation Baby"></td>
@@ -476,7 +476,7 @@ function tkd_page_init_saison() {
                 <label>Filtrer :
                     <select id="tkd-filtre-cat">
                         <option value="">Toutes catégories</option>
-                        <?php foreach (['Baby','Enfant','Ado/adulte','Adulte','Tout âge'] as $c): ?>
+                        <?php foreach (['Baby','Enfant','Ado/adulte','Tout âge'] as $c): ?>
                         <option value="<?php echo esc_attr($c); ?>"><?php echo esc_html($c); ?></option>
                         <?php endforeach; ?>
                     </select>
@@ -710,7 +710,7 @@ function tkd_page_cotisations_global() {
             <label>Catégorie :
                 <select onchange="window.location='?page=tkd-cotisations&saison=<?php echo esc_js( $filtre_saison ); ?>&cat='+this.value+'&statut=<?php echo esc_js( $filtre_st ); ?>'">
                     <option value="">Toutes</option>
-                    <?php foreach ( [ 'Baby', 'Enfant', 'Ado/adulte', 'Adulte', 'Tout âge' ] as $c ) : ?>
+                    <?php foreach ( [ 'Baby', 'Enfant', 'Ado/adulte', 'Tout âge' ] as $c ) : ?>
                         <option value="<?php echo esc_attr($c); ?>" <?php selected( $filtre_cat, $c ); ?>><?php echo esc_html($c); ?></option>
                     <?php endforeach; ?>
                 </select>
