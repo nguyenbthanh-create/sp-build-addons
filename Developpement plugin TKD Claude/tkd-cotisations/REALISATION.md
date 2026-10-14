@@ -52,7 +52,7 @@ Ce plugin n'a visiblement pas bénéficié du même suivi (Git + `CLAUDE.md` + j
 ## 14/10/2026
 
 - **Catégorie « Adulte » retirée des listes (v1.2.1)** : elle n'est plus attribuée depuis la règle des classes scolaires du 08/10/2026 (plus aucun adhérent actif dans cette catégorie), mais restait proposée dans la page Tarifs (cases à cocher, y compris sur « + Ajouter un tarif »), dans le filtre de l'Initialisation saison et dans le filtre Catégorie de la Vue globale. Listes ramenées à Baby / Enfant / Ado/adulte / Tout âge. Aucune donnée modifiée : un ancien tarif qui aurait encore « Adulte » coché la perd simplement au prochain enregistrement de la page Tarifs ; les fiches inactives restées en « Adulte » (saison 2025/2026) ne sont plus filtrables à part, mais restent visibles avec « Toutes ».
-- **À vérifier après déploiement** (WinSCP en mode **Binaire**) : pages Tarifs, Initialisation saison et Vue globale — « Adulte » n'apparaît plus, les tarifs existants gardent leurs cases cochées.
+- **En prod le 14/10/2026, vérifié sur le test puis la prod** : pages Tarifs (y compris « + Ajouter un tarif »), Initialisation saison et Vue globale — « Adulte » n'apparaît plus, les 9 tarifs gardent leurs cases. Constaté au passage : les tarifs « Renfo » et « Renfo NV » n'ont aucune catégorie cochée (déjà le cas avant), « Tout âge » serait à cocher — décision laissée au bureau.
 
 ## À partir de maintenant
 
