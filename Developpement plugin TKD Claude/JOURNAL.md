@@ -284,6 +284,10 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Carte de membre, nouveau dessin — en prod le 13/10/2026 (`sp_build` `4f11415`), vérifié (fiche personnelle, fiche admin, liste des photos : 6 à recadrer, 29 sans photo sur 97)** : dessin unique `class-carte.php` (photo rectangulaire, contact d'urgence et naissance au verso, filigrane 태권도) pour la fiche personnelle et l'impression par lot ; outil de cadrage sur la fiche admin et liste « Photos des cartes » sur la page « Cartes membres ». **L'application `/app/` garde l'ancienne carte** (accord de l'utilisateur à demander). Version en ligne : `4f11415` (test et prod). Détail dans `sp_build/EVOLUTION.md`.
 
+**Catégorie « Adulte » retirée des listes — en prod le 14/10/2026 (`sp_build` `b9f3f9d`, `tkd-cotisations` v1.2.1), vérifié sur le test et la prod** : Tarifs, Initialisation saison, Vue globale, fiche adhérent. Tarifs Renfo et Renfo NV passés en « Tout âge » (simple repère d'affichage). Détail dans `tkd-cotisations/REALISATION.md` et `sp_build/EVOLUTION.md`.
+
+**Application `/app/` : QR code de la carte en plein écran — en prod le 15/10/2026 (`sp_build` `59da348`), vérifié** : accord explicite de l'utilisateur, essai fait par lui sur le site de test ; bouton « Afficher le QR en grand » sous la carte, ou appui sur le QR de la carte. Même QR, pointage et mode PIN inchangés. Version en ligne : `59da348` (test et prod). Détail dans `sp_build/EVOLUTION.md`.
+
 
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
