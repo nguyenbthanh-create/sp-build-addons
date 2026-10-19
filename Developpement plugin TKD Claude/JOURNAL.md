@@ -288,6 +288,8 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Application `/app/` : QR code de la carte en plein écran — en prod le 15/10/2026 (`sp_build` `59da348`), vérifié** : accord explicite de l'utilisateur, essai fait par lui sur le site de test ; bouton « Afficher le QR en grand » sous la carte, ou appui sur le QR de la carte. Même QR, pointage et mode PIN inchangés. Version en ligne : `59da348` (test et prod). Détail dans `sp_build/EVOLUTION.md`.
 
+**Annulation par lot : raccourci « Jours fériés de la saison » — en prod le 19/10/2026 (`sp_build` `7bd1e54`), vérifié** : essai complet sur le site de test (annuler, rétablir, mode vacances intact, un email par adhérent bloqué par le test), puis vérification en prod en lecture seule. **Les jours fériés de la saison 2026/2027 ont été annulés en prod par l'utilisateur lui-même, depuis un autre PC, le 19/10 à 15h31** (12 cours sur 5 jours : 11/11, 29/03, 01/05, 06/05, 17/05 ; un email par adhérent, parti à 15h35). Jours fériés calculés par `SpCalPro_DB::jours_feries()` (tests `outils/tests/JoursFeriesTest.php`). Version en ligne : `7bd1e54` (test et prod). Détail dans `sp_build/EVOLUTION.md`.
+
 
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
