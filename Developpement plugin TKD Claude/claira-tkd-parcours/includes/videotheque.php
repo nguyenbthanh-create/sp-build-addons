@@ -189,11 +189,13 @@ function claira_tkd_vt_grades() {
         $terms  = get_the_terms( $post->ID, 'tkd_age_group' );
         $age    = ( $terms && ! is_wp_error( $terms ) ) ? $terms[0]->name : '';
         list( $nom, $etoiles ) = claira_tkd_split_grade_stars( $titre );
+        $keup = trim( (string) get_post_meta( $post->ID, '_claira_tkd_keup_rank', true ) );
         $grades[ $post->ID ] = array(
             'id'      => $post->ID,
             'label'   => trim( $nom . ' ' . $etoiles ),
+            'keup'    => $keup,
             'age'     => $age,
-            'rang'    => claira_tkd_vt_rang_progression( get_post_meta( $post->ID, '_claira_tkd_keup_rank', true ) ),
+            'rang'    => claira_tkd_vt_rang_progression( $keup ),
             'ordre_age' => isset( $ordre_age[ $age ] ) ? $ordre_age[ $age ] : 9,
             'classes' => trim( claira_tkd_get_belt_color_class( $titre ) . ' ' . claira_tkd_get_bicolor_class( $titre ) ),
         );
@@ -207,7 +209,38 @@ function claira_tkd_vt_grades() {
         }
         return strcmp( $a['label'], $b['label'] );
     } );
+
+    // Même nom dans une tranche d'âge (ex. trois « Rouge / Noire » Enfant :
+    // Il, Yi, Sam Poom) : on précise le rang pour les distinguer.
+    $compte = array();
+    foreach ( $grades as $grade ) {
+        $cle            = $grade['age'] . '|' . $grade['label'];
+        $compte[ $cle ] = isset( $compte[ $cle ] ) ? $compte[ $cle ] + 1 : 1;
+    }
+    foreach ( $grades as $id => $grade ) {
+        if ( $compte[ $grade['age'] . '|' . $grade['label'] ] > 1 && '' !== $grade['keup'] ) {
+            $grades[ $id ]['label'] .= ' (' . $grade['keup'] . ')';
+        }
+    }
     return $grades;
+}
+
+/**
+ * Compare deux vidéos dans l'ordre de la progression. Chaque tranche d'âge a sa
+ * propre numérotation (Baby 19e → 13e, Enfant 16e → 1er, Ado 10e → 1er) : on
+ * compare donc dans la première tranche d'âge où les deux vidéos ont un grade
+ * (Ado/Adulte d'abord, programme complet des poomsae), sinon sur le rang le plus bas.
+ */
+function claira_tkd_vt_comparer_progression( $a, $b ) {
+    foreach ( array( 'Adolescent', 'Adulte', 'Enfant', 'Baby' ) as $age ) {
+        if ( isset( $a['rangs'][ $age ], $b['rangs'][ $age ] ) && $a['rangs'][ $age ] !== $b['rangs'][ $age ] ) {
+            return $a['rangs'][ $age ] < $b['rangs'][ $age ] ? -1 : 1;
+        }
+    }
+    if ( $a['rang'] !== $b['rang'] ) {
+        return $a['rang'] < $b['rang'] ? -1 : 1;
+    }
+    return 0;
 }
 
 /**
@@ -300,9 +333,13 @@ function claira_tkd_vt_collecter( $appels_max = 3 ) {
             $titre = '' !== $v['secours'] ? $v['secours'] : __( 'Vidéo', 'claira-tkd-parcours' );
         }
 
-        $rang = 999;
+        // Rang le plus bas, au total et par tranche d'âge.
+        $rang  = 999;
+        $rangs = array();
         foreach ( $tous as $id ) {
-            $rang = min( $rang, $grades[ $id ]['rang'] );
+            $g    = $grades[ $id ];
+            $rang = min( $rang, $g['rang'] );
+            $rangs[ $g['age'] ] = isset( $rangs[ $g['age'] ] ) ? min( $rangs[ $g['age'] ], $g['rang'] ) : $g['rang'];
         }
 
         $videos[ $key ] = array_merge( $v, array(
@@ -311,6 +348,7 @@ function claira_tkd_vt_collecter( $appels_max = 3 ) {
             'vignette' => claira_tkd_vt_vignette( $v, $infos ),
             'grades'   => $tous,
             'rang'     => $rang,
+            'rangs'    => $rangs,
         ) );
     }
 
@@ -321,8 +359,9 @@ function claira_tkd_vt_collecter( $appels_max = 3 ) {
         if ( $oa !== $ob ) {
             return $oa < $ob ? -1 : 1;
         }
-        if ( $a['rang'] !== $b['rang'] ) {
-            return $a['rang'] - $b['rang'];
+        $progression = claira_tkd_vt_comparer_progression( $a, $b );
+        if ( 0 !== $progression ) {
+            return $progression;
         }
         return strnatcasecmp( $a['titre'], $b['titre'] );
     } );
