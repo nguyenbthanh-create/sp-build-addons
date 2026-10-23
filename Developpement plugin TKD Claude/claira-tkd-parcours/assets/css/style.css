@@ -1090,3 +1090,271 @@ button.claira-tkd-modal-edit { background: transparent; cursor: pointer; line-he
 @media (max-width: 768px) {
   .claira-tkd-modal-form { padding: 1rem 1.25rem 1.5rem; }
 }
+
+/* ==========================================================================
+   Vidéothèque ([claira_tkd_videotheque], v1.11.0)
+   Charte du site : titre Montserrat fin majuscules + trait rouge, cartes
+   blanches, filtres en pastilles à contour noir (rouge quand actif).
+   Les règles de bouton neutralisent le style de bouton du thème.
+   ========================================================================== */
+.claira-tkd-vt {
+  --sp-red: #D4000F; --sp-ink: #222; --sp-muted: #7a7a7a; --sp-line: #e8e5e2;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--sp-ink);
+  text-align: left;
+}
+.claira-tkd-vt-head { text-align: center; margin-bottom: 22px; }
+.claira-tkd-vt-head h2 {
+  color: #111;
+  font-family: Montserrat, sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  line-height: 1.3;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.claira-tkd-vt-head h2::after {
+  content: "";
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: var(--sp-red);
+  margin: 12px auto;
+}
+.claira-tkd-vt-head p {
+  color: var(--sp-muted);
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Filtres */
+.claira-tkd-vt-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.claira-tkd-vt-themes { display: flex; flex-wrap: wrap; gap: 8px; }
+.claira-tkd-vt .claira-tkd-vt-chip,
+.claira-tkd-vt .claira-tkd-vt-chip:hover,
+.claira-tkd-vt .claira-tkd-vt-chip:focus {
+  margin: 0;
+  padding: 7px 14px;
+  border: 1px solid #111;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: none;
+  color: #111;
+  cursor: pointer;
+  font-family: Montserrat, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.claira-tkd-vt .claira-tkd-vt-chip:hover { background: #f5f3f1; }
+.claira-tkd-vt .claira-tkd-vt-chip[aria-pressed="true"] { background: var(--sp-red); border-color: var(--sp-red); color: #fff; }
+.claira-tkd-vt .claira-tkd-vt-chip:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+.claira-tkd-vt-champs { display: flex; flex-wrap: wrap; gap: 8px; }
+.claira-tkd-vt-champs select,
+.claira-tkd-vt-champs input[type="search"] {
+  min-height: 38px;
+  margin: 0;
+  padding: 6px 12px;
+  border: 1px solid #d6d2ce;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--sp-ink);
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+.claira-tkd-vt-champs input[type="search"] { width: 220px; }
+.claira-tkd-vt-sr {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Sections par thème */
+.claira-tkd-vt-section { margin-top: 26px; }
+.claira-tkd-vt-section[hidden] { display: none; }
+.claira-tkd-vt-section h3 {
+  margin: 0 0 14px;
+  padding-left: 12px;
+  border-left: 3px solid var(--sp-red);
+  color: #111;
+  font-family: Montserrat, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.claira-tkd-vt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 18px;
+}
+
+/* Carte vidéo */
+.claira-tkd-vt-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--sp-line);
+  border-radius: 6px;
+  overflow: hidden;
+  transition: box-shadow .15s ease;
+}
+.claira-tkd-vt-card[hidden] { display: none; }
+.claira-tkd-vt-card:hover { box-shadow: 0 4px 14px rgba(0, 0, 0, .08); }
+.claira-tkd-vt .claira-tkd-vt-play,
+.claira-tkd-vt .claira-tkd-vt-play:hover,
+.claira-tkd-vt .claira-tkd-vt-play:focus {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 10px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--sp-ink);
+  cursor: pointer;
+  font-family: inherit;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+}
+.claira-tkd-vt .claira-tkd-vt-play:focus-visible { outline: 2px solid #111; outline-offset: -2px; }
+.claira-tkd-vt-thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+.claira-tkd-vt-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  margin: 0;
+  transition: transform .25s ease;
+}
+.claira-tkd-vt-play:hover .claira-tkd-vt-thumb img { transform: scale(1.04); }
+.claira-tkd-vt-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, .72);
+  transition: background .15s ease;
+}
+.claira-tkd-vt-icon::after {
+  content: "";
+  position: absolute;
+  left: 21px;
+  top: 16px;
+  border-style: solid;
+  border-width: 11px 0 11px 18px;
+  border-color: transparent transparent transparent #fff;
+}
+.claira-tkd-vt-play:hover .claira-tkd-vt-icon { background: var(--sp-red); }
+.claira-tkd-vt-titre {
+  display: block;
+  padding: 12px 14px 0;
+  color: #111;
+  font-family: Montserrat, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+.claira-tkd-vt-auteur {
+  display: block;
+  padding: 3px 14px 0;
+  color: var(--sp-muted);
+  font-size: 12px;
+}
+.claira-tkd-vt .claira-tkd-vt-grades {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin: auto 0 0;
+  padding: 0 14px 14px;
+  list-style: none;
+  font-size: 12px;
+  color: var(--sp-muted);
+}
+.claira-tkd-vt .claira-tkd-vt-grades li { margin: 0; padding: 0; list-style: none; }
+.claira-tkd-vt .claira-tkd-vt-grades li.claira-tkd-vt-age {
+  flex-basis: 100%;
+  margin-top: 4px;
+  color: #111;
+  font-family: Montserrat, sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.claira-tkd-vt .claira-tkd-vt-grades li.claira-tkd-vt-grade { position: relative; padding-left: 16px; white-space: nowrap; }
+.claira-tkd-vt-grade::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, .2);
+  box-sizing: border-box;
+  background: var(--belt-color, #94a3b8);
+}
+.claira-tkd-vt-vide { margin: 24px 0; text-align: center; color: var(--sp-muted); font-style: italic; }
+.claira-tkd-vt-vide[hidden] { display: none; }
+
+/* Lecteur (fenêtre) */
+.claira-tkd-vt-modal .claira-tkd-modal-header { padding: 1.5rem 4.5rem 1rem 2rem; }
+.claira-tkd-vt-modal .claira-tkd-modal-header h2 {
+  font-family: Montserrat, sans-serif;
+  font-size: 1.3rem;
+  font-weight: 500;
+  letter-spacing: .08em;
+}
+.claira-tkd-vt-modal .claira-tkd-modal-tags { margin: .4rem 0 0; font-size: .85rem; }
+.claira-tkd-vt-lecteur-corps { padding: 1.25rem 2rem 1.5rem; }
+.claira-tkd-vt-lecteur-corps .claira-tkd-video-container { margin-top: 0; }
+.claira-tkd-vt-lecteur-desc { margin: 1rem 0 0; line-height: 1.5; white-space: pre-line; }
+.claira-tkd-vt-lecteur-desc[hidden] { display: none; }
+.claira-tkd-vt-lecteur-lien { margin: .9rem 0 0; font-size: 13px; }
+.claira-tkd-vt-lecteur-lien a { color: #7a7a7a; text-decoration: underline; }
+
+@media (max-width: 700px) {
+  .claira-tkd-vt-head h2 { font-size: 21px; }
+  .claira-tkd-vt-champs, .claira-tkd-vt-champs select, .claira-tkd-vt-champs input[type="search"] { width: 100%; }
+  .claira-tkd-vt-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .claira-tkd-vt-modal .claira-tkd-modal-panel { width: 96%; }
+  .claira-tkd-vt-modal .claira-tkd-modal-close { top: 1rem; right: 1rem; }
+  .claira-tkd-vt-modal .claira-tkd-modal-header { padding: 1.1rem 3.8rem .8rem 1.1rem; }
+  .claira-tkd-vt-lecteur-corps { padding: 1rem 1.1rem 1.25rem; }
+}

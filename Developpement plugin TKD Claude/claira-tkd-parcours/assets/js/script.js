@@ -134,6 +134,10 @@
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
 
+        // Le lecteur de la vidéothèque retire lui-même sa vidéo (sinon le
+        // rechargement ci-dessous relancerait la lecture en autoplay, fenêtre fermée).
+        modal.dispatchEvent(new CustomEvent('claira-tkd-fermeture'));
+
         var iframes = modal.querySelectorAll('iframe');
         iframes.forEach(function(iframe) {
             var src = iframe.src;
@@ -183,6 +187,89 @@
                 }
             });
         }
+    });
+
+    /* ── Vidéothèque ([claira_tkd_videotheque], includes/videotheque.php) ── */
+
+    function sansAccents(texte) {
+        return (texte || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    }
+
+    document.querySelectorAll('[data-vt]').forEach(function (vt) {
+        var lecteur = document.getElementById('claira-tkd-vt-lecteur');
+        var cards = vt.querySelectorAll('[data-vt-card]');
+        var chips = vt.querySelectorAll('[data-vt-theme]');
+        var selectGrade = vt.querySelector('[data-vt-grade]');
+        var recherche = vt.querySelector('[data-vt-search]');
+        var aucune = vt.querySelector('[data-vt-aucune]');
+        var theme = '';
+
+        function filtrer() {
+            var grade = selectGrade ? selectGrade.value : '';
+            var mots = sansAccents(recherche ? recherche.value.trim() : '').split(/\s+/).filter(Boolean);
+            var visibles = 0;
+            cards.forEach(function (card) {
+                var ok = (!theme || card.dataset.theme === theme)
+                    && (!grade || (' ' + card.dataset.grades + ' ').indexOf(' ' + grade + ' ') !== -1)
+                    && mots.every(function (mot) { return card.dataset.search.indexOf(mot) !== -1; });
+                card.hidden = !ok;
+                if (ok) {
+                    visibles++;
+                }
+            });
+            vt.querySelectorAll('[data-vt-section]').forEach(function (section) {
+                section.hidden = !section.querySelector('[data-vt-card]:not([hidden])');
+            });
+            if (aucune) {
+                aucune.hidden = visibles > 0;
+            }
+        }
+
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                theme = chip.dataset.vtTheme;
+                chips.forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+                filtrer();
+            });
+        });
+        if (selectGrade) {
+            selectGrade.addEventListener('change', filtrer);
+        }
+        if (recherche) {
+            recherche.addEventListener('input', filtrer);
+        }
+
+        if (!lecteur) {
+            return;
+        }
+        var zoneVideo = lecteur.querySelector('[data-vt-lecteur-video]');
+        var desc = lecteur.querySelector('[data-vt-lecteur-desc]');
+        var lien = lecteur.querySelector('[data-vt-lecteur-lien]');
+
+        // Le lecteur YouTube n'est chargé qu'au clic, puis retiré à la fermeture.
+        vt.querySelectorAll('.claira-tkd-vt-play').forEach(function (button) {
+            button.addEventListener('click', function () {
+                lecteur.querySelector('h2').textContent = button.dataset.vtTitre;
+                lecteur.querySelector('[data-vt-lecteur-tags]').textContent = button.dataset.vtTags;
+                desc.textContent = button.dataset.vtDesc;
+                desc.hidden = !button.dataset.vtDesc;
+                lien.href = button.dataset.vtLien;
+                lien.textContent = button.dataset.vtLien.indexOf('vimeo') !== -1 ? 'Ouvrir sur Vimeo' : 'Ouvrir sur YouTube';
+
+                var iframe = document.createElement('iframe');
+                iframe.src = button.dataset.vtEmbed;
+                iframe.title = button.dataset.vtTitre;
+                iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', '');
+                iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+                zoneVideo.innerHTML = '';
+                zoneVideo.appendChild(iframe);
+                openModal(lecteur.id, button);
+            });
+        });
+        lecteur.addEventListener('claira-tkd-fermeture', function () {
+            zoneVideo.innerHTML = '';
+        });
     });
 
     // Après un enregistrement : rouvrir la fiche modifiée avec un message de confirmation.

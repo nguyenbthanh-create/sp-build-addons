@@ -7,6 +7,7 @@ Plugin WordPress pour afficher un parcours de progression taekwondo avec contenu
 - Shortcode public : `[claira_tkd_parcours]`
 - Shortcode « cahier de révision » imprimable : `[claira_tkd_parcours_tableau age="Enfant"]`
 - Shortcode « schéma des grades » (colonnes Baby / Enfant / Ado & Adulte, âges minimums conseillés) : `[claira_tkd_schema_grades]`
+- Shortcode « vidéothèque » (toutes les vidéos par thème, filtres thème / grade / recherche) : `[claira_tkd_videotheque]` — reprend les vidéos des grades, plus les vidéos ajoutées dans « TKD Parcours → Vidéothèque »
 - Page d'administration dans le back-office WordPress (menu « TKD Parcours ») : ajout, édition, suppression et import en masse des grades
 - Type de contenu `tkd_grade` (sans écran d'édition natif WordPress — géré uniquement via la page d'administration du plugin)
 - Taxonomie : tranches d'âge

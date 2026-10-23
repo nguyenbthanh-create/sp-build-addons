@@ -87,3 +87,20 @@
 .claira-tkd-admin-pill.claira-tkd-bicolor-red-black { background: linear-gradient(180deg, #ed1c24 50%, #000000 50%); }
 .claira-tkd-admin-pill.claira-tkd-bicolor-green-blue { background: linear-gradient(180deg, #00a651 50%, #0072ce 50%); }
 .claira-tkd-admin-pill.claira-tkd-bicolor-blue-red { background: linear-gradient(180deg, #0072ce 50%, #ed1c24 50%); }
+
+/* ── Vidéothèque : liste des grades à cocher ── */
+.claira-tkd-vt-admin-grades {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 2px 12px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 8px 12px;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #fff;
+}
+.claira-tkd-vt-admin-grades strong { grid-column: 1 / -1; margin: 8px 0 2px; }
+.claira-tkd-vt-admin-grades strong:first-child { margin-top: 0; }
+.claira-tkd-vt-admin-grades label { display: flex; align-items: center; gap: 4px; padding: 2px 0; }
+.claira-tkd-vt-admin-grades .claira-tkd-admin-pill { margin-right: 2px; width: 13px; height: 13px; }

@@ -24,7 +24,8 @@ function claira_tkd_enqueue_assets() {
 }
 
 function claira_tkd_admin_assets( $hook ) {
-    if ( false === strpos( $hook, 'claira-tkd-parcours' ) ) {
+    // Pages « Grades » (…_page_claira-tkd-parcours) et « Vidéothèque » (…_page_claira-tkd-videotheque).
+    if ( false === strpos( $hook, 'claira-tkd-parcours' ) && false === strpos( $hook, 'claira-tkd-videotheque' ) ) {
         return;
     }
 
