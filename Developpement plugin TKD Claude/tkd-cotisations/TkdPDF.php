@@ -230,7 +230,8 @@ class TkdPDF {
         $cy -= $th + 35;
 
         // Fait à
-        $fait = 'Fait à ' . $d['club_ville'] . ', le ' . date('d/m/Y');
+        // Date de finalisation du dossier (dernier paiement), fournie par tkd_generer_pdf_recu().
+        $fait = 'Fait à ' . $d['club_ville'] . ', le ' . ( ! empty( $d['date_fait'] ) ? $d['date_fait'] : date('d/m/Y') );
         $fait_w = $this->str_width($fait, 10, false);
         $s .= $T($W - $M - $fait_w - 5, $cy, $this->t($fait), 10, 107,114,128);
         $cy -= 40;

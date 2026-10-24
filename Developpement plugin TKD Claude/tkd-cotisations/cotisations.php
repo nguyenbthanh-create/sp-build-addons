@@ -164,6 +164,28 @@ function tkd_get_paiements( $cotisation_id ) {
     );
 }
 
+/**
+ * Date du « Fait à …, le … » des reçus (24/10/2026) : date de finalisation du dossier, c'est-à-dire
+ * la date du dernier paiement enregistré sur la cotisation (Pass'Sport compris), et non plus la
+ * date du jour où l'on imprime ou envoie le reçu. $cotis : ligne de cotisation (id) ou paiement
+ * joint à sa cotisation (cotisation_id). Repli : $repli (date du paiement du reçu), sinon aujourd'hui.
+ * Renvoie la date au format jj/mm/aaaa.
+ */
+function tkd_date_fait_recu( $cotis, $repli = '' ) {
+    global $wpdb;
+    $cotisation_id = 0;
+    if ( is_object( $cotis ) ) {
+        $cotisation_id = ! empty( $cotis->cotisation_id ) ? intval( $cotis->cotisation_id ) : intval( $cotis->id ?? 0 );
+    }
+    $derniere = $cotisation_id ? $wpdb->get_var( $wpdb->prepare(
+        "SELECT MAX(date_paiement) FROM {$wpdb->prefix}sp_cal_cotisation_paiements WHERE cotisation_id = %d",
+        $cotisation_id
+    ) ) : '';
+    $date = $derniere ? $derniere : $repli;
+    $obj  = $date ? date_create( $date ) : false;
+    return $obj ? $obj->format( 'd/m/Y' ) : date( 'd/m/Y' );
+}
+
 function tkd_recalcule_statut( $cotisation_id ) {
     global $wpdb;
     $cotis = $wpdb->get_row( $wpdb->prepare(
@@ -1832,7 +1854,7 @@ function tkd_html_recu( $eleve, $cotis, $montant, $mode, $reference, $date_paie,
     $mode_label  = tkd_mode_label( $mode );
     if ( $reference ) $mode_label .= ' N°' . $reference;
     $date_fmt    = $date_paie ? date_create($date_paie)->format('d/m/Y') : date('d/m/Y');
-    $today_fmt   = date('d/m/Y');
+    $today_fmt   = tkd_date_fait_recu( $cotis, $date_paie ); // date du dernier paiement du dossier
     $saison      = $cotis->saison ?? get_option('tkd_saison_courante', date('Y'));
     $objet       = 'Cotisation ' . $saison;
     if ( !empty($eleve->categorie_saisie) ) $objet .= ' - ' . $eleve->categorie_saisie;
@@ -2011,7 +2033,7 @@ function tkd_envoyer_recu_paiement( $eleve, $cotis, $montant, $mode, $reference,
 
     $nom_complet = trim( wp_unslash($eleve->prenom) . ' ' . wp_unslash($eleve->nom) );
     $date_fmt    = $date_paie ? date_create($date_paie)->format('d/m/Y') : date('d/m/Y');
-    $today_fmt   = date('d/m/Y');
+    $today_fmt   = tkd_date_fait_recu( $cotis, $date_paie ); // date du dernier paiement du dossier
     $saison      = $cotis->saison ?? get_option('tkd_saison_courante', date('Y'));
     $objet       = 'Cotisation ' . $saison;
     if ( ! empty($eleve->categorie_saisie) ) $objet .= ' - ' . wp_unslash($eleve->categorie_saisie);
@@ -2164,6 +2186,7 @@ function tkd_generer_pdf_recu( $eleve, $cotis, $montant, $mode, $reference, $dat
         'objet'        => $objet,
         'mode_label'   => $mode_label,
         'date_paie'    => $date_paie ? date_create($date_paie)->format('d/m/Y') : date('d/m/Y'),
+        'date_fait'    => tkd_date_fait_recu( $cotis, $date_paie ), // « Fait à …, le … » : dernier paiement du dossier
         'recu_num'     => $recu_num,
         'club_nom'     => get_option('blogname', 'Taekwondo Claira'),
         'club_adresse' => get_option('sp_cal_adresse_club', '8 Avenue de l Agly, 66530 Claira'),
