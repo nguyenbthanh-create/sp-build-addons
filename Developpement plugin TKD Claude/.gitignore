@@ -9,3 +9,6 @@
 # Dossiers de deploiement / restauration prepares localement (outils/preparer-deploiement.ps1)
 /DEPLOIEMENT_*/
 /RESTAURATION_*/
+
+# Journal local des envois (outils/deployer.ps1)
+/outils/deploiements.log
