@@ -69,7 +69,8 @@ $champs = [
 	champ( 'radio', 'struct_forme', 'Forme juridique', [ 'req' => 1, 'inline' => 1, 'options' => [ 'Association loi 1901', 'Club sportif', 'Autre' ] ] ),
 	champ( 'text', 'struct_forme_autre', 'Si « Autre », précisez', [] ),
 	champ( 'text', 'struct_creation', 'Date (ou année) de création', [ 'width' => 50 ] ),
-	champ( 'number', 'struct_adherents', 'Nombre approximatif de licenciés / adhérents', [ 'width' => 50, 'field_min' => 0 ] ),
+	// Nombres obligatoires : Elementor enregistre « 0 » un champ nombre laissé vide (constaté au test du 10/11/2026).
+	champ( 'number', 'struct_adherents', 'Nombre approximatif de licenciés / adhérents', [ 'req' => 1, 'width' => 50, 'field_min' => 1 ] ),
 	champ( 'checkbox', 'struct_publics', 'Publics accueillis', [ 'inline' => 1, 'options' => [ 'Enfants', 'Adolescents', 'Adultes', 'Seniors', 'Tous publics' ] ] ),
 	champ( 'textarea', 'struct_presentation', 'Présentation de la structure', [ 'req' => 1, 'rows' => 5, 'placeholder' => 'Histoire, activités, valeurs, principales actions…' ] ),
 
@@ -92,7 +93,7 @@ $champs = [
 	champ( 'text', 'disc_federation', "Fédération / organisme d'affiliation (le cas échéant)", [ 'width' => 50 ] ),
 	champ( 'text', 'disc_lieux', 'Lieu(x) habituel(s) de pratique', [ 'width' => 50 ] ),
 	champ( 'text', 'disc_villes', 'Ville(s) de pratique', [ 'width' => 50 ] ),
-	champ( 'number', 'disc_annees', "Nombre d'années de pratique de la discipline", [ 'width' => 50, 'field_min' => 0 ] ),
+	champ( 'number', 'disc_annees', "Nombre d'années de pratique de la discipline", [ 'req' => 1, 'width' => 50, 'field_min' => 0 ] ),
 	champ( 'text', 'disc_niveaux', 'Principaux niveaux / grades représentés', [ 'width' => 50 ] ),
 	champ( 'text', 'demo_titre', 'Titre / nom de la démonstration', [ 'req' => 1 ] ),
 	champ( 'number', 'demo_duree', "Durée prévue (minutes, entre $DUREE_MIN et $DUREE_MAX)", [ 'req' => 1, 'width' => 50, 'field_min' => $DUREE_MIN, 'field_max' => $DUREE_MAX ] ),
@@ -192,7 +193,8 @@ $modele = [
 	'content'       => [ [
 		'id' => id7(), 'elType' => 'container', 'isInner' => false,
 		'settings' => [ 'content_width' => 'boxed', 'flex_direction' => 'column', 'boxed_width' => [ 'unit' => 'px', 'size' => 860, 'sizes' => [] ] ],
-		'elements' => [ $titre, $intro, $form ],
+		// Pas de $titre : le thème affiche déjà le titre de la page (doublon constaté au test).
+		'elements' => [ $intro, $form ],
 	] ],
 ];
 
