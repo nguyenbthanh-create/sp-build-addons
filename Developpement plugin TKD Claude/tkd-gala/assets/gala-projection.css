@@ -1,0 +1,56 @@
+/* TKD Gala — page Projection (écran salle / écran régie) */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body.tkd-proj { font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+
+/* ─── Écran salle ─────────────────────────────────────────────── */
+body.tkd-proj-salle { background: #000; color: #fff; overflow: hidden; cursor: none; }
+.tkd-proj-scene { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 5vh 6vw; background: radial-gradient(ellipse at center, #1b2440 0%, #000 75%); }
+.tkd-proj-scene.tkd-proj-noir { background: #000; }
+.tkd-proj-diapo { text-align: center; max-width: 100%; animation: tkd-proj-fondu .6s ease; }
+@keyframes tkd-proj-fondu { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: none; } }
+.tkd-proj-surtitre { font-size: 3.2vh; letter-spacing: .35em; text-transform: uppercase; color: #f2c14e; margin-bottom: 2vh; min-height: 1em; }
+.tkd-proj-titre { font-size: 9vh; line-height: 1.1; margin: 0; font-weight: 800; text-wrap: balance; }
+.tkd-proj-sous { font-size: 4.5vh; margin-top: 3vh; font-style: italic; color: #d7dcea; }
+.tkd-proj-edition { font-size: 6vh; margin-top: 2vh; color: #f2c14e; font-weight: 300; letter-spacing: .1em; }
+.tkd-proj-accueil .tkd-proj-titre { font-size: 10vh; }
+.tkd-proj-annonce .tkd-proj-logo { display: block; margin: 0 auto; max-width: 70vw; max-height: 58vh; object-fit: contain; filter: drop-shadow(0 0 3vh rgba(255, 255, 255, .15)); }
+.tkd-proj-slogan { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 6vh; line-height: 1.25; margin-top: 5vh; color: #f7e3a3; text-wrap: balance; }
+
+/* ─── Écran régie ─────────────────────────────────────────────── */
+body.tkd-proj-regie { background: #10131c; color: #e8ebf3; }
+.tkd-proj-barre-outils { position: sticky; top: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 16px; background: #1a1f2e; border-bottom: 1px solid #2c3449; }
+.tkd-proj-btn { font: inherit; font-size: 15px; padding: 8px 14px; border-radius: 6px; border: 1px solid #3a4560; background: #252c40; color: #e8ebf3; cursor: pointer; }
+.tkd-proj-btn:hover { background: #2f3850; }
+.tkd-proj-btn-principal { background: #2563eb; border-color: #2563eb; font-weight: 600; }
+.tkd-proj-btn-principal:hover { background: #1d4fd8; }
+.tkd-proj-btn-alerte { background: #b45309; border-color: #b45309; }
+.tkd-proj-retour { margin-left: auto; color: #9fb0d8; text-decoration: none; }
+.tkd-proj-position { padding: 8px 16px; color: #9fb0d8; font-size: 14px; letter-spacing: .05em; }
+.tkd-proj-grille { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: 16px; padding: 0 16px 16px; }
+@media (max-width: 900px) { .tkd-proj-grille { grid-template-columns: 1fr; } }
+.tkd-proj-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.tkd-proj-carte { background: #1a1f2e; border: 1px solid #2c3449; border-radius: 10px; padding: 16px 20px; }
+.tkd-proj-principal { border-color: #2563eb; box-shadow: 0 0 0 1px #2563eb inset; }
+.tkd-proj-libelle { font-size: 13px; text-transform: uppercase; letter-spacing: .15em; color: #9fb0d8; margin-bottom: 8px; }
+.tkd-proj-tete { display: flex; gap: 14px; align-items: center; font-size: 15px; color: #c9d2e8; }
+.tkd-proj-icone { font-size: 22px; }
+.tkd-proj-nom { font-size: 30px; font-weight: 700; margin: 6px 0; line-height: 1.2; }
+.tkd-proj-principal .tkd-proj-nom { font-size: 38px; }
+.tkd-proj-info { font-size: 17px; color: #c9d2e8; }
+.tkd-proj-audio { font-size: 15px; color: #9fb0d8; margin-top: 8px; }
+.tkd-proj-slogan-r { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 20px; color: #f7e3a3; }
+.tkd-proj-message { margin-top: 14px; padding: 14px 16px; background: #fff8e5; color: #1d1d1d; border-radius: 8px; font-size: 24px; line-height: 1.5; white-space: pre-line; }
+.tkd-proj-chrono { margin-top: 14px; }
+.tkd-proj-ecoule { font-variant-numeric: tabular-nums; font-size: 22px; font-weight: 600; white-space: pre; }
+.tkd-proj-barre { height: 8px; background: #2c3449; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.tkd-proj-jauge { height: 100%; width: 0; background: #22c55e; transition: width .5s linear; }
+.tkd-proj-depasse .tkd-proj-ecoule { color: #f87171; }
+.tkd-proj-depasse .tkd-proj-jauge { background: #ef4444; }
+.tkd-proj-liste { position: relative; list-style: none; margin: 0; padding: 0; background: #1a1f2e; border: 1px solid #2c3449; border-radius: 10px; max-height: calc(100vh - 140px); overflow: auto; }
+.tkd-proj-liste li { display: grid; grid-template-columns: 52px 28px 1fr auto; gap: 8px; align-items: center; padding: 9px 12px; border-bottom: 1px solid #252c40; cursor: pointer; font-size: 15px; }
+.tkd-proj-liste li:hover { background: #222a3d; }
+.tkd-proj-liste li.tkd-proj-passe { color: #6b7896; }
+.tkd-proj-liste li.tkd-proj-actif { background: #2563eb; color: #fff; font-weight: 600; }
+.tkd-proj-l-heure, .tkd-proj-l-duree { font-variant-numeric: tabular-nums; color: inherit; opacity: .85; }
+.tkd-proj-l-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

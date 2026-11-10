@@ -172,6 +172,27 @@ class Tkd_Gala_Candidatures {
 				'inscription_id' => 0, 'edition' => (string) $x->edition, 'submission_id' => intval( $c->id ), 'rang' => $rang++,
 			] );
 		}
+		return self::trier( $liste );
+	}
+
+	/**
+	 * Déroulé complet de la soirée : démonstrations (demos_conducteur()) et passages
+	 * d'annonceurs (type 'ann', cle 'a<id>', avec logo_url, slogan, message), un seul ordre.
+	 * Sans numéro : à la fin, démonstrations d'abord.
+	 *
+	 * @return object[]
+	 */
+	public static function conducteur( string $edition ): array {
+		$liste = self::demos_conducteur( $edition );
+		$rang  = count( $liste );
+		foreach ( Tkd_Gala_Annonceurs::lignes_conducteur( $edition ) as $champs ) {
+			$liste[] = self::ligne( $champs + [ 'rang' => $rang++ ] );
+		}
+		return self::trier( $liste );
+	}
+
+	/** Ordre de passage, puis rang d'arrivée ; les lignes sans numéro à la fin. */
+	private static function trier( array $liste ): array {
 		usort( $liste, static function ( $a, $b ) {
 			if ( ( $a->ordre_passage === null ) !== ( $b->ordre_passage === null ) ) return $a->ordre_passage === null ? 1 : -1;
 			if ( $a->ordre_passage !== $b->ordre_passage ) return $a->ordre_passage <=> $b->ordre_passage;

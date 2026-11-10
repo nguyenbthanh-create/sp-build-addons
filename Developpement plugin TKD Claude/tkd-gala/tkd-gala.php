@@ -3,7 +3,7 @@
  * Plugin Name: TKD Gala
  * Plugin URI:  https://tkdclaira.fr
  * Description: Inscriptions des clubs invités au gala des arts martiaux (sans compte WordPress : lien personnel par club), participants, repas, démonstrations et pistes audio.
- * Version:     1.2.0
+ * Version:     1.3.0
  * Author:      TKD Claira
  * Text Domain: tkd-gala
  * Requires PHP: 8.0
@@ -13,6 +13,8 @@
  * Contenu :
  *  includes/class-gala-db.php     Tables, réglages, lecture / écriture des inscriptions
  *  includes/class-gala-candidatures.php  Candidatures hors taekwondo (envois Elementor) et conducteur commun
+ *  includes/class-gala-annonceurs.php    Annonceurs (logo, slogan, message) et leurs passages dans le conducteur
+ *  includes/class-gala-projection.php    Page Projection : écran salle et écran régie
  *  includes/class-gala-audio.php  Pistes audio : envoi, stockage protégé, écoute
  *  includes/class-gala-mails.php  Mails au représentant du club et à l'organisation
  *  includes/class-gala-front.php  Formulaire public, lien personnel, « lien perdu »
@@ -21,12 +23,14 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'TKD_GALA_VERSION', '1.2.0' );
+define( 'TKD_GALA_VERSION', '1.3.0' );
 define( 'TKD_GALA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TKD_GALA_URL', plugin_dir_url( __FILE__ ) );
 
 require_once TKD_GALA_DIR . 'includes/class-gala-db.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-candidatures.php';
+require_once TKD_GALA_DIR . 'includes/class-gala-annonceurs.php';
+require_once TKD_GALA_DIR . 'includes/class-gala-projection.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-audio.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-mails.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-front.php';
@@ -40,4 +44,4 @@ add_action( 'plugins_loaded', [ 'Tkd_Gala_DB', 'maybe_upgrade' ] );
 
 Tkd_Gala_Audio::get_instance();
 Tkd_Gala_Front::get_instance();
-if ( is_admin() ) Tkd_Gala_Admin::get_instance();
+if ( is_admin() ) { Tkd_Gala_Admin::get_instance(); Tkd_Gala_Projection::get_instance(); }

@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Tkd_Gala_DB {
 
-	const DB_VERSION = '1.2'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement)
+	const DB_VERSION = '1.3'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement) ; 1.3 : annonceurs et leurs passages (Tkd_Gala_Annonceurs)
 	const OPT_DB     = 'tkd_gala_db_version';
 	const OPT_REG    = 'tkd_gala_reglages';
 
@@ -86,9 +86,10 @@ class Tkd_Gala_DB {
 		) $c;" );
 
 		dbDelta( Tkd_Gala_Candidatures::sql_creer( $c ) );
+		foreach ( Tkd_Gala_Annonceurs::sql_creer( $c ) as $sql ) dbDelta( $sql );
 
 		$manque = [];
-		foreach ( [ self::t_inscriptions(), self::t_participants(), self::t_demos(), Tkd_Gala_Candidatures::t_externes() ] as $t ) {
+		foreach ( [ self::t_inscriptions(), self::t_participants(), self::t_demos(), Tkd_Gala_Candidatures::t_externes(), Tkd_Gala_Annonceurs::t_annonceurs(), Tkd_Gala_Annonceurs::t_annonces() ] as $t ) {
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t ) ) !== $t ) $manque[] = $t;
 		}
 		if ( $manque ) {
@@ -115,6 +116,7 @@ class Tkd_Gala_DB {
 			'email_orga'    => get_option( 'admin_email' ),
 			'heure_debut'   => '14:00',   // conducteur : heure de la première démonstration
 			'battement_sec' => 60,        // conducteur : temps entre deux démonstrations
+			'duree_annonce' => 30,        // conducteur : durée proposée pour un nouveau passage d'annonceur (secondes)
 			'couleurs'      => "Rouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr",
 			'paiement'      => 'Les repas sont à régler sur place, le jour du gala.',
 			'texte_rgpd'    => "Les noms, prénoms et dates de naissance des démonstrateurs servent uniquement à l'organisation du gala (liste des participants, repas). Ils sont supprimés au plus tard un mois après le gala.",
@@ -327,6 +329,7 @@ class Tkd_Gala_DB {
 		$n = 0;
 		foreach ( self::inscriptions( $edition ) as $i ) { self::supprimer_inscription( intval( $i->id ) ); $n++; }
 		Tkd_Gala_Candidatures::purger_edition( $edition ); // les candidatures elles-mêmes restent dans Elementor
+		Tkd_Gala_Annonceurs::purger_edition( $edition );   // les logos restent dans la médiathèque
 		Tkd_Gala_Audio::supprimer_dossier( $edition );
 		return $n;
 	}

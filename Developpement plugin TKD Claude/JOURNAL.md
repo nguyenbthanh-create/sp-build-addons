@@ -328,6 +328,19 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Liste des dossiers bloquée — test puis prod le 10/11/2026** : `uploads/`, `wp-includes/` et les dossiers des extensions affichaient leur contenu (« Index of »). Ajout de `Options -Indexes` en tête du `.htaccess` racine (hors blocs WordPress) sur les deux sites. Vérifié en prod : listes en 403 ; accueil, page du gala, PDF du règlement, wp-admin et wp-json inchangés. Juste après l'envoi, les listes restent visibles quelques secondes (prise en compte par l'hébergeur). Sauvegardes : `DEPLOIEMENT_tkd-gala_2026-11-10/prod-root-avant-indexes.htaccess` et `test-root-avant-indexes.htaccess`.
 
+**TKD Gala 1.3 : annonceurs et page Projection — en prod le 10/11/2026** :
+- **Annonceurs** : nom, logo de la médiathèque, slogan projeté, message lu par l'animateur. Les sponsors de SP Compta sont proposés à la saisie, en lecture seule.
+- **Passages** : plusieurs par annonceur, chacun avec sa durée (30 s par défaut, réglable), dans l'ordre commun du Conducteur, le CSV (`gala-<édition>-conducteur.csv`, colonne « Message d'annonce ») et l'impression.
+- **Page Projection** : écran salle et écran régie, pilotage au clavier ou à la télécommande, synchronisation BroadcastChannel.
+- **Base de données** : DB 1.3, tables `…tkd_gala_annonceurs` et `…tkd_gala_annonces`.
+
+Vérifications :
+- **Projection testée en local** avec des données d'exemple : rendus salle et régie, écran d'accueil, chronomètre, synchronisation entre deux onglets.
+- **Écran d'administration non testé sur le site de test** : ni Chrome ni le navigateur intégré n'y avaient accès (authentification HTTP). Déployé directement en prod à la demande de l'utilisateur (« après le test continue sur la prod »), après sauvegarde, le fichier principal envoyé en dernier.
+- **Vérifié en prod avec un annonceur d'essai, supprimé ensuite** : logo choisi par la médiathèque, passages, durée, ordre et heures recalculées, CSV, projection salle et régie avec les vraies données, retrait d'un passage, suppression. Le Conducteur est revenu à l'identique et le journal PHP est sans erreur.
+
+Sauvegarde de la 1.2 : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.2.0/`. Le site de test a reçu la 1.3, mais aucune page de son administration n'a pu y être ouverte.
+
 **SP Compta 0.2.0 : justificatifs protégés + mu-plugin `tkd-medias-prives.php` — test puis prod le 10/11/2026** : les justificatifs (dépenses, recettes, contrats de sponsor) allaient dans la médiathèque publique (adresse devinable, liste de tous les médias publique via `/wp-json/wp/v2/media`). Désormais : rangement dans `uploads/sp-compta/AAAA/MM/` fermé au web, consultation par `admin-post.php?action=sp_compta_fichier&id=…` réservée à `sp_compta_manager`, justificatifs masqués de la médiathèque (`src/Media/JustificatifStorage.php`) ; déplacement automatique des anciens au premier wp-admin d'un compte trésorerie (`JustificatifMigration.php`, options `sp_compta_justificatifs_proteges` / `_journal`). Le mu-plugin réserve `/wp/v2/media` aux comptes connectés. Test : 37 justificatifs déplacés, tous ouverts par leur lien, anciennes adresses 404, dossier 403, REST 401 ; **envoi d'un nouveau justificatif non testé** (Chrome bloqué par l'authentification du test). Prod : 66 déplacés (42 dépenses, 21 recettes, 3 sponsors), tous ouverts, anciennes adresses 404, aucune erreur PHP. Le test avait encore SP Compta du 08/09 : mis à jour en entier (ancienne copie dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-test-sp-compta/`). Sauvegarde prod : `sauvegarde-prod-sp-compta-0.1.0/`. **Restent publics** (hors SP Compta, à trier par l'utilisateur) : `2026/11/CW202611090270.pdf`, `2026/10/FA2609-0009.pdf` et `-1.pdf`, `2026/09/sfr-facture-0626381514-0.pdf`, `2026/04/Renfo.csv`, `2025/12/log_file_2025-12-15__*.txt`, `2026/04/wetransfer_…zip`.
 
 **En attente** :

@@ -23,7 +23,18 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 
 - **Inscriptions** : totaux (clubs, démonstrateurs, repas et montant, démonstrations, durée cumulée, planches, pistes manquantes), liste des clubs, détail (participants, écoute des pistes, case « Repas payés », note interne, suppression).
 - **Candidatures** (depuis la 1.1.0, 10/11/2026) : envois du formulaire Elementor des autres disciplines (nom réglable : Réglages → « Formulaire des candidatures »), **lus sans être modifiés** dans les tables d'Elementor (`…e_submissions`, `…e_submissions_values`). Case « Retenue » par candidature ; dépôt de la piste audio d'une candidature retenue (reçue par mail) par l'organisation. Sélection, ordre et piste rangés dans `…tkd_gala_externes` (une ligne par envoi Elementor). Écoute réservée aux administrateurs (`?tkd_gala_audio_ext=`).
-- **Conducteur** : toutes les démonstrations de la soirée, 🥋 clubs de taekwondo et 🌐 candidatures retenues, avec **un seul** numéro d'ordre de passage ; heures calculées (début + durées + battement), durée totale et heure de fin, écoute, impression.
+- **Conducteur** : tout le déroulé de la soirée avec **un seul** numéro d'ordre de passage :
+  - 🥋 clubs de taekwondo ;
+  - 🌐 candidatures retenues ;
+  - 📣 passages d'annonceurs (depuis la 1.3), avec leur durée en secondes et une case pour retirer le passage.
+
+  On y trouve aussi les heures calculées (début + durées + battement), la durée totale et l'heure de fin, l'écoute des pistes et l'impression. À l'impression, le message d'annonce est mis en avant pour l'animateur.
+- **Annonceurs** (bloc sous le Conducteur, 1.3) : nom (les sponsors de SP Compta sont proposés à la saisie, en lecture seule), logo de la médiathèque, slogan (projeté) et message d'annonce (lu par l'animateur). « ➕ Passage » ajoute un passage de plus. La durée proposée se règle dans Réglages, « Conducteur : durée d'une annonce ». Tables `…tkd_gala_annonceurs` et `…tkd_gala_annonces`, DB 1.3.
+- **Projection** (1.3, liens en haut du Conducteur) : `admin-post.php?action=tkd_gala_projection&vue=salle|regie`, réservé aux administrateurs.
+  - **Écran salle** : logo et slogan pour une annonce, discipline et nom pour une démonstration, écran d'accueil, écran noir.
+  - **Écran régie** : passage en cours avec le message à lire, chronomètre et dépassement, passage suivant, liste cliquable.
+  - **Commandes** : → / Espace / Page suivante pour avancer, ← / Page précédente pour revenir, Début pour l'accueil, B pour l'écran noir, F pour le plein écran.
+  - **Synchronisation** : sur un même ordinateur, la régie pilote l'écran salle (BroadcastChannel), et la position est gardée dans le navigateur. Le déroulé est lu à l'ouverture : utiliser « Recharger le conducteur » après une modification.
 - **Exports** : CSV des démonstrateurs (pour le traiteur), CSV des démonstrations (clubs et candidatures retenues, avec discipline et heure), ZIP de toutes les pistes nommées dans l'ordre de passage.
 - **Après le gala** : Réglages → « Supprimer les données de l'édition » (inscriptions et pistes audio, irréversible).
 

@@ -15,8 +15,24 @@
 .tkd-gala-candidatures tr.tkd-gala-retenue td { background: #ecfdf3; }
 .tkd-gala-candidatures input[type=file] { max-width: 220px; }
 
+/* Annonceurs (10/11/2026) */
+.tkd-gala-conducteur tr.tkd-gala-annonce td { background: #fff8e5; }
+.tkd-gala-logo-mini { max-height: 36px; max-width: 80px; vertical-align: middle; }
+.tkd-gala-slogan { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 600; color: #8a4b00; }
+.tkd-gala-message { margin-top: 4px; font-size: 13px; line-height: 1.45; color: #1d2327; }
+.tkd-gala-retirer { color: #b32d2e; white-space: nowrap; }
+.tkd-gala-annonceurs { margin-top: 32px; padding-top: 8px; border-top: 1px solid #dcdcde; }
+.tkd-gala-inline { display: inline; }
+.tkd-gala-actions-annonceur { white-space: nowrap; }
+.tkd-gala-logo-apercu { display: block; max-height: 120px; max-width: 260px; margin-bottom: 8px; background: #f6f7f7; border: 1px solid #dcdcde; padding: 4px; }
+.tkd-gala-logo-apercu[hidden] { display: none; }
+.tkd-gala-projection-liens .description { margin-left: 6px; }
+
 @media print {
-	#adminmenumain, #wpadminbar, #wpfooter, .nav-tab-wrapper, .notice, .tkd-gala-admin .button, .tkd-gala-admin .description, .tkd-gala-admin audio { display: none !important; }
+	#adminmenumain, #wpadminbar, #wpfooter, .nav-tab-wrapper, .notice, .tkd-gala-admin .button, .tkd-gala-admin .description, .tkd-gala-admin audio,
+	.tkd-gala-annonceurs, .tkd-gala-projection-liens, .tkd-gala-retirer { display: none !important; }
 	#wpcontent { margin-left: 0 !important; }
 	.tkd-gala-conducteur input { border: none; box-shadow: none; }
+	.tkd-gala-conducteur tr.tkd-gala-annonce td { background: #fff3cd !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+	.tkd-gala-message { font-size: 12pt; }
 }
