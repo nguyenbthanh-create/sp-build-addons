@@ -491,7 +491,7 @@ class Tkd_Gala_Front {
 				<span class="tkd-gala-couleurs"><?php $sel( $n . '[c1]', $d['couleur1'] ); $sel( $n . '[c2]', $d['couleur2'] ); ?></span></p>
 			<p class="tkd-gala-ligne"><label>Nombre de planches de casse (~3 mm)</label>
 				<input class="tkd-gala-champ tkd-gala-court" type="number" min="0" max="<?php echo intval( $planches_max ); ?>" step="1" name="<?php echo esc_attr( $n ); ?>[planches]" value="<?php echo intval( $d['planches'] ); ?>">
-				<span class="tkd-gala-aide">(<?php echo intval( $planches_max ); ?> au maximum, une planche par participant)</span></p>
+				<span class="tkd-gala-aide">L'organisation met à votre disposition une planche par participant, si vous avez besoin de davantage, inscrivez le nombre ici.</span></p>
 		</fieldset>
 		<?php
 	}
