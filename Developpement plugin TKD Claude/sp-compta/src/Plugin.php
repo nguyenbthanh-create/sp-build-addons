@@ -25,6 +25,8 @@ use SpCompta\Front\SaisieRapideShortcode;
 use SpCompta\Front\ServiceWorker;
 use SpCompta\Integration\SpBuildReader;
 use SpCompta\Media\AttachmentUploader;
+use SpCompta\Media\JustificatifMigration;
+use SpCompta\Media\JustificatifStorage;
 use SpCompta\Numbering\DocumentNumeroGenerator;
 use SpCompta\Numbering\SequenceGenerator;
 use SpCompta\Repository\ClientRepository;
@@ -75,10 +77,15 @@ final class Plugin
         // sur le telephone) - doit agir sur wp-login.php, donc hors bootAdmin().
         (new SessionLongue())->registerHooks();
 
+        // Justificatifs a l'abri (uploads/sp-compta/, 10/11/2026) : la
+        // consultation passe par admin-post.php, donc hors bootAdmin() aussi.
+        (new JustificatifStorage($this->capabilities))->registerHooks();
+
         $this->bootFront();
 
         if (is_admin()) {
             add_action('admin_init', [$this->database, 'maybeUpgrade']);
+            (new JustificatifMigration($this->database, $this->capabilities))->registerHooks();
             $this->bootAdmin();
         }
     }

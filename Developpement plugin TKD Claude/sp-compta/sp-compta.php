@@ -3,7 +3,7 @@
 /**
  * Plugin Name: SP Compta
  * Description: Gestion de tresorerie associative (depenses, recettes, devis, factures, clients, fournisseurs, sponsors).
- * Version: 0.1.0
+ * Version: 0.2.0
  * Text Domain: sp-compta
  */
 

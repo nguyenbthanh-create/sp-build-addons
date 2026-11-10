@@ -20,7 +20,11 @@ final class AttachmentLink
         }
 
         if (ctype_digit($value) && get_post_type((int) $value) === 'attachment') {
-            $url = wp_get_attachment_url((int) $value);
+            // Justificatif range a l'abri : adresse reservee aux comptes
+            // tresorerie ; sinon (pas encore deplace) adresse publique d'origine.
+            $url = JustificatifStorage::estProtege((int) $value)
+                ? JustificatifStorage::url((int) $value)
+                : wp_get_attachment_url((int) $value);
             $filename = basename((string) get_attached_file((int) $value));
 
             return '<a href="' . esc_url((string) $url) . '" target="_blank" rel="noopener noreferrer">'

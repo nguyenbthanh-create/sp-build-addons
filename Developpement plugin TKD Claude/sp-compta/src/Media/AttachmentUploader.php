@@ -26,11 +26,25 @@ final class AttachmentUploader
         require_once ABSPATH . 'wp-admin/includes/image.php';
         require_once ABSPATH . 'wp-admin/includes/media.php';
 
-        $attachmentId = media_handle_upload($fieldName, 0);
+        // Range dans uploads/sp-compta/AAAA/MM (ferme au web) au lieu de la
+        // mediatheque publique - voir JustificatifStorage.md (10/11/2026).
+        if (!JustificatifStorage::protegerDossier()) {
+            return $existingValue; // jamais de justificatif depose dans un dossier public
+        }
+
+        $filtre = [JustificatifStorage::class, 'filtreUploadDir'];
+        add_filter('upload_dir', $filtre);
+        try {
+            $attachmentId = media_handle_upload($fieldName, 0);
+        } finally {
+            remove_filter('upload_dir', $filtre);
+        }
 
         if (is_wp_error($attachmentId)) {
             return $existingValue;
         }
+
+        JustificatifStorage::marquer((int) $attachmentId);
 
         return (string) $attachmentId;
     }
