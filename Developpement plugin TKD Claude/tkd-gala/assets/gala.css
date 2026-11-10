@@ -1,0 +1,140 @@
+/* TKD Gala — formulaire public [tkd_gala_inscription].
+   Couleurs et fonds écrits explicitement : le thème du site (Premier) met tous les tableaux
+   sur fond noir avec texte gris, et ses champs n'ont pas toujours de fond. */
+
+.tkd-gala {
+	--g-marine: #1d2b53;
+	--g-bleu: #467ff7;
+	--g-rouge: #d62839;
+	--g-texte: #1f2937;
+	--g-doux: #6b7280;
+	--g-bord: #d7dce6;
+	--g-fond: #f6f7fb;
+	--g-carte: #ffffff;
+	--g-ok-fond: #ecfdf3; --g-ok-bord: #34a853;
+	--g-ko-fond: #fdecee; --g-ko-bord: #d62839;
+	max-width: 880px;
+	margin: 0 auto;
+	color: var(--g-texte);
+	font-size: 16px;
+	line-height: 1.5;
+	box-sizing: border-box;
+}
+.tkd-gala *, .tkd-gala *::before, .tkd-gala *::after { box-sizing: border-box; }
+
+.tkd-gala-entete { margin-bottom: 20px; }
+.tkd-gala-entete h2 { color: var(--g-marine); margin: 0 0 6px; border-bottom: 3px solid var(--g-rouge); padding-bottom: 6px; }
+.tkd-gala-entete p { margin: 0; color: var(--g-doux); }
+
+.tkd-gala-bloc {
+	background: var(--g-carte);
+	border: 1px solid var(--g-bord);
+	border-radius: 12px;
+	padding: 20px;
+	margin: 0 0 18px;
+}
+.tkd-gala-bloc h3 { color: var(--g-marine); margin: 0 0 14px; font-size: 1.2em; }
+
+.tkd-gala-ligne { margin: 0 0 14px; }
+.tkd-gala-ligne > label { display: block; font-weight: 600; margin-bottom: 4px; color: var(--g-marine); }
+.tkd-gala-requis { color: var(--g-rouge); }
+.tkd-gala-aide { display: block; font-size: 0.875em; color: var(--g-doux); margin-top: 3px; }
+.tkd-gala-petit { font-size: 0.9em; }
+
+.tkd-gala input[type=text], .tkd-gala input[type=email], .tkd-gala input[type=tel],
+.tkd-gala input[type=date], .tkd-gala input[type=number], .tkd-gala select, .tkd-gala textarea {
+	background: #fff;
+	color: var(--g-texte);
+	border: 1px solid var(--g-bord);
+	border-radius: 8px;
+	padding: 9px 11px;
+	font: inherit;
+	max-width: 100%;
+}
+.tkd-gala .tkd-gala-champ { width: 100%; }
+.tkd-gala .tkd-gala-court { width: 110px; }
+.tkd-gala input:focus, .tkd-gala select:focus, .tkd-gala textarea:focus { outline: 2px solid var(--g-bleu); outline-offset: 1px; border-color: var(--g-bleu); }
+.tkd-gala input[type=file] { color: var(--g-texte); max-width: 100%; }
+.tkd-gala textarea { width: 100%; }
+
+/* Tableau des démonstrateurs */
+.tkd-gala-table-wrap { overflow-x: auto; }
+.tkd-gala .tkd-gala-table { width: 100%; border-collapse: collapse; background: #fff; margin: 0; }
+.tkd-gala .tkd-gala-table th, .tkd-gala .tkd-gala-table td {
+	background: #fff;
+	color: var(--g-texte);
+	border: none;
+	border-bottom: 1px solid var(--g-bord);
+	padding: 6px;
+	text-align: left;
+	vertical-align: middle;
+}
+.tkd-gala .tkd-gala-table th { background: var(--g-fond); color: var(--g-marine); font-size: 0.85em; text-transform: uppercase; letter-spacing: .03em; }
+.tkd-gala .tkd-gala-table td input[type=text], .tkd-gala .tkd-gala-table td input[type=date] { width: 100%; min-width: 120px; }
+.tkd-gala .tkd-gala-table .tkd-gala-num { color: var(--g-doux); width: 32px; font-size: 0.85em; }
+.tkd-gala .tkd-gala-centre { text-align: center; }
+.tkd-gala input[type=checkbox] { width: 20px; height: 20px; accent-color: var(--g-bleu); vertical-align: middle; }
+.tkd-gala-suppr { background: none; border: 1px solid var(--g-bord); color: var(--g-doux); border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 14px; line-height: 1; }
+.tkd-gala-suppr:hover { color: var(--g-rouge); border-color: var(--g-rouge); }
+
+.tkd-gala-total { font-weight: 700; color: var(--g-marine); background: var(--g-fond); border-radius: 8px; padding: 10px 12px; margin: 12px 0 6px; }
+.tkd-gala-collage { background: var(--g-fond); border: 1px dashed var(--g-bord); border-radius: 10px; padding: 12px; margin: 10px 0; }
+.tkd-gala-collage label { font-weight: 600; display: block; margin-bottom: 6px; }
+.tkd-gala-collage-msg { color: var(--g-doux); font-size: 0.9em; }
+
+/* Démonstrations */
+.tkd-gala-demo { border: 1px solid var(--g-bord); border-radius: 10px; padding: 14px 16px 4px; margin: 0 0 14px; background: var(--g-fond); min-width: 0; }
+.tkd-gala-demo legend { font-weight: 700; color: var(--g-marine); padding: 0 6px; }
+.tkd-gala-duree, .tkd-gala-couleurs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.tkd-gala-couleurs select { flex: 1 1 160px; }
+.tkd-gala-audio-actuel { margin: 0 0 4px; font-weight: 600; }
+.tkd-gala audio { width: 100%; max-width: 420px; display: block; margin: 4px 0; }
+
+/* Boutons */
+.tkd-gala-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 10px 0; }
+.tkd-gala .tkd-gala-btn {
+	background: var(--g-bleu); color: #fff; border: 2px solid var(--g-bleu);
+	border-radius: 999px; padding: 9px 18px; font: inherit; font-weight: 600; cursor: pointer; text-decoration: none; line-height: 1.2;
+}
+.tkd-gala .tkd-gala-btn:hover { filter: brightness(0.95); }
+.tkd-gala .tkd-gala-btn-sec { background: #fff; color: var(--g-bleu); }
+.tkd-gala .tkd-gala-btn-danger { color: var(--g-rouge); border-color: var(--g-rouge); }
+.tkd-gala .tkd-gala-btn-principal { background: var(--g-marine); border-color: var(--g-marine); font-size: 1.1em; padding: 12px 28px; }
+.tkd-gala .tkd-gala-btn:disabled { opacity: .6; cursor: wait; }
+.tkd-gala-envoi { text-align: center; margin: 24px 0; }
+.tkd-gala-case { display: flex; gap: 10px; align-items: flex-start; }
+.tkd-gala-case input { flex: none; margin-top: 2px; }
+
+/* Messages */
+.tkd-gala-alerte { border-left: 4px solid var(--g-bleu); background: var(--g-fond); border-radius: 8px; padding: 12px 16px; margin: 0 0 18px; }
+.tkd-gala-alerte p, .tkd-gala-alerte ul { margin: 0 0 6px; }
+.tkd-gala-alerte p:last-child, .tkd-gala-alerte ul:last-child { margin-bottom: 0; }
+.tkd-gala-ok { border-color: var(--g-ok-bord); background: var(--g-ok-fond); }
+.tkd-gala-ko { border-color: var(--g-ko-bord); background: var(--g-ko-fond); }
+.tkd-gala-lien input { width: 100%; font-family: monospace; font-size: 0.85em; }
+.tkd-gala-recap { white-space: pre-wrap; font-family: inherit; background: none; color: var(--g-texte); margin: 0; padding: 0; border: none; }
+
+/* Champ piège pour les robots : hors écran, pas display:none (certains robots l'évitent). */
+.tkd-gala-piege { position: absolute !important; left: -9999px !important; width: 1px; height: 1px; overflow: hidden; }
+
+/* Téléphone : chaque démonstrateur devient une petite carte. */
+@media (max-width: 640px) {
+	.tkd-gala-bloc { padding: 16px 14px; }
+	.tkd-gala .tkd-gala-table thead { display: none; }
+	.tkd-gala .tkd-gala-table, .tkd-gala .tkd-gala-table tbody { display: block; }
+	.tkd-gala .tkd-gala-table tr {
+		display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px;
+		border: 1px solid var(--g-bord); border-radius: 10px; padding: 10px; margin-bottom: 10px; position: relative; background: #fff;
+	}
+	.tkd-gala .tkd-gala-table td { display: block; border: none; padding: 0; }
+	.tkd-gala .tkd-gala-table td.tkd-gala-num { grid-column: 1 / -1; width: auto; font-weight: 700; color: var(--g-marine); }
+	.tkd-gala .tkd-gala-table td.tkd-gala-num::before { content: 'Démonstrateur '; }
+	.tkd-gala .tkd-gala-table td:nth-child(2)::before { content: 'Nom'; }
+	.tkd-gala .tkd-gala-table td:nth-child(3)::before { content: 'Prénom'; }
+	.tkd-gala .tkd-gala-table td:nth-child(4)::before { content: 'Date de naissance'; }
+	.tkd-gala .tkd-gala-table td:nth-child(5)::before { content: 'Repas'; margin-right: 8px; }
+	.tkd-gala .tkd-gala-table td:nth-child(n+2):nth-child(-n+4)::before { display: block; font-size: 0.8em; color: var(--g-doux); }
+	.tkd-gala .tkd-gala-table td:nth-child(5) { align-self: end; padding-bottom: 8px; text-align: left; }
+	.tkd-gala .tkd-gala-table td:last-child { position: absolute; top: 6px; right: 6px; }
+	.tkd-gala .tkd-gala-table td input[type=text], .tkd-gala .tkd-gala-table td input[type=date] { min-width: 0; }
+}

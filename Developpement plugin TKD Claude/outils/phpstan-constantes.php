@@ -12,3 +12,6 @@ define( 'CLAIRA_TKD_PLUGIN_URL', 'https://example.test/wp-content/plugins/claira
 define( 'CLAIRA_TKD_PLUGIN_VERSION', '0' );
 define( 'TKD_COT_DIR', __DIR__ . '/../tkd-cotisations/' );
 define( 'TKD_COT_CAP', 'tkd_cotisations_manager' );
+define( 'TKD_GALA_VERSION', '0' );
+define( 'TKD_GALA_DIR', __DIR__ . '/../tkd-gala/' );
+define( 'TKD_GALA_URL', 'https://example.test/wp-content/plugins/tkd-gala/' );

@@ -9,6 +9,7 @@ parameters:
         - ../sp-compta
         - ../tkd-cotisations
         - ../claira-tkd-parcours
+        - ../tkd-gala
     excludePaths:
         analyse:
             - ../*/vendor/*

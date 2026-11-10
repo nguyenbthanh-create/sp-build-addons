@@ -12,7 +12,7 @@ param( [switch] $Rapide )
 $ErrorActionPreference = 'Continue'
 $env:Path   = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 $racine     = Split-Path $PSScriptRoot -Parent
-$plugins    = 'sp_build', 'sp-compta', 'tkd-cotisations', 'claira-tkd-parcours' | ForEach-Object { Join-Path $racine $_ }
+$plugins    = 'sp_build', 'sp-compta', 'tkd-cotisations', 'claira-tkd-parcours', 'tkd-gala' | ForEach-Object { Join-Path $racine $_ }
 $exclus     = '\\(vendor|node_modules|tests)\\'
 $problemes  = 0
 

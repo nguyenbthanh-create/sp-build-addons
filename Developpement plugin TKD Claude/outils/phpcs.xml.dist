@@ -10,6 +10,7 @@
     <file>../sp-compta</file>
     <file>../tkd-cotisations</file>
     <file>../claira-tkd-parcours</file>
+    <file>../tkd-gala</file>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/node_modules/*</exclude-pattern>
     <exclude-pattern>*.min.js</exclude-pattern>
