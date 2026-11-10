@@ -41,6 +41,28 @@ class Tkd_Gala_Candidatures {
 		) $charset;";
 	}
 
+	public static function init(): void {
+		add_action( 'elementor_pro/forms/validation', [ self::class, 'valider_elementor' ], 10, 2 );
+	}
+
+	/**
+	 * Formulaire de candidature : deux couleurs de scénographie différentes (comme le
+	 * formulaire des clubs). Les autres contrôles restent ceux d'Elementor.
+	 *
+	 * @param object $record       ElementorPro\Modules\Forms\Classes\Form_Record
+	 * @param object $ajax_handler ElementorPro\Modules\Forms\Classes\Ajax_Handler
+	 */
+	public static function valider_elementor( $record, $ajax_handler ): void {
+		if ( ! is_object( $record ) || ! method_exists( $record, 'get_form_settings' ) ) return;
+		if ( (string) $record->get_form_settings( 'form_name' ) !== (string) Tkd_Gala_DB::reglages()['form_candidature'] ) return;
+		$f  = (array) $record->get( 'fields' );
+		$c1 = trim( (string) ( $f['demo_couleur1']['value'] ?? '' ) );
+		$c2 = trim( (string) ( $f['demo_couleur2']['value'] ?? '' ) );
+		if ( $c1 !== '' && $c1 === $c2 && method_exists( $ajax_handler, 'add_error' ) ) {
+			$ajax_handler->add_error( 'demo_couleur2', 'Choisissez deux couleurs différentes.' );
+		}
+	}
+
 	/** Elementor Pro enregistre-t-il les envois sur ce site ? */
 	public static function elementor_dispo(): bool {
 		static $ok = null;
@@ -166,7 +188,9 @@ class Tkd_Gala_Candidatures {
 			$v = $c->v;
 			$liste[] = self::ligne( [
 				'cle' => 'e' . $x->id, 'type' => 'ext', 'id' => intval( $x->id ), 'club_nom' => $v['struct_nom'] ?? '', 'titre' => $v['demo_titre'] ?? '',
-				'discipline' => $v['disc_nom'] ?? '', 'duree_sec' => max( 0, intval( $v['demo_duree'] ?? 0 ) ) * 60, 'couleur1' => '', 'couleur2' => '',
+				'discipline' => $v['disc_nom'] ?? '', 'duree_sec' => max( 0, intval( $v['demo_duree'] ?? 0 ) ) * 60,
+				// Scénographie (11/11/2026) : champs demo_couleur1 / demo_couleur2 du formulaire Elementor ; vides pour les envois antérieurs.
+				'couleur1' => (string) ( $v['demo_couleur1'] ?? '' ), 'couleur2' => (string) ( $v['demo_couleur2'] ?? '' ),
 				'planches' => null, 'participants' => intval( $v['demo_participants'] ?? 0 ), 'audio_fichier' => $x->audio_fichier, 'audio_nom' => $x->audio_nom,
 				'audio_taille' => intval( $x->audio_taille ), 'ordre_passage' => $x->ordre_passage === null ? null : intval( $x->ordre_passage ),
 				'inscription_id' => 0, 'edition' => (string) $x->edition, 'submission_id' => intval( $c->id ), 'rang' => $rang++,

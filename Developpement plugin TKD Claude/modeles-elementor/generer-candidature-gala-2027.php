@@ -18,6 +18,9 @@ $DATE_LIMITE  = '15 décembre 2026';
 $DATE_GALA    = 'samedi 30 janvier 2027';
 $DUREE_MIN    = 10;
 $DUREE_MAX    = 20;   // décision du 10/11/2026 (le PDF disait aussi « 10 à 15 » en pages 4 et 5)
+// Couleurs de scénographie : recopier la liste de Gala → Réglages → « Couleurs proposées ».
+// « — Choisir —| » = option vide (valeur vide), donc refusée par le champ obligatoire.
+$COULEURS     = [ '— Choisir —|', 'Rouge', 'Bleu', 'Vert', 'Jaune', 'Orange', 'Violet', 'Rose', 'Blanc', 'Cyan', 'Or' ];
 
 $ids = [];
 function id7(): string { global $ids; do { $i = substr( bin2hex( random_bytes( 4 ) ), 0, 7 ); } while ( isset( $ids[ $i ] ) ); $ids[ $i ] = 1; return $i; }
@@ -103,6 +106,12 @@ $champs = [
 	champ( 'textarea', 'demo_contenu', 'Contenu de la démonstration', [ 'req' => 1, 'rows' => 5, 'placeholder' => 'Décrivez brièvement le déroulement prévu de votre prestation.' ] ),
 	champ( 'checkbox', 'demo_elements', 'Éléments présentés', [ 'inline' => 1, 'options' => [ 'Techniques martiales', 'Katas / formes', 'Combat / opposition', 'Démonstration technique', 'Acrobatie', 'Armes traditionnelles', 'Démonstration collective', 'Autre' ] ] ),
 	champ( 'text', 'demo_elements_autre', 'Si « Autre », précisez', [] ),
+	// Scénographie (11/11/2026) : mêmes couleurs que le formulaire des clubs (Gala → Réglages → Couleurs
+	// proposées) ; lues par TKD Gala pour la colonne Couleurs du Conducteur. Deux couleurs différentes
+	// (contrôle côté serveur dans Tkd_Gala_Candidatures::valider_elementor()).
+	champ( 'select', 'demo_couleur1', 'Scénographie : couleur dominante 1', [ 'req' => 1, 'width' => 50, 'options' => $COULEURS ] ),
+	champ( 'select', 'demo_couleur2', 'Scénographie : couleur dominante 2', [ 'req' => 1, 'width' => 50, 'options' => $COULEURS ] ),
+	html( 'info_couleurs', '<div style="opacity:.75;font-size:.9em;margin-top:-4px">Deux couleurs différentes : elles servent à préparer l\'éclairage de votre passage.</div>' ),
 	html( 'info_musique', '<div style="' . $encart . '">🎵 <strong>Musique</strong> : la démonstration se déroule obligatoirement en musique. Une seule piste audio de bonne qualité sera demandée aux structures retenues, dans un délai qui leur sera communiqué.</div>' ),
 
 	// ── 5. Technique et vidéo ──────────────────────────────────────────────────

@@ -328,6 +328,17 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Liste des dossiers bloquée — test puis prod le 10/11/2026** : `uploads/`, `wp-includes/` et les dossiers des extensions affichaient leur contenu (« Index of »). Ajout de `Options -Indexes` en tête du `.htaccess` racine (hors blocs WordPress) sur les deux sites. Vérifié en prod : listes en 403 ; accueil, page du gala, PDF du règlement, wp-admin et wp-json inchangés. Juste après l'envoi, les listes restent visibles quelques secondes (prise en compte par l'hébergeur). Sauvegardes : `DEPLOIEMENT_tkd-gala_2026-11-10/prod-root-avant-indexes.htaccess` et `test-root-avant-indexes.htaccess`.
 
+**Candidature Elementor + TKD Gala 1.3.3 : couleurs de scénographie — prod le 11/11/2026** :
+- **Formulaire de candidature** (modèle Elementor 6053 en prod) : ajout à l'étape Démonstration, après « Si « Autre », précisez », de deux listes obligatoires `demo_couleur1` et `demo_couleur2` (mêmes 10 couleurs que Gala → Réglages, option vide « — Choisir — ») et d'une note. Ajout fait par l'éditeur Elementor (`document/repeater/insert`), puis enregistré ; le générateur et le JSON du modèle sont mis à jour.
+- **TKD Gala 1.3.3** :
+  - les couleurs des candidatures s'affichent dans la colonne Couleurs du Conducteur, le CSV et l'onglet Candidatures ;
+  - deux couleurs identiques sont refusées par le crochet `elementor_pro/forms/validation` (`Tkd_Gala_Candidatures::valider_elementor()`) ;
+  - les envois antérieurs affichent « — ».
+
+**Pas fait** :
+- le modèle du site de test (5609) n'a pas reçu les champs, le test étant inaccessible depuis le navigateur ;
+- le refus de deux couleurs identiques n'a pas été testé par un envoi réel, pour ne pas créer de fausse candidature ni envoyer de mails.
+
 **TKD Gala 1.3 : annonceurs et page Projection — en prod le 10/11/2026** :
 - **Annonceurs** : nom, logo de la médiathèque, slogan projeté, message lu par l'animateur. Les sponsors de SP Compta sont proposés à la saisie, en lecture seule.
 - **Passages** : plusieurs par annonceur, chacun avec sa durée (30 s par défaut, réglable), dans l'ordre commun du Conducteur, le CSV (`gala-<édition>-conducteur.csv`, colonne « Message d'annonce ») et l'impression.

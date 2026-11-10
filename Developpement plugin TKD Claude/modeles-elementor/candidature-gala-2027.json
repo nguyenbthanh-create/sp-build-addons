@@ -5,7 +5,7 @@
     "page_settings": [],
     "content": [
         {
-            "id": "5c3516e",
+            "id": "32d4ad0",
             "elType": "container",
             "isInner": false,
             "settings": {
@@ -19,7 +19,7 @@
             },
             "elements": [
                 {
-                    "id": "f0d533a",
+                    "id": "965030a",
                     "elType": "widget",
                     "widgetType": "text-editor",
                     "elements": [],
@@ -28,7 +28,7 @@
                     }
                 },
                 {
-                    "id": "d7d8cd3",
+                    "id": "378ae32",
                     "elType": "widget",
                     "widgetType": "form",
                     "elements": [],
@@ -36,7 +36,7 @@
                         "form_name": "Candidature Gala Arts Martiaux 2027",
                         "form_fields": [
                             {
-                                "_id": "35dedc9",
+                                "_id": "2d9603c",
                                 "custom_id": "etape_reglement",
                                 "field_type": "step",
                                 "field_label": "Conditions",
@@ -44,7 +44,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "2e6e55e",
+                                "_id": "3408eaa",
                                 "custom_id": "info_conditions",
                                 "field_type": "html",
                                 "field_label": "",
@@ -52,7 +52,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "75dede4",
+                                "_id": "e82a9e7",
                                 "custom_id": "accepte_reglement",
                                 "field_type": "acceptance",
                                 "field_label": "Règlement",
@@ -61,7 +61,7 @@
                                 "acceptance_text": "J'accepte le règlement et les conditions de participation au Gala des Arts Martiaux de Claira."
                             },
                             {
-                                "_id": "45fa8e0",
+                                "_id": "d1cc67b",
                                 "custom_id": "etape_structure",
                                 "field_type": "step",
                                 "field_label": "Structure",
@@ -69,7 +69,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "0ba80c7",
+                                "_id": "f82a7a8",
                                 "custom_id": "struct_nom",
                                 "field_type": "text",
                                 "field_label": "Raison sociale / Nom de l'association",
@@ -77,28 +77,28 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "831652f",
+                                "_id": "f09d1cd",
                                 "custom_id": "struct_sigle",
                                 "field_type": "text",
                                 "field_label": "Sigle",
                                 "width": "33"
                             },
                             {
-                                "_id": "2417878",
+                                "_id": "5fff863",
                                 "custom_id": "struct_siret",
                                 "field_type": "text",
                                 "field_label": "SIRET",
                                 "width": "50"
                             },
                             {
-                                "_id": "5e3d89a",
+                                "_id": "d661d32",
                                 "custom_id": "struct_rna",
                                 "field_type": "text",
                                 "field_label": "N° RNA / W",
                                 "width": "50"
                             },
                             {
-                                "_id": "7d0a670",
+                                "_id": "e00b0a8",
                                 "custom_id": "struct_siege",
                                 "field_type": "text",
                                 "field_label": "Siège social (adresse)",
@@ -106,7 +106,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "a205e99",
+                                "_id": "51f18fa",
                                 "custom_id": "struct_cp_ville",
                                 "field_type": "text",
                                 "field_label": "Code postal / Ville",
@@ -114,7 +114,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "47d8f43",
+                                "_id": "4bfbc90",
                                 "custom_id": "struct_site",
                                 "field_type": "url",
                                 "field_label": "Site internet",
@@ -122,7 +122,7 @@
                                 "placeholder": "https://"
                             },
                             {
-                                "_id": "99f2b8f",
+                                "_id": "95eebb9",
                                 "custom_id": "struct_reseaux",
                                 "field_type": "text",
                                 "field_label": "Réseaux sociaux",
@@ -130,7 +130,7 @@
                                 "placeholder": "Facebook, Instagram…"
                             },
                             {
-                                "_id": "80a3ed1",
+                                "_id": "ce1c5d7",
                                 "custom_id": "struct_forme",
                                 "field_type": "radio",
                                 "field_label": "Forme juridique",
@@ -140,21 +140,21 @@
                                 "inline_list": "elementor-subgroup-inline"
                             },
                             {
-                                "_id": "c7d4d88",
+                                "_id": "e2847d3",
                                 "custom_id": "struct_forme_autre",
                                 "field_type": "text",
                                 "field_label": "Si « Autre », précisez",
                                 "width": "100"
                             },
                             {
-                                "_id": "f7509e9",
+                                "_id": "0b5ed66",
                                 "custom_id": "struct_creation",
                                 "field_type": "text",
                                 "field_label": "Date (ou année) de création",
                                 "width": "50"
                             },
                             {
-                                "_id": "87e1a9a",
+                                "_id": "b841105",
                                 "custom_id": "struct_adherents",
                                 "field_type": "number",
                                 "field_label": "Nombre approximatif de licenciés / adhérents",
@@ -163,7 +163,7 @@
                                 "field_min": "1"
                             },
                             {
-                                "_id": "d0fff50",
+                                "_id": "43bf4fc",
                                 "custom_id": "struct_publics",
                                 "field_type": "checkbox",
                                 "field_label": "Publics accueillis",
@@ -172,7 +172,7 @@
                                 "inline_list": "elementor-subgroup-inline"
                             },
                             {
-                                "_id": "273f0c9",
+                                "_id": "658ef4b",
                                 "custom_id": "struct_presentation",
                                 "field_type": "textarea",
                                 "field_label": "Présentation de la structure",
@@ -182,7 +182,7 @@
                                 "rows": "5"
                             },
                             {
-                                "_id": "c393e58",
+                                "_id": "c131d99",
                                 "custom_id": "etape_contacts",
                                 "field_type": "step",
                                 "field_label": "Contacts",
@@ -190,7 +190,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "21965c9",
+                                "_id": "f106204",
                                 "custom_id": "titre_responsable",
                                 "field_type": "html",
                                 "field_label": "",
@@ -198,7 +198,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "9a2732d",
+                                "_id": "f6984f9",
                                 "custom_id": "resp_nom",
                                 "field_type": "text",
                                 "field_label": "Nom et prénom",
@@ -206,7 +206,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "35c1bf8",
+                                "_id": "4256d73",
                                 "custom_id": "resp_fonction",
                                 "field_type": "text",
                                 "field_label": "Fonction",
@@ -214,7 +214,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "35f7b6b",
+                                "_id": "3beb3c9",
                                 "custom_id": "resp_tel",
                                 "field_type": "tel",
                                 "field_label": "Téléphone",
@@ -222,7 +222,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "a700fca",
+                                "_id": "e137232",
                                 "custom_id": "resp_email",
                                 "field_type": "email",
                                 "field_label": "Adresse e-mail",
@@ -231,7 +231,7 @@
                                 "placeholder": "Le récapitulatif de la candidature y sera envoyé"
                             },
                             {
-                                "_id": "5d2c5e0",
+                                "_id": "97e5714",
                                 "custom_id": "titre_referent",
                                 "field_type": "html",
                                 "field_label": "",
@@ -239,35 +239,35 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "242bb5b",
+                                "_id": "756cffc",
                                 "custom_id": "ref_nom",
                                 "field_type": "text",
                                 "field_label": "Nom et prénom",
                                 "width": "50"
                             },
                             {
-                                "_id": "bfbf179",
+                                "_id": "8e7e930",
                                 "custom_id": "ref_fonction",
                                 "field_type": "text",
                                 "field_label": "Fonction",
                                 "width": "50"
                             },
                             {
-                                "_id": "d7654af",
+                                "_id": "1f106ef",
                                 "custom_id": "ref_tel",
                                 "field_type": "tel",
                                 "field_label": "Téléphone",
                                 "width": "50"
                             },
                             {
-                                "_id": "17172f1",
+                                "_id": "3ecb69b",
                                 "custom_id": "ref_email",
                                 "field_type": "email",
                                 "field_label": "E-mail",
                                 "width": "50"
                             },
                             {
-                                "_id": "4933e16",
+                                "_id": "20a1da2",
                                 "custom_id": "etape_demonstration",
                                 "field_type": "step",
                                 "field_label": "Démonstration",
@@ -275,7 +275,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "b6770e4",
+                                "_id": "6be7ac1",
                                 "custom_id": "disc_nom",
                                 "field_type": "text",
                                 "field_label": "Discipline présentée",
@@ -283,28 +283,28 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "e5f6669",
+                                "_id": "7e46f17",
                                 "custom_id": "disc_federation",
                                 "field_type": "text",
                                 "field_label": "Fédération / organisme d'affiliation (le cas échéant)",
                                 "width": "50"
                             },
                             {
-                                "_id": "aa6d1bc",
+                                "_id": "9605668",
                                 "custom_id": "disc_lieux",
                                 "field_type": "text",
                                 "field_label": "Lieu(x) habituel(s) de pratique",
                                 "width": "50"
                             },
                             {
-                                "_id": "ba51239",
+                                "_id": "c862c6f",
                                 "custom_id": "disc_villes",
                                 "field_type": "text",
                                 "field_label": "Ville(s) de pratique",
                                 "width": "50"
                             },
                             {
-                                "_id": "ee644d1",
+                                "_id": "3511e97",
                                 "custom_id": "disc_annees",
                                 "field_type": "number",
                                 "field_label": "Nombre d'années de pratique de la discipline",
@@ -313,14 +313,14 @@
                                 "field_min": "0"
                             },
                             {
-                                "_id": "83f1faf",
+                                "_id": "f28797f",
                                 "custom_id": "disc_niveaux",
                                 "field_type": "text",
                                 "field_label": "Principaux niveaux / grades représentés",
                                 "width": "50"
                             },
                             {
-                                "_id": "cb333a0",
+                                "_id": "e53476c",
                                 "custom_id": "demo_titre",
                                 "field_type": "text",
                                 "field_label": "Titre / nom de la démonstration",
@@ -328,7 +328,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "fdaa597",
+                                "_id": "80fa6c2",
                                 "custom_id": "demo_duree",
                                 "field_type": "number",
                                 "field_label": "Durée prévue (minutes, entre 10 et 20)",
@@ -338,7 +338,7 @@
                                 "field_max": "20"
                             },
                             {
-                                "_id": "5486751",
+                                "_id": "3d310f4",
                                 "custom_id": "demo_participants",
                                 "field_type": "number",
                                 "field_label": "Nombre de participants prévus",
@@ -347,7 +347,7 @@
                                 "field_min": "1"
                             },
                             {
-                                "_id": "30789ef",
+                                "_id": "b7827b7",
                                 "custom_id": "demo_ages",
                                 "field_type": "text",
                                 "field_label": "Âge des participants",
@@ -356,7 +356,7 @@
                                 "placeholder": "Ex. : de 8 à 45 ans"
                             },
                             {
-                                "_id": "6ab1708",
+                                "_id": "064d8bb",
                                 "custom_id": "demo_encadrants",
                                 "field_type": "number",
                                 "field_label": "Nombre d'encadrants / responsables présents",
@@ -365,7 +365,7 @@
                                 "field_min": "1"
                             },
                             {
-                                "_id": "51bb042",
+                                "_id": "0e22100",
                                 "custom_id": "demo_contenu",
                                 "field_type": "textarea",
                                 "field_label": "Contenu de la démonstration",
@@ -375,7 +375,7 @@
                                 "rows": "5"
                             },
                             {
-                                "_id": "870e03b",
+                                "_id": "ce22062",
                                 "custom_id": "demo_elements",
                                 "field_type": "checkbox",
                                 "field_label": "Éléments présentés",
@@ -384,14 +384,40 @@
                                 "inline_list": "elementor-subgroup-inline"
                             },
                             {
-                                "_id": "6d66cde",
+                                "_id": "ee6e5e5",
                                 "custom_id": "demo_elements_autre",
                                 "field_type": "text",
                                 "field_label": "Si « Autre », précisez",
                                 "width": "100"
                             },
                             {
-                                "_id": "6998144",
+                                "_id": "786319a",
+                                "custom_id": "demo_couleur1",
+                                "field_type": "select",
+                                "field_label": "Scénographie : couleur dominante 1",
+                                "width": "50",
+                                "required": "true",
+                                "field_options": "— Choisir —|\nRouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr"
+                            },
+                            {
+                                "_id": "74b455d",
+                                "custom_id": "demo_couleur2",
+                                "field_type": "select",
+                                "field_label": "Scénographie : couleur dominante 2",
+                                "width": "50",
+                                "required": "true",
+                                "field_options": "— Choisir —|\nRouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr"
+                            },
+                            {
+                                "_id": "a1bd510",
+                                "custom_id": "info_couleurs",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"opacity:.75;font-size:.9em;margin-top:-4px\">Deux couleurs différentes : elles servent à préparer l'éclairage de votre passage.</div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "1afee37",
                                 "custom_id": "info_musique",
                                 "field_type": "html",
                                 "field_label": "",
@@ -399,7 +425,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "faac3c6",
+                                "_id": "c1d37c2",
                                 "custom_id": "etape_technique",
                                 "field_type": "step",
                                 "field_label": "Technique et vidéo",
@@ -407,7 +433,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "e0da559",
+                                "_id": "3e17254",
                                 "custom_id": "tech_surface",
                                 "field_type": "textarea",
                                 "field_label": "Surface / espace nécessaire",
@@ -415,7 +441,7 @@
                                 "rows": "2"
                             },
                             {
-                                "_id": "ea0ee2d",
+                                "_id": "3557a24",
                                 "custom_id": "tech_materiel",
                                 "field_type": "checkbox",
                                 "field_label": "Matériel nécessaire",
@@ -424,14 +450,14 @@
                                 "inline_list": "elementor-subgroup-inline"
                             },
                             {
-                                "_id": "7eacbf7",
+                                "_id": "61cedb3",
                                 "custom_id": "tech_materiel_autre",
                                 "field_type": "text",
                                 "field_label": "Si « Autre », précisez",
                                 "width": "100"
                             },
                             {
-                                "_id": "9c2bdd6",
+                                "_id": "3aedd05",
                                 "custom_id": "tech_materiel_liste",
                                 "field_type": "textarea",
                                 "field_label": "Liste détaillée du matériel nécessaire",
@@ -439,7 +465,7 @@
                                 "rows": "3"
                             },
                             {
-                                "_id": "a46497a",
+                                "_id": "e7e9140",
                                 "custom_id": "tech_besoins",
                                 "field_type": "textarea",
                                 "field_label": "Besoins particuliers",
@@ -447,7 +473,7 @@
                                 "rows": "3"
                             },
                             {
-                                "_id": "003a368",
+                                "_id": "a7cb692",
                                 "custom_id": "info_materiel",
                                 "field_type": "html",
                                 "field_label": "",
@@ -455,7 +481,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "9698182",
+                                "_id": "bcf2cba",
                                 "custom_id": "info_video",
                                 "field_type": "html",
                                 "field_label": "",
@@ -463,7 +489,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "c099eca",
+                                "_id": "bc11e10",
                                 "custom_id": "video_lien",
                                 "field_type": "url",
                                 "field_label": "Lien vers la vidéo",
@@ -472,7 +498,7 @@
                                 "placeholder": "https://"
                             },
                             {
-                                "_id": "80e01a4",
+                                "_id": "1ca00be",
                                 "custom_id": "video_plateforme",
                                 "field_type": "select",
                                 "field_label": "Plateforme",
@@ -481,7 +507,7 @@
                                 "field_options": "YouTube\nGoogle Drive\nAutre"
                             },
                             {
-                                "_id": "e3af93d",
+                                "_id": "1f31383",
                                 "custom_id": "etape_engagement",
                                 "field_type": "step",
                                 "field_label": "Engagement",
@@ -489,7 +515,7 @@
                                 "next_button": ""
                             },
                             {
-                                "_id": "9098cc2",
+                                "_id": "055c9a1",
                                 "custom_id": "dispo_confirme",
                                 "field_type": "acceptance",
                                 "field_label": "Disponibilité",
@@ -498,7 +524,7 @@
                                 "acceptance_text": "La structure confirme être disponible le samedi 30 janvier 2027 et s'engage à respecter les horaires d'arrivée, de répétition et de passage communiqués par l'organisation (susceptibles d'être modifiés)."
                             },
                             {
-                                "_id": "b5d4a9b",
+                                "_id": "c641f1a",
                                 "custom_id": "info_engagement",
                                 "field_type": "html",
                                 "field_label": "",
@@ -506,7 +532,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "4ba581f",
+                                "_id": "44c4304",
                                 "custom_id": "engagement",
                                 "field_type": "acceptance",
                                 "field_label": "Engagement",
@@ -515,7 +541,7 @@
                                 "acceptance_text": "La structure a pris connaissance des conditions de participation et de sélection et s'y engage."
                             },
                             {
-                                "_id": "15dd376",
+                                "_id": "fd556b0",
                                 "custom_id": "titre_declaration",
                                 "field_type": "html",
                                 "field_label": "",
@@ -523,7 +549,7 @@
                                 "width": "100"
                             },
                             {
-                                "_id": "96bd64a",
+                                "_id": "a78d3f3",
                                 "custom_id": "decl_nom",
                                 "field_type": "text",
                                 "field_label": "Nom",
@@ -531,7 +557,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "a0d2e8a",
+                                "_id": "3be04d0",
                                 "custom_id": "decl_prenom",
                                 "field_type": "text",
                                 "field_label": "Prénom",
@@ -539,7 +565,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "cfeadd0",
+                                "_id": "1f77f2b",
                                 "custom_id": "decl_fonction",
                                 "field_type": "text",
                                 "field_label": "Fonction au sein de la structure",
@@ -547,7 +573,7 @@
                                 "required": "true"
                             },
                             {
-                                "_id": "8017d73",
+                                "_id": "d46c8b9",
                                 "custom_id": "decl_certifie",
                                 "field_type": "acceptance",
                                 "field_label": "Certification",
@@ -556,7 +582,7 @@
                                 "acceptance_text": "Je certifie l'exactitude des informations communiquées et confirme que la participation proposée est bénévole et non rémunérée."
                             },
                             {
-                                "_id": "5212c66",
+                                "_id": "1e182c1",
                                 "custom_id": "piege",
                                 "field_type": "honeypot",
                                 "field_label": "",

@@ -3,7 +3,7 @@
  * Plugin Name: TKD Gala
  * Plugin URI:  https://tkdclaira.fr
  * Description: Inscriptions des clubs invités au gala des arts martiaux (sans compte WordPress : lien personnel par club), participants, repas, démonstrations et pistes audio.
- * Version:     1.3.2
+ * Version:     1.3.3
  * Author:      TKD Claira
  * Text Domain: tkd-gala
  * Requires PHP: 8.0
@@ -23,7 +23,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'TKD_GALA_VERSION', '1.3.2' );
+define( 'TKD_GALA_VERSION', '1.3.3' );
 define( 'TKD_GALA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TKD_GALA_URL', plugin_dir_url( __FILE__ ) );
 
@@ -42,6 +42,7 @@ register_activation_hook( __FILE__, [ 'Tkd_Gala_DB', 'installer' ] );
 // chargement, sans réactivation (comparaison de version, donc une seule requête ensuite).
 add_action( 'plugins_loaded', [ 'Tkd_Gala_DB', 'maybe_upgrade' ] );
 
+Tkd_Gala_Candidatures::init(); // contrôle des couleurs du formulaire de candidature Elementor
 Tkd_Gala_Audio::get_instance();
 Tkd_Gala_Front::get_instance();
 if ( is_admin() ) { Tkd_Gala_Admin::get_instance(); Tkd_Gala_Projection::get_instance(); }

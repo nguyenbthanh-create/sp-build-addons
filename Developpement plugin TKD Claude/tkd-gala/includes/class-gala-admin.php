@@ -240,7 +240,8 @@ class Tkd_Gala_Admin {
 				echo '<td>' . esc_html( $d->club_nom ) . ( $ext && $d->discipline !== '' ? '<br><span class="description">' . esc_html( $d->discipline ) . '</span>' : '' ) . '</td>';
 				echo '<td>' . esc_html( $d->titre !== '' ? $d->titre : '—' ) . ( $ext && $d->participants ? '<br><span class="description">' . intval( $d->participants ) . ' participant(s)</span>' : '' ) . '</td>';
 				echo '<td>' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) ) . '</td>';
-				echo '<td>' . ( $ext ? '—' : esc_html( $d->couleur1 . ' / ' . $d->couleur2 ) ) . '</td><td>' . ( $ext ? '—' : intval( $d->planches ) ) . '</td>';
+				// Couleurs : clubs et, depuis le 11/11/2026, candidatures (champs du formulaire Elementor).
+				echo '<td>' . ( (string) $d->couleur1 !== '' ? esc_html( $d->couleur1 . ' / ' . $d->couleur2 ) : '—' ) . '</td><td>' . ( $ext ? '—' : intval( $d->planches ) ) . '</td>';
 				echo '<td>' . $this->audio( $d ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans audio()
 			}
 			echo '</tbody></table><p>';
@@ -377,7 +378,8 @@ class Tkd_Gala_Admin {
 				. '<br><a class="description" href="' . esc_url( admin_url( 'admin.php?page=e-form-submissions#/' . $sid ) ) . '">Envoi n° ' . intval( $sid ) . '</a><br><span class="description">' . esc_html( mysql2date( 'd/m/Y', $c->created_at ) ) . '</span></td>';
 			echo '<td><strong>' . $g( 'struct_nom' ) . '</strong>' . ( ! empty( $v['struct_sigle'] ) ? ' (' . $g( 'struct_sigle' ) . ')' : '' ) . '<br><span class="description">' . $g( 'struct_cp_ville' ) . '</span></td>';
 			echo '<td>' . $g( 'disc_nom' ) . ( ! empty( $v['disc_federation'] ) ? '<br><span class="description">' . $g( 'disc_federation' ) . '</span>' : '' ) . '</td>';
-			echo '<td><strong>' . $g( 'demo_titre' ) . '</strong><br>' . intval( $v['demo_duree'] ?? 0 ) . ' min · ' . intval( $v['demo_participants'] ?? 0 ) . ' participant(s) · ' . $g( 'demo_ages' ) . '</td>';
+			echo '<td><strong>' . $g( 'demo_titre' ) . '</strong><br>' . intval( $v['demo_duree'] ?? 0 ) . ' min · ' . intval( $v['demo_participants'] ?? 0 ) . ' participant(s) · ' . $g( 'demo_ages' )
+				. ( ! empty( $v['demo_couleur1'] ) ? '<br><span class="description">🎨 ' . $g( 'demo_couleur1' ) . ' / ' . $g( 'demo_couleur2' ) . '</span>' : '' ) . '</td>';
 			echo '<td>' . $g( 'resp_nom' ) . ( ! empty( $v['resp_fonction'] ) ? ' — ' . $g( 'resp_fonction' ) : '' ) . '<br><a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', (string) ( $v['resp_tel'] ?? '' ) ) ) . '">' . $g( 'resp_tel' ) . '</a><br><a href="mailto:' . esc_attr( (string) ( $v['resp_email'] ?? '' ) ) . '">' . $g( 'resp_email' ) . '</a></td>';
 			echo '<td>' . ( ! empty( $v['video_lien'] ) ? '<a href="' . esc_url( (string) $v['video_lien'] ) . '" target="_blank" rel="noopener noreferrer">▶️ ' . $g( 'video_plateforme' ) . '</a>' : '—' ) . '</td>';
 			$tech = trim( implode( ' · ', array_filter( [ $v['tech_materiel'] ?? '', $v['tech_surface'] ?? '', $v['tech_besoins'] ?? '' ] ) ) );
@@ -570,7 +572,7 @@ class Tkd_Gala_Admin {
 			foreach ( $demos as $d ) {
 				$ext = $d->type !== 'tkd';
 				$ann = $d->type === 'ann';
-				$l[] = [ $d->ordre_passage, $heures[ $d->cle ] ?? '', $d->discipline, $d->club_nom, $d->titre, Tkd_Gala_Front::duree( (int) $d->duree_sec ), $ext ? '' : $d->couleur1, $ext ? '' : $d->couleur2, $ext ? '' : $d->planches, $d->type === 'ext' ? $d->participants : '', $ann ? '' : ( (string) $d->audio_nom !== '' ? $d->audio_nom : 'MANQUANTE' ), $ann ? $d->message : '' ];
+				$l[] = [ $d->ordre_passage, $heures[ $d->cle ] ?? '', $d->discipline, $d->club_nom, $d->titre, Tkd_Gala_Front::duree( (int) $d->duree_sec ), $d->couleur1, $d->couleur2, $ext ? '' : $d->planches, $d->type === 'ext' ? $d->participants : '', $ann ? '' : ( (string) $d->audio_nom !== '' ? $d->audio_nom : 'MANQUANTE' ), $ann ? $d->message : '' ];
 			}
 			self::csv( 'gala-' . $e . '-conducteur.csv', [ 'Ordre', 'Heure', 'Discipline', 'Club / structure / annonceur', 'Démonstration / slogan', 'Durée', 'Couleur 1', 'Couleur 2', 'Planches', 'Participants', 'Piste audio', 'Message d\'annonce' ], $l );
 		}
