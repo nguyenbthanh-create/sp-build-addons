@@ -1,0 +1,615 @@
+{
+    "version": "0.4",
+    "title": "Candidature Gala Arts Martiaux 2027",
+    "type": "page",
+    "page_settings": [],
+    "content": [
+        {
+            "id": "5c6d091",
+            "elType": "container",
+            "isInner": false,
+            "settings": {
+                "content_width": "boxed",
+                "flex_direction": "column",
+                "boxed_width": {
+                    "unit": "px",
+                    "size": 860,
+                    "sizes": []
+                }
+            },
+            "elements": [
+                {
+                    "id": "b043110",
+                    "elType": "widget",
+                    "widgetType": "heading",
+                    "elements": [],
+                    "settings": {
+                        "title": "Candidature — Gala des Arts Martiaux 2027",
+                        "header_size": "h1"
+                    }
+                },
+                {
+                    "id": "af86f00",
+                    "elType": "widget",
+                    "widgetType": "text-editor",
+                    "elements": [],
+                    "settings": {
+                        "editor": "<p>Taekwondo Claira lance un appel à candidatures auprès des associations, clubs et organismes pratiquant <strong>une discipline martiale autre que le taekwondo</strong>, pour participer au <strong>Gala des Arts Martiaux</strong> du samedi 30 janvier 2027 à la Salle Polyvalente de Claira (ouverture des portes 18h00, démonstrations à partir de 19h00).</p><p><strong>Date limite de candidature : 15 décembre 2026.</strong> Le formulaire compte 6 étapes ; préparez le lien de votre vidéo de démonstration.</p>"
+                    }
+                },
+                {
+                    "id": "b30ddda",
+                    "elType": "widget",
+                    "widgetType": "form",
+                    "elements": [],
+                    "settings": {
+                        "form_name": "Candidature Gala Arts Martiaux 2027",
+                        "form_fields": [
+                            {
+                                "_id": "c4c5bb4",
+                                "custom_id": "etape_reglement",
+                                "field_type": "step",
+                                "field_label": "Conditions",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "851ef06",
+                                "custom_id": "info_conditions",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"background:#fdecee;border-left:4px solid #d62839;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\"><strong>⚠️ Conditions essentielles</strong><ul style=\"margin:0 0 0 1.2em;padding:0\"><li>Discipline martiale <strong>hors taekwondo</strong>, proposée par une association, un club ou une structure organisée</li><li>Démonstration de <strong>10 à 15 minutes</strong>, obligatoirement <strong>en musique</strong></li><li>Une seule piste audio de bonne qualité (demandée plus tard aux structures retenues)</li><li><strong>Vidéo obligatoire</strong> montrant une démonstration déjà effectuée (lien)</li><li>Participation <strong>bénévole et non rémunérée</strong></li><li>Dossier à transmettre <strong>avant le 15 décembre 2026</strong></li></ul></div><div style=\"background:#f6f7fb;border-left:4px solid #1d2b53;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\">Le dépôt d'un dossier ne garantit pas la participation au Gala : Taekwondo Claira sélectionne librement les démonstrations (diversité des disciplines, contraintes techniques, de sécurité et d'organisation) et peut demander des modifications de durée, de contenu ou de conditions techniques. Les horaires sont indicatifs et peuvent être modifiés par l'organisation. Aucune indemnité ne pourra être réclamée en cas de non-sélection ou de modification de la programmation.</div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "600915d",
+                                "custom_id": "accepte_reglement",
+                                "field_type": "acceptance",
+                                "field_label": "Règlement",
+                                "width": "100",
+                                "required": "true",
+                                "acceptance_text": "J'accepte le règlement et les conditions de participation au Gala des Arts Martiaux de Claira."
+                            },
+                            {
+                                "_id": "57e57c4",
+                                "custom_id": "etape_structure",
+                                "field_type": "step",
+                                "field_label": "Structure",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "ef04110",
+                                "custom_id": "struct_nom",
+                                "field_type": "text",
+                                "field_label": "Raison sociale / Nom de l'association",
+                                "width": "66",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "47cd8ab",
+                                "custom_id": "struct_sigle",
+                                "field_type": "text",
+                                "field_label": "Sigle",
+                                "width": "33"
+                            },
+                            {
+                                "_id": "036f961",
+                                "custom_id": "struct_siret",
+                                "field_type": "text",
+                                "field_label": "SIRET",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "33ae8e7",
+                                "custom_id": "struct_rna",
+                                "field_type": "text",
+                                "field_label": "N° RNA / W",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "7e37936",
+                                "custom_id": "struct_siege",
+                                "field_type": "text",
+                                "field_label": "Siège social (adresse)",
+                                "width": "66",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "cff3a60",
+                                "custom_id": "struct_cp_ville",
+                                "field_type": "text",
+                                "field_label": "Code postal / Ville",
+                                "width": "33",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "101ecc7",
+                                "custom_id": "struct_site",
+                                "field_type": "url",
+                                "field_label": "Site internet",
+                                "width": "50",
+                                "placeholder": "https://"
+                            },
+                            {
+                                "_id": "6f259e0",
+                                "custom_id": "struct_reseaux",
+                                "field_type": "text",
+                                "field_label": "Réseaux sociaux",
+                                "width": "50",
+                                "placeholder": "Facebook, Instagram…"
+                            },
+                            {
+                                "_id": "ae1a0c9",
+                                "custom_id": "struct_forme",
+                                "field_type": "radio",
+                                "field_label": "Forme juridique",
+                                "width": "100",
+                                "required": "true",
+                                "field_options": "Association loi 1901\nClub sportif\nAutre",
+                                "inline_list": "elementor-subgroup-inline"
+                            },
+                            {
+                                "_id": "58313b1",
+                                "custom_id": "struct_forme_autre",
+                                "field_type": "text",
+                                "field_label": "Si « Autre », précisez",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "2f3e0dd",
+                                "custom_id": "struct_creation",
+                                "field_type": "text",
+                                "field_label": "Date (ou année) de création",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "e6bf70c",
+                                "custom_id": "struct_adherents",
+                                "field_type": "number",
+                                "field_label": "Nombre approximatif de licenciés / adhérents",
+                                "width": "50",
+                                "field_min": "0"
+                            },
+                            {
+                                "_id": "4a925e8",
+                                "custom_id": "struct_publics",
+                                "field_type": "checkbox",
+                                "field_label": "Publics accueillis",
+                                "width": "100",
+                                "field_options": "Enfants\nAdolescents\nAdultes\nSeniors\nTous publics",
+                                "inline_list": "elementor-subgroup-inline"
+                            },
+                            {
+                                "_id": "a4ed6d9",
+                                "custom_id": "struct_presentation",
+                                "field_type": "textarea",
+                                "field_label": "Présentation de la structure",
+                                "width": "100",
+                                "required": "true",
+                                "placeholder": "Histoire, activités, valeurs, principales actions…",
+                                "rows": "5"
+                            },
+                            {
+                                "_id": "49f2ba0",
+                                "custom_id": "etape_contacts",
+                                "field_type": "step",
+                                "field_label": "Contacts",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "808e5bd",
+                                "custom_id": "titre_responsable",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<strong>Responsable de la structure</strong>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "10650e9",
+                                "custom_id": "resp_nom",
+                                "field_type": "text",
+                                "field_label": "Nom et prénom",
+                                "width": "50",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "4fb3b57",
+                                "custom_id": "resp_fonction",
+                                "field_type": "text",
+                                "field_label": "Fonction",
+                                "width": "50",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "1bd1ce8",
+                                "custom_id": "resp_tel",
+                                "field_type": "tel",
+                                "field_label": "Téléphone",
+                                "width": "50",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "67f83a3",
+                                "custom_id": "resp_email",
+                                "field_type": "email",
+                                "field_label": "Adresse e-mail",
+                                "width": "50",
+                                "required": "true",
+                                "placeholder": "Le récapitulatif de la candidature y sera envoyé"
+                            },
+                            {
+                                "_id": "48e81aa",
+                                "custom_id": "titre_referent",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<strong>Personne référente pour le Gala</strong> <span style=\"opacity:.7\">(si différente du responsable)</span>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "808a1db",
+                                "custom_id": "ref_nom",
+                                "field_type": "text",
+                                "field_label": "Nom et prénom",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "837ffeb",
+                                "custom_id": "ref_fonction",
+                                "field_type": "text",
+                                "field_label": "Fonction",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "8ebb686",
+                                "custom_id": "ref_tel",
+                                "field_type": "tel",
+                                "field_label": "Téléphone",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "7c5184a",
+                                "custom_id": "ref_email",
+                                "field_type": "email",
+                                "field_label": "E-mail",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "2d08607",
+                                "custom_id": "etape_demonstration",
+                                "field_type": "step",
+                                "field_label": "Démonstration",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "5b7d948",
+                                "custom_id": "disc_nom",
+                                "field_type": "text",
+                                "field_label": "Discipline présentée",
+                                "width": "50",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "3d411f9",
+                                "custom_id": "disc_federation",
+                                "field_type": "text",
+                                "field_label": "Fédération / organisme d'affiliation (le cas échéant)",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "c5e68ec",
+                                "custom_id": "disc_lieux",
+                                "field_type": "text",
+                                "field_label": "Lieu(x) habituel(s) de pratique",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "4a4f5e0",
+                                "custom_id": "disc_villes",
+                                "field_type": "text",
+                                "field_label": "Ville(s) de pratique",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "4eee2c8",
+                                "custom_id": "disc_annees",
+                                "field_type": "number",
+                                "field_label": "Nombre d'années de pratique de la discipline",
+                                "width": "50",
+                                "field_min": "0"
+                            },
+                            {
+                                "_id": "ed366ee",
+                                "custom_id": "disc_niveaux",
+                                "field_type": "text",
+                                "field_label": "Principaux niveaux / grades représentés",
+                                "width": "50"
+                            },
+                            {
+                                "_id": "ebdbca4",
+                                "custom_id": "demo_titre",
+                                "field_type": "text",
+                                "field_label": "Titre / nom de la démonstration",
+                                "width": "100",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "ad55578",
+                                "custom_id": "demo_duree",
+                                "field_type": "number",
+                                "field_label": "Durée prévue (minutes, entre 10 et 15)",
+                                "width": "50",
+                                "required": "true",
+                                "field_min": "10",
+                                "field_max": "15"
+                            },
+                            {
+                                "_id": "8753a73",
+                                "custom_id": "demo_participants",
+                                "field_type": "number",
+                                "field_label": "Nombre de participants prévus",
+                                "width": "50",
+                                "required": "true",
+                                "field_min": "1"
+                            },
+                            {
+                                "_id": "13cc7d2",
+                                "custom_id": "demo_ages",
+                                "field_type": "text",
+                                "field_label": "Âge des participants",
+                                "width": "50",
+                                "required": "true",
+                                "placeholder": "Ex. : de 8 à 45 ans"
+                            },
+                            {
+                                "_id": "cece628",
+                                "custom_id": "demo_encadrants",
+                                "field_type": "number",
+                                "field_label": "Nombre d'encadrants / responsables présents",
+                                "width": "50",
+                                "required": "true",
+                                "field_min": "1"
+                            },
+                            {
+                                "_id": "1c4d385",
+                                "custom_id": "demo_contenu",
+                                "field_type": "textarea",
+                                "field_label": "Contenu de la démonstration",
+                                "width": "100",
+                                "required": "true",
+                                "placeholder": "Décrivez brièvement le déroulement prévu de votre prestation.",
+                                "rows": "5"
+                            },
+                            {
+                                "_id": "b10ce07",
+                                "custom_id": "demo_elements",
+                                "field_type": "checkbox",
+                                "field_label": "Éléments présentés",
+                                "width": "100",
+                                "field_options": "Techniques martiales\nKatas / formes\nCombat / opposition\nDémonstration technique\nAcrobatie\nArmes traditionnelles\nDémonstration collective\nAutre",
+                                "inline_list": "elementor-subgroup-inline"
+                            },
+                            {
+                                "_id": "0bac752",
+                                "custom_id": "demo_elements_autre",
+                                "field_type": "text",
+                                "field_label": "Si « Autre », précisez",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "0e6cba7",
+                                "custom_id": "info_musique",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"background:#f6f7fb;border-left:4px solid #1d2b53;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\">🎵 <strong>Musique</strong> : la démonstration se déroule obligatoirement en musique. Une seule piste audio de bonne qualité sera demandée aux structures retenues, dans un délai qui leur sera communiqué.</div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "b815368",
+                                "custom_id": "etape_technique",
+                                "field_type": "step",
+                                "field_label": "Technique et vidéo",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "597b567",
+                                "custom_id": "tech_surface",
+                                "field_type": "textarea",
+                                "field_label": "Surface / espace nécessaire",
+                                "width": "100",
+                                "rows": "2"
+                            },
+                            {
+                                "_id": "504c289",
+                                "custom_id": "tech_materiel",
+                                "field_type": "checkbox",
+                                "field_label": "Matériel nécessaire",
+                                "width": "100",
+                                "field_options": "Aucun matériel particulier\nTatamis\nArmes / matériel spécifique\nAccessoires\nAutre",
+                                "inline_list": "elementor-subgroup-inline"
+                            },
+                            {
+                                "_id": "f154a39",
+                                "custom_id": "tech_materiel_autre",
+                                "field_type": "text",
+                                "field_label": "Si « Autre », précisez",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "76b9d63",
+                                "custom_id": "tech_materiel_liste",
+                                "field_type": "textarea",
+                                "field_label": "Liste détaillée du matériel nécessaire",
+                                "width": "100",
+                                "rows": "3"
+                            },
+                            {
+                                "_id": "395ca53",
+                                "custom_id": "tech_besoins",
+                                "field_type": "textarea",
+                                "field_label": "Besoins particuliers",
+                                "width": "100",
+                                "rows": "3"
+                            },
+                            {
+                                "_id": "9559ceb",
+                                "custom_id": "info_materiel",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"background:#f6f7fb;border-left:4px solid #1d2b53;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\">Sauf accord préalable avec l'organisation, le matériel spécifique nécessaire à la démonstration est apporté par la structure participante.</div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "907a939",
+                                "custom_id": "info_video",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"background:#fdecee;border-left:4px solid #d62839;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\">🎬 <strong>Vidéo obligatoire</strong> : elle doit montrer une démonstration <strong>déjà effectuée</strong> par la structure (gala, compétition, manifestation…) pour permettre au comité d'apprécier le niveau, le contenu et la faisabilité. Une candidature sans vidéo pourra être considérée comme incomplète.<br>Vérifiez que le lien est accessible sans compte : vidéo YouTube « non répertoriée », ou partage Google Drive « Tous les utilisateurs disposant du lien ».</div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "00555ed",
+                                "custom_id": "video_lien",
+                                "field_type": "url",
+                                "field_label": "Lien vers la vidéo",
+                                "width": "66",
+                                "required": "true",
+                                "placeholder": "https://"
+                            },
+                            {
+                                "_id": "f829214",
+                                "custom_id": "video_plateforme",
+                                "field_type": "select",
+                                "field_label": "Plateforme",
+                                "width": "33",
+                                "required": "true",
+                                "field_options": "YouTube\nGoogle Drive\nAutre"
+                            },
+                            {
+                                "_id": "017bec1",
+                                "custom_id": "etape_engagement",
+                                "field_type": "step",
+                                "field_label": "Engagement",
+                                "previous_button": "",
+                                "next_button": ""
+                            },
+                            {
+                                "_id": "e3a8e90",
+                                "custom_id": "dispo_confirme",
+                                "field_type": "acceptance",
+                                "field_label": "Disponibilité",
+                                "width": "100",
+                                "required": "true",
+                                "acceptance_text": "La structure confirme être disponible le samedi 30 janvier 2027 et s'engage à respecter les horaires d'arrivée, de répétition et de passage communiqués par l'organisation (susceptibles d'être modifiés)."
+                            },
+                            {
+                                "_id": "d004dce",
+                                "custom_id": "info_engagement",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<div style=\"background:#f6f7fb;border-left:4px solid #1d2b53;border-radius:6px;padding:12px 16px;margin:4px 0 8px;\"><strong>En déposant ce dossier, la structure s'engage à :</strong><ul style=\"margin:0 0 0 1.2em;padding:0\"><li>respecter les consignes de sécurité, d'organisation et les horaires communiqués ;</li><li>informer l'organisateur de tout élément pouvant avoir une incidence sur la sécurité des participants ou du public ;</li><li>faire encadrer ses participants par les personnes compétentes de sa structure pendant leur présence sur l'événement ;</li><li>fournir ultérieurement, si elle est retenue : attestation d'assurance responsabilité civile, liste définitive des participants, autorisations parentales des mineurs, piste audio définitive.</li></ul></div>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "b2ec1e1",
+                                "custom_id": "engagement",
+                                "field_type": "acceptance",
+                                "field_label": "Engagement",
+                                "width": "100",
+                                "required": "true",
+                                "acceptance_text": "La structure a pris connaissance des conditions de participation et de sélection et s'y engage."
+                            },
+                            {
+                                "_id": "b5c3aff",
+                                "custom_id": "titre_declaration",
+                                "field_type": "html",
+                                "field_label": "",
+                                "field_html": "<strong>Déclaration</strong>",
+                                "width": "100"
+                            },
+                            {
+                                "_id": "e986870",
+                                "custom_id": "decl_nom",
+                                "field_type": "text",
+                                "field_label": "Nom",
+                                "width": "33",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "653165e",
+                                "custom_id": "decl_prenom",
+                                "field_type": "text",
+                                "field_label": "Prénom",
+                                "width": "33",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "6f3eae3",
+                                "custom_id": "decl_fonction",
+                                "field_type": "text",
+                                "field_label": "Fonction au sein de la structure",
+                                "width": "33",
+                                "required": "true"
+                            },
+                            {
+                                "_id": "aa39056",
+                                "custom_id": "decl_certifie",
+                                "field_type": "acceptance",
+                                "field_label": "Certification",
+                                "width": "100",
+                                "required": "true",
+                                "acceptance_text": "Je certifie l'exactitude des informations communiquées et confirme que la participation proposée est bénévole et non rémunérée."
+                            },
+                            {
+                                "_id": "c284ff2",
+                                "custom_id": "piege",
+                                "field_type": "honeypot",
+                                "field_label": "",
+                                "width": "100"
+                            }
+                        ],
+                        "input_size": "sm",
+                        "show_labels": "true",
+                        "mark_required": "yes",
+                        "step_type": "number_text",
+                        "step_next_label": "Suivant",
+                        "step_previous_label": "Précédent",
+                        "button_text": "Envoyer la candidature",
+                        "button_width": "100",
+                        "submit_actions": [
+                            "save-to-database",
+                            "email",
+                            "email2"
+                        ],
+                        "email_to": "contact@tkdclaira.fr",
+                        "email_subject": "[Gala 2027] Candidature : [field id=\"struct_nom\"] — [field id=\"disc_nom\"]",
+                        "email_content": "[all-fields]",
+                        "email_reply_to": "[field id=\"resp_email\"]",
+                        "email_content_type": "html",
+                        "form_metadata": [
+                            "date",
+                            "time",
+                            "page_url",
+                            "remote_ip"
+                        ],
+                        "email_to_2": "[field id=\"resp_email\"]",
+                        "email_subject_2": "Votre candidature au Gala des Arts Martiaux de Claira",
+                        "email_content_2": "<p>Bonjour [field id=\"resp_nom\"],</p><p>Nous avons bien reçu la candidature de <strong>[field id=\"struct_nom\"]</strong> au Gala des Arts Martiaux de Claira (samedi 30 janvier 2027). Merci !</p><p>Le comité organisateur étudiera les dossiers après le 15 décembre 2026 et reviendra vers vous. Pour toute correction, répondez simplement à ce message.</p><p><strong>Copie de votre candidature :</strong></p>[all-fields]<p>Taekwondo Claira — contact@tkdclaira.fr — tkdclaira.fr</p>",
+                        "email_reply_to_2": "contact@tkdclaira.fr",
+                        "email_content_type_2": "html",
+                        "form_metadata_2": [],
+                        "form_id": "candidature_gala_2027",
+                        "success_message": "Merci ! Votre candidature a bien été envoyée. Une copie vient de vous être adressée par e-mail (pensez à regarder dans les courriers indésirables).",
+                        "error_message": "Une erreur est survenue : vérifiez les champs signalés puis réessayez.",
+                        "required_field_message": "Ce champ est obligatoire.",
+                        "invalid_message": "Valeur invalide.",
+                        "custom_messages": "yes"
+                    }
+                }
+            ]
+        }
+    ]
+}
