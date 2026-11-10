@@ -24,7 +24,7 @@ class Tkd_Gala_Admin {
 
 	private function __construct() {
 		add_action( 'admin_menu', [ $this, 'menu' ] );
-		foreach ( [ 'reglages', 'paye', 'supprimer', 'ordre', 'export', 'zip', 'purger' ] as $a ) {
+		foreach ( [ 'reglages', 'paye', 'supprimer', 'ordre', 'export', 'zip', 'purger', 'candidatures' ] as $a ) {
 			add_action( 'admin_post_tkd_gala_' . $a, [ $this, 'action_' . $a ] );
 		}
 	}
@@ -54,7 +54,7 @@ class Tkd_Gala_Admin {
 		if ( ! current_user_can( self::CAP ) ) wp_die( 'Accès refusé' );
 		$r      = Tkd_Gala_DB::reglages();
 		$onglet = sanitize_key( $_GET['onglet'] ?? 'inscriptions' );
-		$onglets = [ 'inscriptions' => '🥋 Inscriptions', 'conducteur' => '🎬 Conducteur', 'reglages' => '⚙️ Réglages' ];
+		$onglets = [ 'inscriptions' => '🥋 Inscriptions', 'candidatures' => '🌐 Candidatures', 'conducteur' => '🎬 Conducteur', 'reglages' => '⚙️ Réglages' ];
 		wp_enqueue_style( 'tkd-gala-admin', TKD_GALA_URL . 'assets/gala-admin.css', [], TKD_GALA_VERSION . '-' . filemtime( TKD_GALA_DIR . 'assets/gala-admin.css' ) );
 
 		echo '<div class="wrap tkd-gala-admin"><h1>' . esc_html( $r['titre'] . ' ' . $r['edition'] ) . '</h1>';
@@ -65,13 +65,16 @@ class Tkd_Gala_Admin {
 
 		if ( $onglet === 'reglages' )       $this->onglet_reglages( $r );
 		elseif ( $onglet === 'conducteur' ) $this->onglet_conducteur( $r );
+		elseif ( $onglet === 'candidatures' ) $this->onglet_candidatures( $r );
 		elseif ( ! empty( $_GET['inscription'] ) ) $this->detail( intval( $_GET['inscription'] ), $r );
 		else                                 $this->onglet_inscriptions( $r );
 		echo '</div>';
 	}
 
 	private function notices( array $r ): void {
-		$msgs = [ 'reglages' => 'Réglages enregistrés.', 'paye' => 'Inscription mise à jour.', 'supprime' => 'Inscription supprimée.', 'ordre' => 'Ordre de passage enregistré.' ];
+		$msgs = [ 'reglages' => 'Réglages enregistrés.', 'paye' => 'Inscription mise à jour.', 'supprime' => 'Inscription supprimée.', 'ordre' => 'Ordre de passage enregistré.', 'candidatures' => 'Candidatures enregistrées.' ];
+		$ko   = intval( $_GET['audio_ko'] ?? 0 );
+		if ( $ko ) echo '<div class="notice notice-error"><p>' . intval( $ko ) . ' piste(s) audio refusée(s) : ' . esc_html( sanitize_text_field( wp_unslash( $_GET['audio_err'] ?? '' ) ) ) . '</p></div>';
 		$m    = sanitize_key( $_GET['fait'] ?? '' );
 		if ( isset( $msgs[ $m ] ) ) echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msgs[ $m ] ) . '</p></div>';
 		if ( $m === 'purge' ) echo '<div class="notice notice-success"><p>' . intval( $_GET['n'] ?? 0 ) . ' inscription(s) et leurs pistes audio supprimées.</p></div>';
@@ -94,7 +97,7 @@ class Tkd_Gala_Admin {
 			$par[ $i->id ] = Tkd_Gala_Mails::totaux( $i );
 			foreach ( $tot as $k => $v ) $tot[ $k ] = $v + $par[ $i->id ][ $k ];
 		}
-		$duree = array_sum( array_map( static fn( $d ) => (int) $d->duree_sec, Tkd_Gala_DB::demos_edition( $r['edition'] ) ) );
+		$duree = array_sum( array_map( static fn( $d ) => (int) $d->duree_sec, Tkd_Gala_DB::demos_edition( $r['edition'] ) ) ); // clubs de taekwondo seulement (le total soirée est dans le Conducteur)
 
 		echo '<div class="tkd-gala-cartes">';
 		foreach ( [
@@ -179,44 +182,123 @@ class Tkd_Gala_Admin {
 		echo $this->audio( $d ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans audio()
 	}
 
+	/** Lecteur + téléchargement ; $d est une démonstration de club ou une ligne du conducteur commun. */
 	private function audio( object $d ): string {
 		if ( (string) $d->audio_fichier === '' ) return '<span class="tkd-gala-alerte-txt">⚠️ Pas de piste audio</span>';
-		$url = Tkd_Gala_Audio::url_ecoute( intval( $d->id ) );
+		$url = ( $d->type ?? 'tkd' ) === 'ext' ? Tkd_Gala_Audio::url_ecoute_externe( intval( $d->id ) ) : Tkd_Gala_Audio::url_ecoute( intval( $d->id ) );
 		return '<audio controls preload="none" src="' . esc_url( $url ) . '"></audio> <a href="' . esc_url( add_query_arg( 'telecharger', '1', $url ) ) . '">⬇️ ' . esc_html( $d->audio_nom ) . '</a> <span class="description">(' . esc_html( size_format( (int) $d->audio_taille ) ) . ')</span>';
 	}
 
-	// ─── Conducteur ─────────────────────────────────────────────────────────────
+	// ─── Conducteur (clubs de taekwondo + candidatures retenues) ───────────────
 
-	/** Heures de passage : [ demo_id => 'HH:MM' ], d'après l'heure de début, les durées et le battement. */
+	/** Heures de passage : [ cle => 'HH:MM' ], d'après l'heure de début, les durées et le battement. */
 	private static function heures( array $demos, array $r ): array {
 		$h = [];
 		if ( ! preg_match( '/^(\d{1,2}):(\d{2})$/', (string) $r['heure_debut'], $m ) ) return $h;
 		$t = intval( $m[1] ) * 3600 + intval( $m[2] ) * 60;
 		foreach ( $demos as $d ) {
-			$h[ intval( $d->id ) ] = sprintf( '%02d:%02d', intdiv( $t, 3600 ) % 24, intdiv( $t % 3600, 60 ) );
+			$h[ $d->cle ] = sprintf( '%02d:%02d', intdiv( $t, 3600 ) % 24, intdiv( $t % 3600, 60 ) );
 			$t += intval( $d->duree_sec ) + intval( $r['battement_sec'] );
 		}
 		return $h;
 	}
 
 	private function onglet_conducteur( array $r ): void {
-		$demos  = Tkd_Gala_DB::demos_edition( $r['edition'] );
+		$demos  = Tkd_Gala_Candidatures::demos_conducteur( $r['edition'] );
 		$heures = self::heures( $demos, $r );
-		echo '<p class="description">Numérotez les démonstrations dans l\'ordre de passage puis enregistrez. Heures calculées à partir de ' . esc_html( $r['heure_debut'] ) . ', avec ' . intval( $r['battement_sec'] ) . ' s entre deux passages (onglet Réglages). Sans numéro : à la fin, dans l\'ordre d\'inscription.</p>';
+		$total  = array_sum( array_map( static fn( $d ) => (int) $d->duree_sec, $demos ) ) + max( 0, count( $demos ) - 1 ) * intval( $r['battement_sec'] );
+		echo '<p class="description">Toutes les démonstrations de la soirée : 🥋 clubs de taekwondo (onglet Inscriptions) et 🌐 autres disciplines retenues (onglet Candidatures). Numérotez-les dans l\'ordre de passage puis enregistrez. Heures calculées à partir de ' . esc_html( $r['heure_debut'] ) . ', avec ' . intval( $r['battement_sec'] ) . ' s entre deux passages (onglet Réglages). Sans numéro : à la fin.</p>';
 		if ( ! $demos ) { echo '<p>Aucune démonstration pour l\'instant.</p>'; return; }
+		echo '<p><strong>' . count( $demos ) . ' démonstration(s), ' . esc_html( Tkd_Gala_Front::duree( $total ) ) . ' au total</strong> (battements compris)' . ( isset( $heures[ $demos[ count( $demos ) - 1 ]->cle ] ) ? ', fin vers ' . esc_html( self::heure_fin( $demos, $heures, $r ) ) : '' ) . '.</p>';
 
 		self::form_debut( 'ordre' );
-		echo '<table class="widefat striped tkd-gala-conducteur"><thead><tr><th>Ordre</th><th>Heure</th><th>Club</th><th>Démonstration</th><th>Durée</th><th>Couleurs</th><th>Planches</th><th>Piste audio</th></tr></thead><tbody>';
+		echo '<table class="widefat striped tkd-gala-conducteur"><thead><tr><th>Ordre</th><th>Heure</th><th></th><th>Club / structure</th><th>Démonstration</th><th>Durée</th><th>Couleurs</th><th>Planches</th><th>Piste audio</th></tr></thead><tbody>';
 		foreach ( $demos as $d ) {
-			echo '<tr><td><input type="number" min="1" step="1" name="ordre[' . intval( $d->id ) . ']" value="' . esc_attr( $d->ordre_passage === null ? '' : (string) $d->ordre_passage ) . '" class="small-text"></td>';
-			echo '<td><strong>' . esc_html( $heures[ intval( $d->id ) ] ?? '' ) . '</strong></td>';
-			echo '<td>' . esc_html( $d->club_nom ) . '</td><td>' . esc_html( $d->titre !== '' ? $d->titre : '—' ) . '</td>';
-			echo '<td>' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) ) . '</td><td>' . esc_html( $d->couleur1 . ' / ' . $d->couleur2 ) . '</td><td>' . intval( $d->planches ) . '</td>';
+			$ext = $d->type === 'ext';
+			echo '<tr><td><input type="number" min="1" step="1" name="ordre[' . esc_attr( $d->cle ) . ']" value="' . esc_attr( $d->ordre_passage === null ? '' : (string) $d->ordre_passage ) . '" class="small-text"></td>';
+			echo '<td><strong>' . esc_html( $heures[ $d->cle ] ?? '' ) . '</strong></td>';
+			echo '<td title="' . ( $ext ? 'Autre discipline' : 'Taekwondo' ) . '">' . ( $ext ? '🌐' : '🥋' ) . '</td>';
+			echo '<td>' . esc_html( $d->club_nom ) . ( $ext && $d->discipline !== '' ? '<br><span class="description">' . esc_html( $d->discipline ) . '</span>' : '' ) . '</td>';
+			echo '<td>' . esc_html( $d->titre !== '' ? $d->titre : '—' ) . ( $ext && $d->participants ? '<br><span class="description">' . intval( $d->participants ) . ' participant(s)</span>' : '' ) . '</td>';
+			echo '<td>' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) ) . '</td>';
+			echo '<td>' . ( $ext ? '—' : esc_html( $d->couleur1 . ' / ' . $d->couleur2 ) ) . '</td><td>' . ( $ext ? '—' : intval( $d->planches ) ) . '</td>';
 			echo '<td>' . $this->audio( $d ) . '</td></tr>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans audio()
 		}
 		echo '</tbody></table><p>';
 		submit_button( 'Enregistrer l\'ordre de passage', 'primary', 'submit', false );
 		echo ' <button type="button" class="button" onclick="window.print()">🖨️ Imprimer</button></p></form>';
+	}
+
+	private static function heure_fin( array $demos, array $heures, array $r ): string {
+		$der = $demos[ count( $demos ) - 1 ];
+		if ( ! preg_match( '/^(\d{2}):(\d{2})$/', (string) ( $heures[ $der->cle ] ?? '' ), $m ) ) return '';
+		$t = intval( $m[1] ) * 3600 + intval( $m[2] ) * 60 + intval( $der->duree_sec );
+		return sprintf( '%02d:%02d', intdiv( $t, 3600 ) % 24, intdiv( $t % 3600, 60 ) );
+	}
+
+	// ─── Candidatures hors taekwondo (formulaire Elementor) ────────────────────
+
+	private function onglet_candidatures( array $r ): void {
+		if ( ! Tkd_Gala_Candidatures::elementor_dispo() ) {
+			echo '<p>Les envois de formulaires Elementor ne sont pas disponibles sur ce site (Elementor Pro inactif ou action « Collecter les envois » jamais utilisée).</p>';
+			return;
+		}
+		$cands = Tkd_Gala_Candidatures::candidatures();
+		$ext   = Tkd_Gala_Candidatures::externes( $r['edition'] );
+		$nb_ret = count( array_filter( $ext, static fn( $x ) => (int) $x->retenue === 1 ) );
+		echo '<p class="description">Envois du formulaire Elementor « ' . esc_html( $r['form_candidature'] ) . ' » (nom réglable dans l\'onglet Réglages), lus sans être modifiés : le détail complet reste dans <a href="' . esc_url( admin_url( 'admin.php?page=e-form-submissions' ) ) . '">Elementor → Envois</a>. Cochez les candidatures retenues : elles rejoignent le Conducteur. Leur piste audio, reçue plus tard, se dépose ici.</p>';
+		if ( ! $cands ) { echo '<p>Aucune candidature pour l\'instant.</p>'; return; }
+		echo '<p><strong>' . count( $cands ) . ' candidature(s), ' . intval( $nb_ret ) . ' retenue(s).</strong></p>';
+
+		self::form_debut( 'candidatures', 'enctype="multipart/form-data"' );
+		echo '<table class="widefat striped tkd-gala-candidatures"><thead><tr><th>Retenue</th><th>Structure</th><th>Discipline</th><th>Démonstration</th><th>Contact</th><th>Vidéo</th><th>Technique</th><th>Piste audio</th></tr></thead><tbody>';
+		foreach ( $cands as $c ) {
+			$v   = $c->v;
+			$sid = intval( $c->id );
+			$x   = $ext[ $sid ] ?? null;
+			$ret = $x && (int) $x->retenue === 1;
+			$g   = static fn( string $k ) => esc_html( (string) ( $v[ $k ] ?? '' ) );
+			echo '<tr' . ( $ret ? ' class="tkd-gala-retenue"' : '' ) . '>';
+			echo '<td><input type="hidden" name="toutes[]" value="' . intval( $sid ) . '"><label><input type="checkbox" name="retenue[' . intval( $sid ) . ']" value="1"' . checked( $ret, true, false ) . '> Retenue</label>'
+				. '<br><a class="description" href="' . esc_url( admin_url( 'admin.php?page=e-form-submissions#/' . $sid ) ) . '">Envoi n° ' . intval( $sid ) . '</a><br><span class="description">' . esc_html( mysql2date( 'd/m/Y', $c->created_at ) ) . '</span></td>';
+			echo '<td><strong>' . $g( 'struct_nom' ) . '</strong>' . ( ! empty( $v['struct_sigle'] ) ? ' (' . $g( 'struct_sigle' ) . ')' : '' ) . '<br><span class="description">' . $g( 'struct_cp_ville' ) . '</span></td>';
+			echo '<td>' . $g( 'disc_nom' ) . ( ! empty( $v['disc_federation'] ) ? '<br><span class="description">' . $g( 'disc_federation' ) . '</span>' : '' ) . '</td>';
+			echo '<td><strong>' . $g( 'demo_titre' ) . '</strong><br>' . intval( $v['demo_duree'] ?? 0 ) . ' min · ' . intval( $v['demo_participants'] ?? 0 ) . ' participant(s) · ' . $g( 'demo_ages' ) . '</td>';
+			echo '<td>' . $g( 'resp_nom' ) . ( ! empty( $v['resp_fonction'] ) ? ' — ' . $g( 'resp_fonction' ) : '' ) . '<br><a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', (string) ( $v['resp_tel'] ?? '' ) ) ) . '">' . $g( 'resp_tel' ) . '</a><br><a href="mailto:' . esc_attr( (string) ( $v['resp_email'] ?? '' ) ) . '">' . $g( 'resp_email' ) . '</a></td>';
+			echo '<td>' . ( ! empty( $v['video_lien'] ) ? '<a href="' . esc_url( (string) $v['video_lien'] ) . '" target="_blank" rel="noopener noreferrer">▶️ ' . $g( 'video_plateforme' ) . '</a>' : '—' ) . '</td>';
+			$tech = trim( implode( ' · ', array_filter( [ $v['tech_materiel'] ?? '', $v['tech_surface'] ?? '', $v['tech_besoins'] ?? '' ] ) ) );
+			echo '<td class="description">' . esc_html( mb_strimwidth( $tech, 0, 160, '…' ) ) . '</td>';
+			echo '<td>' . ( $x && (string) $x->audio_fichier !== '' ? $this->audio( (object) [ 'type' => 'ext', 'id' => $x->id, 'audio_fichier' => $x->audio_fichier, 'audio_nom' => $x->audio_nom, 'audio_taille' => $x->audio_taille ] ) . '<br>' : '' ) // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans audio()
+				. ( $ret ? '<input type="file" name="audio_' . intval( $sid ) . '" accept=".mp3,.m4a,.aac,.wav,audio/*">' : '<span class="description">Après sélection</span>' ) . '</td>';
+			echo '</tr>';
+		}
+		echo '</tbody></table><p>';
+		submit_button( 'Enregistrer (sélection et pistes audio)', 'primary', 'submit', false );
+		echo '</p></form>';
+	}
+
+	public function action_candidatures(): void {
+		self::garde( 'candidatures' );
+		$edition = (string) Tkd_Gala_DB::reglages()['edition'];
+		$valides = [];
+		foreach ( Tkd_Gala_Candidatures::candidatures() as $c ) $valides[ intval( $c->id ) ] = true;
+		$retenues = array_map( 'intval', array_keys( (array) ( $_POST['retenue'] ?? [] ) ) );
+		foreach ( array_map( 'intval', (array) ( $_POST['toutes'] ?? [] ) ) as $sid ) {
+			if ( ! isset( $valides[ $sid ] ) ) continue;
+			Tkd_Gala_Candidatures::definir_retenue( $sid, in_array( $sid, $retenues, true ), $edition );
+		}
+		$ko = 0; $err = '';
+		foreach ( $retenues as $sid ) {
+			$f = $_FILES[ 'audio_' . $sid ] ?? null;
+			if ( ! isset( $valides[ $sid ] ) || ! $f || intval( $f['error'] ?? UPLOAD_ERR_NO_FILE ) === UPLOAD_ERR_NO_FILE ) continue;
+			$e = Tkd_Gala_Audio::verifier( $f );
+			$x = Tkd_Gala_Candidatures::assurer_externe( $sid, $edition );
+			if ( $e !== '' || ! Tkd_Gala_Audio::enregistrer_envoi_externe( $f, intval( $x->id ) ) ) { $ko++; $err = $e !== '' ? $e : 'enregistrement impossible sur le serveur.'; }
+		}
+		$args = [ 'onglet' => 'candidatures', 'fait' => 'candidatures' ];
+		if ( $ko ) $args += [ 'audio_ko' => $ko, 'audio_err' => rawurlencode( $err ) ];
+		wp_safe_redirect( self::url( $args ) );
+		exit;
 	}
 
 	// ─── Réglages ───────────────────────────────────────────────────────────────
@@ -243,6 +325,7 @@ class Tkd_Gala_Admin {
 		$ligne( 'Couleurs proposées', '<textarea name="r[couleurs]" rows="8" class="regular-text">' . esc_textarea( (string) $r['couleurs'] ) . '</textarea>', 'Une couleur par ligne : à voir avec la personne qui gère l\'éclairage.' );
 		$ligne( 'Paiement des repas', '<textarea name="r[paiement]" rows="2" class="large-text">' . esc_textarea( (string) $r['paiement'] ) . '</textarea>' );
 		$ligne( 'Données personnelles', '<textarea name="r[texte_rgpd]" rows="3" class="large-text">' . esc_textarea( (string) $r['texte_rgpd'] ) . '</textarea>', 'Affiché au-dessus de la case d\'accord du formulaire.' );
+		$ligne( 'Formulaire des candidatures', $in( 'form_candidature', 'text', 'class="regular-text"' ), 'Nom exact du formulaire Elementor des autres disciplines (widget Formulaire → « Nom du formulaire ») : ses envois apparaissent dans l\'onglet Candidatures.' );
 		echo '</table>';
 		submit_button( 'Enregistrer les réglages' );
 		echo '</form>';
@@ -278,6 +361,7 @@ class Tkd_Gala_Admin {
 			'couleurs'      => implode( "\n", $couleurs ?: Tkd_Gala_DB::couleurs() ),
 			'paiement'      => sanitize_textarea_field( (string) ( $in['paiement'] ?? '' ) ),
 			'texte_rgpd'    => sanitize_textarea_field( (string) ( $in['texte_rgpd'] ?? '' ) ),
+			'form_candidature' => mb_substr( $txt( 'form_candidature' ), 0, 60 ) ?: 'Candidature Gala Arts Martiaux 2027',
 		] );
 		wp_safe_redirect( self::url( [ 'onglet' => 'reglages', 'fait' => 'reglages' ] ) );
 		exit;
@@ -306,13 +390,15 @@ class Tkd_Gala_Admin {
 		self::garde( 'ordre' );
 		global $wpdb;
 		$edition = Tkd_Gala_DB::reglages()['edition'];
-		$ok      = [];
-		foreach ( Tkd_Gala_DB::demos_edition( $edition ) as $d ) $ok[ intval( $d->id ) ] = true;
-		foreach ( (array) wp_unslash( $_POST['ordre'] ?? [] ) as $id => $v ) {
-			$id = intval( $id );
-			if ( ! isset( $ok[ $id ] ) ) continue;
-			$v = trim( sanitize_text_field( (string) $v ) );
-			$wpdb->update( Tkd_Gala_DB::t_demos(), [ 'ordre_passage' => $v === '' ? null : max( 1, intval( $v ) ) ], [ 'id' => $id ] );
+		$ok      = []; // clés du conducteur : « d<id> » démonstration de club, « e<id> » candidature retenue
+		foreach ( Tkd_Gala_Candidatures::demos_conducteur( $edition ) as $d ) $ok[ $d->cle ] = $d;
+		foreach ( (array) wp_unslash( $_POST['ordre'] ?? [] ) as $cle => $v ) {
+			$cle = sanitize_key( (string) $cle );
+			if ( ! isset( $ok[ $cle ] ) ) continue;
+			$v     = trim( sanitize_text_field( (string) $v ) );
+			$ordre = $v === '' ? null : max( 1, intval( $v ) );
+			if ( $ok[ $cle ]->type === 'ext' ) Tkd_Gala_Candidatures::definir_ordre( $ok[ $cle ]->id, $ordre );
+			else $wpdb->update( Tkd_Gala_DB::t_demos(), [ 'ordre_passage' => $ordre ], [ 'id' => $ok[ $cle ]->id ] );
 		}
 		wp_safe_redirect( self::url( [ 'onglet' => 'conducteur', 'fait' => 'ordre' ] ) );
 		exit;
@@ -349,13 +435,14 @@ class Tkd_Gala_Admin {
 		$e = sanitize_file_name( $r['edition'] );
 
 		if ( sanitize_key( wp_unslash( $_GET['type'] ?? '' ) ) === 'conducteur' ) {
-			$demos  = Tkd_Gala_DB::demos_edition( $r['edition'] );
+			$demos  = Tkd_Gala_Candidatures::demos_conducteur( $r['edition'] );
 			$heures = self::heures( $demos, $r );
 			$l = [];
 			foreach ( $demos as $d ) {
-				$l[] = [ $d->ordre_passage, $heures[ intval( $d->id ) ] ?? '', $d->club_nom, $d->titre, Tkd_Gala_Front::duree( (int) $d->duree_sec ), $d->couleur1, $d->couleur2, $d->planches, $d->audio_nom !== '' ? $d->audio_nom : 'MANQUANTE' ];
+				$ext = $d->type === 'ext';
+				$l[] = [ $d->ordre_passage, $heures[ $d->cle ] ?? '', $d->discipline, $d->club_nom, $d->titre, Tkd_Gala_Front::duree( (int) $d->duree_sec ), $ext ? '' : $d->couleur1, $ext ? '' : $d->couleur2, $ext ? '' : $d->planches, $ext ? $d->participants : '', (string) $d->audio_nom !== '' ? $d->audio_nom : 'MANQUANTE' ];
 			}
-			self::csv( 'gala-' . $e . '-demonstrations.csv', [ 'Ordre', 'Heure', 'Club', 'Démonstration', 'Durée', 'Couleur 1', 'Couleur 2', 'Planches', 'Piste audio' ], $l );
+			self::csv( 'gala-' . $e . '-demonstrations.csv', [ 'Ordre', 'Heure', 'Discipline', 'Club / structure', 'Démonstration', 'Durée', 'Couleur 1', 'Couleur 2', 'Planches', 'Participants', 'Piste audio' ], $l );
 		}
 
 		$l = [];
@@ -370,7 +457,7 @@ class Tkd_Gala_Admin {
 		check_admin_referer( 'tkd_gala_zip' );
 		if ( ! class_exists( 'ZipArchive' ) ) wp_die( 'L\'extension PHP « zip » n\'est pas disponible sur ce serveur : téléchargez les pistes une par une depuis le conducteur.' );
 		$r     = Tkd_Gala_DB::reglages();
-		$demos = Tkd_Gala_DB::demos_edition( $r['edition'] );
+		$demos = Tkd_Gala_Candidatures::demos_conducteur( $r['edition'] ); // clubs + candidatures retenues
 		$tmp   = wp_tempnam( 'tkd-gala' );
 		$zip   = new ZipArchive();
 		if ( $zip->open( $tmp, ZipArchive::OVERWRITE ) !== true ) wp_die( 'Impossible de créer l\'archive.' );

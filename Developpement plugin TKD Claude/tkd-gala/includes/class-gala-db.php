@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Tkd_Gala_DB {
 
-	const DB_VERSION = '1.0';
+	const DB_VERSION = '1.1'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures)
 	const OPT_DB     = 'tkd_gala_db_version';
 	const OPT_REG    = 'tkd_gala_reglages';
 
@@ -84,8 +84,10 @@ class Tkd_Gala_DB {
 			KEY inscription_id (inscription_id)
 		) $c;" );
 
+		dbDelta( Tkd_Gala_Candidatures::sql_creer( $c ) );
+
 		$manque = [];
-		foreach ( [ self::t_inscriptions(), self::t_participants(), self::t_demos() ] as $t ) {
+		foreach ( [ self::t_inscriptions(), self::t_participants(), self::t_demos(), Tkd_Gala_Candidatures::t_externes() ] as $t ) {
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $t ) ) !== $t ) $manque[] = $t;
 		}
 		if ( $manque ) {
@@ -115,6 +117,8 @@ class Tkd_Gala_DB {
 			'couleurs'      => "Rouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr",
 			'paiement'      => 'Les repas sont à régler sur place, le jour du gala.',
 			'texte_rgpd'    => "Les noms, prénoms et dates de naissance des démonstrateurs servent uniquement à l'organisation du gala (liste des participants, repas). Ils sont supprimés au plus tard un mois après le gala.",
+			// Nom du formulaire Elementor des candidatures hors taekwondo (onglet Candidatures).
+			'form_candidature' => 'Candidature Gala Arts Martiaux 2027',
 		];
 	}
 
@@ -318,6 +322,7 @@ class Tkd_Gala_DB {
 	public static function purger_edition( string $edition ): int {
 		$n = 0;
 		foreach ( self::inscriptions( $edition ) as $i ) { self::supprimer_inscription( intval( $i->id ) ); $n++; }
+		Tkd_Gala_Candidatures::purger_edition( $edition ); // les candidatures elles-mêmes restent dans Elementor
 		Tkd_Gala_Audio::supprimer_dossier( $edition );
 		return $n;
 	}

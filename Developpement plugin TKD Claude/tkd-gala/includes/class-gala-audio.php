@@ -93,10 +93,29 @@ class Tkd_Gala_Audio {
 		return true;
 	}
 
+	/**
+	 * Chemin du fichier d'une démonstration de club (édition lue sur son inscription) ou d'une
+	 * candidature retenue (objet qui porte lui-même son « edition »).
+	 */
 	public static function chemin( object $demo ): string {
 		if ( (string) $demo->audio_fichier === '' ) return '';
+		if ( isset( $demo->edition ) ) return self::dossier( (string) $demo->edition ) . basename( (string) $demo->audio_fichier );
 		$ins = Tkd_Gala_DB::inscription( intval( $demo->inscription_id ) );
 		return $ins ? self::dossier( $ins->edition ) . basename( (string) $demo->audio_fichier ) : '';
+	}
+
+	/** Piste d'une candidature retenue, déposée par l'organisation ; remplace l'ancienne. */
+	public static function enregistrer_envoi_externe( array $f, int $externe_id ): bool {
+		$x = Tkd_Gala_Candidatures::externe( $externe_id );
+		if ( ! $x ) return false;
+		$dir = self::dossier( $x->edition );
+		if ( ! self::preparer_dossier( $dir ) ) { error_log( '[TKD Gala] dossier audio impossible à créer : ' . $dir ); return false; }
+		$ext = strtolower( pathinfo( (string) $f['name'], PATHINFO_EXTENSION ) );
+		$nom = 'candidature' . intval( $x->submission_id ) . '-' . bin2hex( random_bytes( 6 ) ) . '.' . $ext;
+		if ( ! move_uploaded_file( $f['tmp_name'], $dir . $nom ) ) { error_log( '[TKD Gala] move_uploaded_file a échoué vers ' . $dir . $nom ); return false; }
+		self::supprimer_fichier( $x );
+		Tkd_Gala_Candidatures::attacher_audio( $externe_id, $nom, mb_substr( sanitize_file_name( (string) $f['name'] ), 0, 255 ), intval( $f['size'] ) );
+		return true;
 	}
 
 	public static function supprimer_fichier( object $demo ): void {
@@ -119,7 +138,18 @@ class Tkd_Gala_Audio {
 		return add_query_arg( $args, home_url( '/' ) );
 	}
 
+	/** Écoute d'une piste de candidature : administrateurs seulement. */
+	public static function url_ecoute_externe( int $externe_id ): string {
+		return add_query_arg( 'tkd_gala_audio_ext', $externe_id, home_url( '/' ) );
+	}
+
 	public function maybe_servir(): void {
+		if ( ! empty( $_GET['tkd_gala_audio_ext'] ) ) {
+			$x    = current_user_can( 'manage_options' ) ? Tkd_Gala_Candidatures::externe( intval( $_GET['tkd_gala_audio_ext'] ) ) : null;
+			$path = $x ? self::chemin( $x ) : '';
+			if ( $path === '' || ! is_file( $path ) ) { status_header( 404 ); nocache_headers(); exit( 'Piste introuvable.' ); }
+			self::envoyer_fichier( $path, (string) ( $x->audio_nom ?: basename( $path ) ), ! empty( $_GET['telecharger'] ) );
+		}
 		if ( empty( $_GET['tkd_gala_audio'] ) ) return;
 		$demo = Tkd_Gala_DB::demo( intval( $_GET['tkd_gala_audio'] ) );
 		$ins  = $demo ? Tkd_Gala_DB::inscription( intval( $demo->inscription_id ) ) : null;

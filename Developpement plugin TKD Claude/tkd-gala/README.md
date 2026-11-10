@@ -21,8 +21,9 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 ## Administration (menu Gala)
 
 - **Inscriptions** : totaux (clubs, démonstrateurs, repas et montant, démonstrations, durée cumulée, planches, pistes manquantes), liste des clubs, détail (participants, écoute des pistes, case « Repas payés », note interne, suppression).
-- **Conducteur** : numéro d'ordre de passage par démonstration, heures calculées (début + durées + battement), écoute, impression.
-- **Exports** : CSV des démonstrateurs (pour le traiteur), CSV des démonstrations, ZIP de toutes les pistes nommées dans l'ordre de passage.
+- **Candidatures** (depuis la 1.1.0, 10/11/2026) : envois du formulaire Elementor des autres disciplines (nom réglable : Réglages → « Formulaire des candidatures »), **lus sans être modifiés** dans les tables d'Elementor (`…e_submissions`, `…e_submissions_values`). Case « Retenue » par candidature ; dépôt de la piste audio d'une candidature retenue (reçue par mail) par l'organisation. Sélection, ordre et piste rangés dans `…tkd_gala_externes` (une ligne par envoi Elementor). Écoute réservée aux administrateurs (`?tkd_gala_audio_ext=`).
+- **Conducteur** : toutes les démonstrations de la soirée, 🥋 clubs de taekwondo et 🌐 candidatures retenues, avec **un seul** numéro d'ordre de passage ; heures calculées (début + durées + battement), durée totale et heure de fin, écoute, impression.
+- **Exports** : CSV des démonstrateurs (pour le traiteur), CSV des démonstrations (clubs et candidatures retenues, avec discipline et heure), ZIP de toutes les pistes nommées dans l'ordre de passage.
 - **Après le gala** : Réglages → « Supprimer les données de l'édition » (inscriptions et pistes audio, irréversible).
 
 ## Sécurité
@@ -38,3 +39,5 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 - **Piste audio introuvable à l'écoute** : vérifier le dossier `uploads/tkd-gala/<édition>/` ; changer d'édition dans les réglages ne déplace pas les fichiers.
 - **Lecture impossible sur iPhone** : la lecture passe par `Tkd_Gala_Audio::envoyer_fichier()`, qui gère les requêtes « Range » exigées par Safari.
 - **Tables absentes** : désactiver puis réactiver l'extension ; message `[TKD Gala] tables absentes` dans le journal d'erreurs sinon.
+- **Onglet Candidatures vide** : vérifier que le nom du formulaire Elementor correspond exactement au réglage « Formulaire des candidatures », et que l'action « Collecter les envois » est active sur ce formulaire. Une candidature mise à la corbeille dans Elementor disparaît de l'onglet (et du Conducteur).
+- **Une candidature retenue n'apparaît pas au Conducteur** : elle est retenue pour une autre édition (la ligne garde l'édition du moment où elle a été cochée).

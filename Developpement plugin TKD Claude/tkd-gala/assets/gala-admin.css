@@ -11,6 +11,9 @@
 .tkd-gala-demo-admin { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 10px 14px; margin: 0 0 10px; }
 .tkd-gala-admin audio { height: 34px; vertical-align: middle; max-width: 100%; }
 .tkd-gala-conducteur td { vertical-align: middle; }
+.tkd-gala-candidatures td { vertical-align: top; }
+.tkd-gala-candidatures tr.tkd-gala-retenue td { background: #ecfdf3; }
+.tkd-gala-candidatures input[type=file] { max-width: 220px; }
 
 @media print {
 	#adminmenumain, #wpadminbar, #wpfooter, .nav-tab-wrapper, .notice, .tkd-gala-admin .button, .tkd-gala-admin .description, .tkd-gala-admin audio { display: none !important; }
