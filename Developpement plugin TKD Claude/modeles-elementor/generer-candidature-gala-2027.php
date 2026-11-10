@@ -17,7 +17,7 @@ $ORGA_EMAIL   = 'contact@tkdclaira.fr';
 $DATE_LIMITE  = '15 décembre 2026';
 $DATE_GALA    = 'samedi 30 janvier 2027';
 $DUREE_MIN    = 10;
-$DUREE_MAX    = 15;   // ⚠️ le PDF dit « 10 à 20 » en page 1 et « 10 à 15 » en pages 4 et 5 : à confirmer
+$DUREE_MAX    = 20;   // décision du 10/11/2026 (le PDF disait aussi « 10 à 15 » en pages 4 et 5)
 
 $ids = [];
 function id7(): string { global $ids; do { $i = substr( bin2hex( random_bytes( 4 ) ), 0, 7 ); } while ( isset( $ids[ $i ] ) ); $ids[ $i ] = 1; return $i; }

@@ -10,7 +10,7 @@ Formulaire de candidature des structures **hors taekwondo**, d'après le dossier
 - **Vidéo** : lien obligatoire (YouTube, Google Drive, Autre), pas d'envoi de fichier (taille, fichiers publics). WeTransfer volontairement absent (liens qui expirent).
 - **Signature / « Fait à… le… »** remplacés par une case de certification + nom, prénom, fonction (date d'envoi enregistrée automatiquement).
 - **Anti-robots** : champ piège (honeypot).
-- **Durée** : 10 à 15 minutes (le PDF dit aussi « 10 à 20 » en page 1 : à trancher, constante `$DUREE_MAX` du script).
+- **Durée** : 10 à 20 minutes (décision du 10/11/2026 ; le PDF indique encore « 10 à 15 » en pages 4 et 5, à corriger dans le PDF). Constante `$DUREE_MAX` du script.
 
 ### Mise en place
 
