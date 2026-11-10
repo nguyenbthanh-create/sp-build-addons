@@ -228,6 +228,8 @@ class Tkd_Gala_Front {
 
 		$data['consentement'] = ! empty( $post['consentement'] );
 		if ( ! $data['consentement'] ) $err[] = 'Cochez l\'attestation d\'accord des démonstrateurs (et de leurs représentants légaux pour les mineurs).';
+		$data['reglement'] = ! empty( $post['reglement'] );
+		if ( ! $data['reglement'] && (string) $r['url_reglement'] !== '' ) $err[] = 'Cochez la case d\'acceptation du règlement des démonstrations.';
 
 		return [ $data, $err ];
 	}
@@ -264,6 +266,7 @@ class Tkd_Gala_Front {
 			'participants' => $p,
 			'demos'        => $d,
 			'consentement' => ! empty( $ins->consentement ),
+			'reglement'    => ! empty( $ins->reglement ),
 		];
 	}
 
@@ -273,6 +276,7 @@ class Tkd_Gala_Front {
 			'participants' => [ [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false ] ],
 			'demos'        => [ 'n0' => [ 'id' => 0, 'titre' => '', 'duree_sec' => 0, 'couleur1' => '', 'couleur2' => '', 'planches' => 0, 'audio_nom' => '' ] ],
 			'consentement' => false,
+			'reglement'    => false,
 		];
 	}
 
@@ -423,9 +427,12 @@ class Tkd_Gala_Front {
 			</section>
 
 			<section class="tkd-gala-bloc">
-				<h3>4. Accord et données personnelles</h3>
+				<h3>4. Accord, données personnelles et règlement</h3>
 				<p class="tkd-gala-aide"><?php echo esc_html( $r['texte_rgpd'] ); ?></p>
 				<p><label class="tkd-gala-case"><input type="checkbox" name="consentement" value="1" required<?php checked( ! empty( $data['consentement'] ) ); ?>> J'atteste avoir l'accord des démonstrateurs, et de leurs représentants légaux pour les mineurs, pour la transmission de ces informations. <span class="tkd-gala-requis">*</span></label></p>
+				<?php if ( (string) $r['url_reglement'] !== '' ) : ?>
+				<p><label class="tkd-gala-case"><input type="checkbox" name="reglement" value="1" required<?php checked( ! empty( $data['reglement'] ) ); ?>> <span>J'ai lu et j'accepte, au nom du club et de ses démonstrateurs, le <a href="<?php echo esc_url( $r['url_reglement'] ); ?>" target="_blank" rel="noopener">règlement des démonstrations (PDF)</a>.</span> <span class="tkd-gala-requis">*</span></label></p>
+				<?php endif; ?>
 			</section>
 
 			<p class="tkd-gala-envoi"><button type="submit" class="tkd-gala-btn tkd-gala-btn-principal"><?php echo $ins ? 'Enregistrer les modifications' : 'Envoyer l\'inscription'; ?></button></p>

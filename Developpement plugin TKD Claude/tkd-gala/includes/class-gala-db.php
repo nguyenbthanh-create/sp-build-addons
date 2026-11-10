@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Tkd_Gala_DB {
 
-	const DB_VERSION = '1.1'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures)
+	const DB_VERSION = '1.2'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement)
 	const OPT_DB     = 'tkd_gala_db_version';
 	const OPT_REG    = 'tkd_gala_reglages';
 
@@ -46,6 +46,7 @@ class Tkd_Gala_DB {
 			telephone varchar(30) NOT NULL DEFAULT '',
 			email varchar(150) NOT NULL DEFAULT '',
 			consentement datetime DEFAULT NULL,
+			reglement datetime DEFAULT NULL,
 			paye tinyint(1) NOT NULL DEFAULT 0,
 			note_admin text,
 			created_at datetime NOT NULL,
@@ -117,6 +118,8 @@ class Tkd_Gala_DB {
 			'couleurs'      => "Rouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr",
 			'paiement'      => 'Les repas sont à régler sur place, le jour du gala.',
 			'texte_rgpd'    => "Les noms, prénoms et dates de naissance des démonstrateurs servent uniquement à l'organisation du gala (liste des participants, repas). Ils sont supprimés au plus tard un mois après le gala.",
+			// Règlement des démonstrations (PDF de la médiathèque) : case à cocher obligatoire du formulaire.
+			'url_reglement' => 'https://tkdclaira.fr/wp-content/uploads/2026/11/Reglement_Demonstrations_Taekwondo_Gala_2027-V2.pdf',
 			// Nom du formulaire Elementor des candidatures hors taekwondo (onglet Candidatures).
 			'form_candidature' => 'Candidature Gala Arts Martiaux 2027',
 		];
@@ -245,6 +248,7 @@ class Tkd_Gala_DB {
 			'telephone'    => $club['telephone'],
 			'email'        => $club['email'],
 			'consentement' => $now,
+			'reglement'    => $now, // case « règlement accepté » obligatoire à chaque enregistrement
 			'updated_at'   => $now,
 		];
 

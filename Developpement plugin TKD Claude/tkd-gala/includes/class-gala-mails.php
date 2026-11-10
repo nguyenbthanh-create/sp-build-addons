@@ -61,6 +61,9 @@ class Tkd_Gala_Mails {
 			$s .= '  Couleurs : ' . $d->couleur1 . ' et ' . $d->couleur2 . ' · Planches : ' . intval( $d->planches ) . "\n";
 			$s .= '  Piste audio : ' . ( $d->audio_nom !== '' ? $d->audio_nom : '⚠️ pas encore envoyée' ) . "\n";
 		}
+		if ( ! empty( $ins->reglement ) ) {
+			$s .= "\nRÈGLEMENT\n  Accepté le " . mysql2date( 'd/m/Y à H:i', $ins->reglement ) . ( (string) $r['url_reglement'] !== '' ? ' : ' . $r['url_reglement'] : '' ) . "\n";
+		}
 		return $s;
 	}
 

@@ -145,7 +145,8 @@ class Tkd_Gala_Admin {
 		echo '<h2>' . esc_html( $i->club_nom ) . '</h2>';
 		echo '<p>' . esc_html( $i->representant . ' — ' . $i->role ) . '<br>📞 ' . esc_html( $i->telephone ) . ' · ✉️ <a href="mailto:' . esc_attr( $i->email ) . '">' . esc_html( $i->email ) . '</a>'
 			. ( $i->affiliation !== '' ? '<br>Affiliation FFTDA : ' . esc_html( $i->affiliation ) : '' ) . '</p>';
-		echo '<p class="description">Inscrit le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->created_at ) ) . ', modifié le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->updated_at ) ) . '.</p>';
+		echo '<p class="description">Inscrit le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->created_at ) ) . ', modifié le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->updated_at ) ) . '.<br>'
+			. ( empty( $i->reglement ) ? '⚠️ Règlement des démonstrations pas encore accepté (inscription antérieure à la case).' : '✅ Règlement des démonstrations accepté le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->reglement ) ) . '.' ) . '</p>';
 		echo '<p><a class="button" href="' . esc_url( Tkd_Gala_Front::lien_club( $i->token ) ) . '" target="_blank" rel="noopener">✏️ Modifier avec le formulaire du club ↗</a></p>';
 		echo '<p class="description">Lien personnel du club (à lui renvoyer si besoin) :<br><input type="text" readonly class="large-text" value="' . esc_attr( Tkd_Gala_Front::lien_club( $i->token ) ) . '" onclick="this.select()"></p>';
 
@@ -325,6 +326,7 @@ class Tkd_Gala_Admin {
 		$ligne( 'Couleurs proposées', '<textarea name="r[couleurs]" rows="8" class="regular-text">' . esc_textarea( (string) $r['couleurs'] ) . '</textarea>', 'Une couleur par ligne : à voir avec la personne qui gère l\'éclairage.' );
 		$ligne( 'Paiement des repas', '<textarea name="r[paiement]" rows="2" class="large-text">' . esc_textarea( (string) $r['paiement'] ) . '</textarea>' );
 		$ligne( 'Données personnelles', '<textarea name="r[texte_rgpd]" rows="3" class="large-text">' . esc_textarea( (string) $r['texte_rgpd'] ) . '</textarea>', 'Affiché au-dessus de la case d\'accord du formulaire.' );
+		$ligne( 'Règlement des démonstrations', $in( 'url_reglement', 'url', 'class="large-text"' ), 'Adresse du PDF (Médias → le fichier → « Copier l\'URL »). Le formulaire affiche une case obligatoire « J\'accepte le règlement » avec ce lien. Vide : pas de case.' );
 		$ligne( 'Formulaire des candidatures', $in( 'form_candidature', 'text', 'class="regular-text"' ), 'Nom exact du formulaire Elementor des autres disciplines (widget Formulaire → « Nom du formulaire ») : ses envois apparaissent dans l\'onglet Candidatures.' );
 		echo '</table>';
 		submit_button( 'Enregistrer les réglages' );
@@ -361,6 +363,7 @@ class Tkd_Gala_Admin {
 			'couleurs'      => implode( "\n", $couleurs ?: Tkd_Gala_DB::couleurs() ),
 			'paiement'      => sanitize_textarea_field( (string) ( $in['paiement'] ?? '' ) ),
 			'texte_rgpd'    => sanitize_textarea_field( (string) ( $in['texte_rgpd'] ?? '' ) ),
+			'url_reglement' => esc_url_raw( trim( (string) ( $in['url_reglement'] ?? '' ) ) ),
 			'form_candidature' => mb_substr( $txt( 'form_candidature' ), 0, 60 ) ?: 'Candidature Gala Arts Martiaux 2027',
 		] );
 		wp_safe_redirect( self::url( [ 'onglet' => 'reglages', 'fait' => 'reglages' ] ) );

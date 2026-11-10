@@ -15,6 +15,7 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 - Un **administrateur connecté** peut toujours modifier une inscription, même après la date limite (bouton « Modifier avec le formulaire du club » dans le détail).
 - **Démonstrateurs** : tableau ligne par ligne, ou « Coller depuis un tableur » (colonnes Nom, Prénom, Date de naissance, Repas oui/non ; l'en-tête « Nom… » est ignoré ; dates JJ/MM/AAAA converties). Repas réservés aux démonstrateurs, payés sur place.
 - **Démonstration** : une seule par club, sans nom (depuis le 10/11/2026). Durée ≤ maximum, 2 couleurs différentes de la liste, planches ≤ maximum (une planche par participant), piste audio facultative à l'envoi (MP3, M4A, AAC, WAV).
+- **Règlement** : case obligatoire « J'ai lu et j'accepte le règlement des démonstrations (PDF) », lien réglable dans Réglages (vide = pas de case). Date d'acceptation enregistrée (détail admin, mail récapitulatif).
 - **Pistes audio** : rangées dans `wp-content/uploads/tkd-gala/<édition>/` sous un nom aléatoire, accès direct interdit par `.htaccess`, lues uniquement via l'extension (jeton du club ou administrateur). Remplacer une piste supprime l'ancienne.
 - **Mails** : au représentant (récapitulatif + lien) et à l'organisation, à chaque enregistrement.
 
