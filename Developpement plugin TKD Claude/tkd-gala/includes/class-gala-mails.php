@@ -55,11 +55,11 @@ class Tkd_Gala_Mails {
 		}
 		$s .= '  Repas : ' . $t['repas'] . ' × ' . Tkd_Gala_Front::montant( (float) $r['prix_repas'] ) . ' = ' . Tkd_Gala_Front::montant( (float) $t['montant'] ) . ( $t['repas'] ? ' — ' . $r['paiement'] : '' ) . "\n\n";
 
-		$s .= 'DÉMONSTRATIONS (' . $t['demos'] . ")\n";
-		foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $n => $d ) {
-			$s .= '  ' . ( $n + 1 ) . '. ' . ( $d->titre !== '' ? $d->titre : 'Démonstration' ) . ' — ' . Tkd_Gala_Front::duree( (int) $d->duree_sec ) . "\n";
-			$s .= '     Couleurs : ' . $d->couleur1 . ' et ' . $d->couleur2 . ' · Planches : ' . intval( $d->planches ) . "\n";
-			$s .= '     Piste audio : ' . ( $d->audio_nom !== '' ? $d->audio_nom : '⚠️ pas encore envoyée' ) . "\n";
+		$s .= "DÉMONSTRATION\n";
+		foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $d ) {
+			$s .= '  Durée : ' . Tkd_Gala_Front::duree( (int) $d->duree_sec ) . "\n";
+			$s .= '  Couleurs : ' . $d->couleur1 . ' et ' . $d->couleur2 . ' · Planches : ' . intval( $d->planches ) . "\n";
+			$s .= '  Piste audio : ' . ( $d->audio_nom !== '' ? $d->audio_nom : '⚠️ pas encore envoyée' ) . "\n";
 		}
 		return $s;
 	}

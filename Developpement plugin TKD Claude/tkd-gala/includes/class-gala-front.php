@@ -22,7 +22,6 @@ class Tkd_Gala_Front {
 	private static ?self $instance = null;
 
 	const MAX_PARTICIPANTS = 200;
-	const MAX_DEMOS        = 10;
 
 	/** @var string[] erreurs de la dernière soumission (formulaire réaffiché avec la saisie) */
 	private array $erreurs = [];
@@ -111,7 +110,7 @@ class Tkd_Gala_Front {
 			$f = $_FILES[ 'audio_' . $cle ] ?? null;
 			if ( ! $f || intval( $f['error'] ?? UPLOAD_ERR_NO_FILE ) === UPLOAD_ERR_NO_FILE ) continue;
 			$err = Tkd_Gala_Audio::verifier( $f );
-			if ( $err !== '' ) $erreurs[] = 'Démonstration « ' . self::nom_demo( $data['demos'][ $cle ], $cle, $data ) . ' » : ' . $err;
+			if ( $err !== '' ) $erreurs[] = 'Piste audio : ' . $err;
 			else $fichiers[ $cle ] = $f;
 		}
 
@@ -152,11 +151,6 @@ class Tkd_Gala_Front {
 		return $s;
 	}
 
-	private static function nom_demo( array $d, $cle, array $data ): string {
-		if ( $d['titre'] !== '' ) return $d['titre'];
-		return 'n° ' . ( array_search( $cle, array_keys( $data['demos'] ), true ) + 1 );
-	}
-
 	/**
 	 * Lit et contrôle le formulaire. Renvoie toujours les données nettoyées (pour réafficher
 	 * le formulaire tel que saisi) et la liste des erreurs (vide = enregistrable).
@@ -184,7 +178,7 @@ class Tkd_Gala_Front {
 		$participants = [];
 		$lignes_ko    = [];
 		$aujourdhui   = current_time( 'Y-m-d' );
-		foreach ( (array) ( $post['p'] ?? [] ) as $p ) {
+		foreach ( (array) ( $post['dp'] ?? [] ) as $p ) {
 			$p   = (array) $p;
 			$nom = self::txt( $p['nom'] ?? '', 100 );
 			$pre = self::txt( $p['prenom'] ?? '', 100 );
@@ -201,6 +195,8 @@ class Tkd_Gala_Front {
 		$couleurs = Tkd_Gala_DB::couleurs();
 		$anciennes = [];
 		if ( $ins ) foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $d ) $anciennes[ intval( $d->id ) ] = $d;
+		// Une seule démonstration par club (10/11/2026) : seul le premier bloc reçu compte ;
+		// une ancienne inscription qui en avait plusieurs ne garde que la première à l'enregistrement.
 		$demos = [];
 		foreach ( (array) ( $post['d'] ?? [] ) as $cle => $d ) {
 			$cle = preg_replace( '/[^a-z0-9]/', '', strtolower( (string) $cle ) );
@@ -210,19 +206,19 @@ class Tkd_Gala_Front {
 			if ( $id && ! isset( $anciennes[ $id ] ) ) $id = 0; // id d'une autre inscription : ignoré
 			$demos[ $cle ] = [
 				'id'        => $id,
-				'titre'     => self::txt( $d['titre'] ?? '' ),
+				'titre'     => '', // plus de nom de démonstration
 				'duree_sec' => max( 0, intval( $d['min'] ?? 0 ) ) * 60 + max( 0, min( 59, intval( $d['sec'] ?? 0 ) ) ),
 				'couleur1'  => self::txt( $d['c1'] ?? '', 50 ),
 				'couleur2'  => self::txt( $d['c2'] ?? '', 50 ),
 				'planches'  => intval( $d['planches'] ?? 0 ),
 				'audio_nom' => $id ? (string) $anciennes[ $id ]->audio_nom : '',
 			];
+			break;
 		}
-		if ( ! $demos ) $err[] = 'Ajoutez au moins une démonstration.';
-		if ( count( $demos ) > self::MAX_DEMOS ) $err[] = 'Trop de démonstrations (' . self::MAX_DEMOS . ' au maximum).';
+		if ( ! $demos ) $demos = self::data_vide()['demos']; // bloc vide : les contrôles ci-dessous signalent durée et couleurs
 		$data = [ 'club' => $club, 'participants' => $participants, 'demos' => $demos ];
-		foreach ( $demos as $cle => $d ) {
-			$nom = 'Démonstration « ' . self::nom_demo( $d, $cle, $data ) . ' » : ';
+		foreach ( $demos as $d ) {
+			$nom = 'Démonstration : ';
 			if ( $d['duree_sec'] <= 0 ) $err[] = $nom . 'indiquez sa durée.';
 			elseif ( $d['duree_sec'] > intval( $r['duree_max'] ) ) $err[] = $nom . 'durée maximale ' . self::duree( intval( $r['duree_max'] ) ) . '.';
 			if ( ! in_array( $d['couleur1'], $couleurs, true ) || ! in_array( $d['couleur2'], $couleurs, true ) ) $err[] = $nom . 'choisissez deux couleurs dans les listes.';
@@ -257,10 +253,12 @@ class Tkd_Gala_Front {
 		$d = [];
 		foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $x ) {
 			$d[ 'e' . $x->id ] = [
-				'id' => intval( $x->id ), 'titre' => $x->titre, 'duree_sec' => intval( $x->duree_sec ),
+				'id' => intval( $x->id ), 'titre' => '', 'duree_sec' => intval( $x->duree_sec ),
 				'couleur1' => $x->couleur1, 'couleur2' => $x->couleur2, 'planches' => intval( $x->planches ), 'audio_nom' => $x->audio_nom,
 			];
+			break; // une seule démonstration par club
 		}
+		if ( ! $d ) $d = self::data_vide()['demos'];
 		return [
 			'club'         => [ 'nom' => $ins->club_nom, 'affiliation' => $ins->affiliation, 'representant' => $ins->representant, 'role' => $ins->role, 'telephone' => $ins->telephone, 'email' => $ins->email ],
 			'participants' => $p,
@@ -417,12 +415,11 @@ class Tkd_Gala_Front {
 			</section>
 
 			<section class="tkd-gala-bloc">
-				<h3>3. Démonstrations</h3>
-				<p class="tkd-gala-aide">Durée maximale : <?php echo esc_html( self::duree( intval( $r['duree_max'] ) ) ); ?> par démonstration. Piste audio : MP3, M4A, AAC ou WAV, <?php echo esc_html( number_format_i18n( $audio_mo, 0 ) ); ?> Mo au maximum — vous pourrez l'ajouter ou la remplacer plus tard avec votre lien personnel.</p>
+				<h3>3. Démonstration</h3>
+				<p class="tkd-gala-aide">Une démonstration par club, de <?php echo esc_html( self::duree( intval( $r['duree_max'] ) ) ); ?> au maximum. Piste audio : MP3, M4A, AAC ou WAV, <?php echo esc_html( number_format_i18n( $audio_mo, 0 ) ); ?> Mo au maximum — vous pourrez l'ajouter ou la remplacer plus tard avec votre lien personnel.</p>
 				<div class="tkd-gala-demos">
 				<?php foreach ( $data['demos'] as $cle => $d ) $this->bloc_demo( (string) $cle, $d, $couleurs, $max_min, intval( $r['planches_max'] ), $ins ); ?>
 				</div>
-				<p class="tkd-gala-actions"><button type="button" class="tkd-gala-btn tkd-gala-btn-sec" data-gala="ajout-demo">➕ Ajouter une démonstration</button></p>
 			</section>
 
 			<section class="tkd-gala-bloc">
@@ -433,9 +430,7 @@ class Tkd_Gala_Front {
 
 			<p class="tkd-gala-envoi"><button type="submit" class="tkd-gala-btn tkd-gala-btn-principal"><?php echo $ins ? 'Enregistrer les modifications' : 'Envoyer l\'inscription'; ?></button></p>
 
-			<template class="tkd-gala-tpl-participant"><?php $this->ligne_participant( '__i__', [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false ] ); ?></template>
-			<template class="tkd-gala-tpl-demo"><?php $this->bloc_demo( '__i__', [ 'id' => 0, 'titre' => '', 'duree_sec' => 0, 'couleur1' => '', 'couleur2' => '', 'planches' => 0, 'audio_nom' => '' ], $couleurs, $max_min, intval( $r['planches_max'] ), null ); ?></template>
-		</form>
+			<template class="tkd-gala-tpl-participant"><?php $this->ligne_participant( '__i__', [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false ] ); ?></template>		</form>
 		<?php if ( ! $ins ) $this->lien_vers_lien_perdu();
 	}
 
@@ -444,7 +439,8 @@ class Tkd_Gala_Front {
 	}
 
 	private function ligne_participant( string $i, array $p ): void {
-		$n = 'p[' . $i . ']';
+		// Pas « p » : WordPress lit ce nom dans $_POST comme identifiant d'article (page 404 au réaffichage).
+		$n = 'dp[' . $i . ']';
 		?>
 		<tr>
 			<td class="tkd-gala-num"></td>
@@ -468,10 +464,7 @@ class Tkd_Gala_Front {
 		};
 		?>
 		<fieldset class="tkd-gala-demo" data-audio="<?php echo $d['audio_nom'] !== '' ? '1' : ''; ?>">
-			<legend>Démonstration <span class="tkd-gala-num"></span></legend>
 			<input type="hidden" name="<?php echo esc_attr( $n ); ?>[id]" value="<?php echo intval( $d['id'] ); ?>">
-			<p class="tkd-gala-ligne"><label>Nom de la démonstration <span class="tkd-gala-aide">(facultatif)</span></label>
-				<input class="tkd-gala-champ" type="text" name="<?php echo esc_attr( $n ); ?>[titre]" value="<?php echo esc_attr( $d['titre'] ); ?>" placeholder="Ex. : Poomsae synchronisé"></p>
 			<p class="tkd-gala-ligne"><label>Durée <span class="tkd-gala-requis">*</span></label>
 				<span class="tkd-gala-duree">
 					<select name="<?php echo esc_attr( $n ); ?>[min]" aria-label="Minutes"><?php for ( $m = 0; $m <= $max_min; $m++ ) echo '<option value="' . intval( $m ) . '"' . selected( $min, $m, false ) . '>' . intval( $m ) . '</option>'; ?></select> min
@@ -491,8 +484,7 @@ class Tkd_Gala_Front {
 				<span class="tkd-gala-couleurs"><?php $sel( $n . '[c1]', $d['couleur1'] ); $sel( $n . '[c2]', $d['couleur2'] ); ?></span></p>
 			<p class="tkd-gala-ligne"><label>Nombre de planches de casse (~3 mm)</label>
 				<input class="tkd-gala-champ tkd-gala-court" type="number" min="0" max="<?php echo intval( $planches_max ); ?>" step="1" name="<?php echo esc_attr( $n ); ?>[planches]" value="<?php echo intval( $d['planches'] ); ?>">
-				<span class="tkd-gala-aide"><?php echo intval( $planches_max ); ?> au maximum.</span></p>
-			<p class="tkd-gala-actions"><button type="button" class="tkd-gala-btn tkd-gala-btn-sec tkd-gala-btn-danger" data-gala="suppr-demo">Retirer cette démonstration</button></p>
+				<span class="tkd-gala-aide">(<?php echo intval( $planches_max ); ?> au maximum, une planche par participant)</span></p>
 		</fieldset>
 		<?php
 	}

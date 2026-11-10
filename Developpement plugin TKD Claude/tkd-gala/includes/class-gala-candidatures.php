@@ -151,7 +151,7 @@ class Tkd_Gala_Candidatures {
 		$rang  = 0;
 		foreach ( Tkd_Gala_DB::demos_edition( $edition ) as $d ) {
 			$liste[] = self::ligne( [
-				'cle' => 'd' . $d->id, 'type' => 'tkd', 'id' => intval( $d->id ), 'club_nom' => $d->club_nom, 'titre' => $d->titre,
+				'cle' => 'd' . $d->id, 'type' => 'tkd', 'id' => intval( $d->id ), 'club_nom' => $d->club_nom, 'titre' => '', // les clubs ne nomment plus leur démonstration
 				'discipline' => 'Taekwondo', 'duree_sec' => intval( $d->duree_sec ), 'couleur1' => $d->couleur1, 'couleur2' => $d->couleur2,
 				'planches' => intval( $d->planches ), 'participants' => null, 'audio_fichier' => $d->audio_fichier, 'audio_nom' => $d->audio_nom,
 				'audio_taille' => intval( $d->audio_taille ), 'ordre_passage' => $d->ordre_passage === null ? null : intval( $d->ordre_passage ),

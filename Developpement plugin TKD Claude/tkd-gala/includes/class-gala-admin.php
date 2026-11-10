@@ -156,8 +156,8 @@ class Tkd_Gala_Admin {
 		}
 		echo '</tbody></table>';
 
-		echo '<h3>Démonstrations (' . intval( $t['demos'] ) . ')</h3>';
-		foreach ( Tkd_Gala_DB::demos( $id ) as $n => $d ) $this->carte_demo( $d, $n + 1 );
+		echo '<h3>Démonstration</h3>';
+		foreach ( Tkd_Gala_DB::demos( $id ) as $d ) $this->carte_demo( $d );
 		echo '</div><div class="tkd-gala-col tkd-gala-col-etroite">';
 
 		echo '<div class="postbox"><div class="inside"><h3>Suivi</h3>';
@@ -176,8 +176,8 @@ class Tkd_Gala_Admin {
 		echo '</div></div>';
 	}
 
-	private function carte_demo( object $d, int $n ): void {
-		echo '<div class="tkd-gala-demo-admin"><strong>' . intval( $n ) . '. ' . esc_html( $d->titre !== '' ? $d->titre : 'Démonstration' ) . '</strong> — ' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) )
+	private function carte_demo( object $d ): void {
+		echo '<div class="tkd-gala-demo-admin"><strong>⏱️ ' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) ) . '</strong>'
 			. ' · 🎨 ' . esc_html( $d->couleur1 . ' / ' . $d->couleur2 ) . ' · 🪵 ' . intval( $d->planches ) . ' planche(s)<br>';
 		echo $this->audio( $d ) . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé dans audio()
 	}
@@ -316,7 +316,7 @@ class Tkd_Gala_Admin {
 		$ligne( 'Date du gala', $in( 'date_gala', 'date' ) );
 		$ligne( 'Date limite', $in( 'date_limite', 'date' ), 'Inscriptions et modifications possibles jusqu\'à ce jour inclus. Vide = sans limite.' );
 		$ligne( 'Durée maximale', $in( 'duree_max', 'number', 'min="30" step="5" class="small-text"' ) . ' secondes', 'Par démonstration (300 = 5 minutes).' );
-		$ligne( 'Planches au maximum', $in( 'planches_max', 'number', 'min="0" step="1" class="small-text"' ), 'Par démonstration.' );
+		$ligne( 'Planches au maximum', $in( 'planches_max', 'number', 'min="0" step="1" class="small-text"' ), 'Pour la démonstration du club (une planche par participant).' );
 		$ligne( 'Prix du repas', $in( 'prix_repas', 'number', 'min="0" step="0.5" class="small-text"' ) . ' €' );
 		$ligne( 'Piste audio : taille maximale', $in( 'audio_max_mo', 'number', 'min="1" step="1" class="small-text"' ) . ' Mo', 'Le serveur accepte au plus ' . size_format( wp_max_upload_size() ) . ' par envoi : la limite réelle est la plus petite des deux.' );
 		$ligne( 'Mail de l\'organisation', $in( 'email_orga', 'email', 'class="regular-text"' ), 'Reçoit un mail à chaque inscription ou modification.' );

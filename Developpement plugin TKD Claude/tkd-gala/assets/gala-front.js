@@ -1,5 +1,5 @@
 /* TKD Gala : formulaire d'inscription — lignes de démonstrateurs, collage depuis un tableur,
-   démonstrations ajoutées / retirées, total des repas. Sans dépendance. Le serveur refait
+   total des repas (une seule démonstration par club, sans ajout ni retrait). Sans dépendance. Le serveur refait
    tous les contrôles (Tkd_Gala_Front::valider()) : ce script ne fait que faciliter la saisie. */
 (function () {
 	'use strict';
@@ -7,9 +7,7 @@
 	if (!form) return;
 
 	var tbody   = form.querySelector('.tkd-gala-participants');
-	var demos   = form.querySelector('.tkd-gala-demos');
 	var tplP    = form.querySelector('.tkd-gala-tpl-participant');
-	var tplD    = form.querySelector('.tkd-gala-tpl-demo');
 	var totalEl = form.querySelector('.tkd-gala-total');
 	var collage = form.querySelector('.tkd-gala-collage');
 	var prix    = parseFloat(form.getAttribute('data-prix-repas')) || 0;
@@ -42,9 +40,6 @@
 				nb++;
 				if (tr.querySelector('input[name$="[repas]"]').checked) repas++;
 			}
-		});
-		[].forEach.call(demos.querySelectorAll('.tkd-gala-demo'), function (fs, i) {
-			fs.querySelector('legend .tkd-gala-num').textContent = i + 1;
 		});
 		totalEl.textContent = nb + ' démonstrateur' + (nb > 1 ? 's' : '') + ' · ' + repas + ' repas' + (repas ? ' · ' + euros(repas * prix) + ' à régler' : '');
 	}
@@ -109,13 +104,6 @@
 			var ta = collage.querySelector('textarea');
 			collage.querySelector('.tkd-gala-collage-msg').textContent = importer(ta.value);
 			ta.value = '';
-		} else if (quoi === 'ajout-demo') {
-			depuisModele(tplD, demos).querySelector('input[type=text]').focus();
-		} else if (quoi === 'suppr-demo') {
-			var fs = b.closest('.tkd-gala-demo');
-			if (fs.getAttribute('data-audio') && !window.confirm('Retirer cette démonstration ? Sa piste audio sera supprimée à l\'enregistrement.')) return;
-			fs.remove();
-			if (!demos.querySelector('.tkd-gala-demo')) depuisModele(tplD, demos);
 		}
 		rafraichir();
 	});
