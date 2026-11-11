@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Tkd_Gala_DB {
 
-	const DB_VERSION = '1.3'; // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement) ; 1.3 : annonceurs et leurs passages (Tkd_Gala_Annonceurs)
+	const DB_VERSION = '1.4'; // 1.4 (11/11/2026) : logo_id (médiathèque) sur les inscriptions et les candidatures // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement) ; 1.3 : annonceurs et leurs passages (Tkd_Gala_Annonceurs)
 	const OPT_DB     = 'tkd_gala_db_version';
 	const OPT_REG    = 'tkd_gala_reglages';
 
@@ -47,6 +47,7 @@ class Tkd_Gala_DB {
 			email varchar(150) NOT NULL DEFAULT '',
 			consentement datetime DEFAULT NULL,
 			reglement datetime DEFAULT NULL,
+			logo_id bigint(20) UNSIGNED NOT NULL DEFAULT 0,
 			paye tinyint(1) NOT NULL DEFAULT 0,
 			note_admin text,
 			created_at datetime NOT NULL,
@@ -210,7 +211,7 @@ class Tkd_Gala_DB {
 	public static function demos_edition( string $edition ): array {
 		global $wpdb;
 		return $wpdb->get_results( $wpdb->prepare(
-			'SELECT d.*, i.club_nom FROM ' . self::t_demos() . ' d INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = d.inscription_id
+			'SELECT d.*, i.club_nom, i.logo_id FROM ' . self::t_demos() . ' d INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = d.inscription_id
 			 WHERE i.edition = %s ORDER BY d.ordre_passage IS NULL, d.ordre_passage ASC, i.id ASC, d.ordre ASC, d.id ASC',
 			$edition
 		) ) ?: [];

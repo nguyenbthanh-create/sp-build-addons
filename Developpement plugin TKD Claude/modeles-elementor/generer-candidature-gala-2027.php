@@ -28,7 +28,7 @@ function id7(): string { global $ids; do { $i = substr( bin2hex( random_bytes( 4
 function champ( string $type, string $id, string $label, array $o = [] ): array {
 	$c = [ '_id' => id7(), 'custom_id' => $id, 'field_type' => $type, 'field_label' => $label, 'width' => (string) ( $o['width'] ?? 100 ) ];
 	if ( ! empty( $o['req'] ) ) $c['required'] = 'true';
-	foreach ( [ 'placeholder', 'rows', 'field_min', 'field_max', 'acceptance_text', 'field_html' ] as $k ) if ( isset( $o[ $k ] ) ) $c[ $k ] = (string) $o[ $k ];
+	foreach ( [ 'placeholder', 'rows', 'field_min', 'field_max', 'acceptance_text', 'field_html', 'file_sizes', 'file_types' ] as $k ) if ( isset( $o[ $k ] ) ) $c[ $k ] = (string) $o[ $k ];
 	if ( isset( $o['options'] ) ) $c['field_options'] = implode( "\n", $o['options'] );
 	if ( ! empty( $o['inline'] ) ) $c['inline_list'] = 'elementor-subgroup-inline';
 	return $c;
@@ -69,6 +69,10 @@ $champs = [
 	champ( 'text', 'struct_cp_ville', 'Code postal / Ville', [ 'req' => 1, 'width' => 33 ] ),
 	champ( 'url', 'struct_site', 'Site internet', [ 'width' => 50, 'placeholder' => 'https://' ] ),
 	champ( 'text', 'struct_reseaux', 'Réseaux sociaux', [ 'width' => 50, 'placeholder' => 'Facebook, Instagram…' ] ),
+	// Logo (11/11/2026) : envoi de fichier ; TKD Gala en fait une copie dans la médiathèque
+	// (Tkd_Gala_Logos::candidature()) pour le Conducteur et l'écran de projection.
+	champ( 'upload', 'struct_logo', 'Logo de la structure (facultatif)', [ 'file_sizes' => 5, 'file_types' => 'png,jpg,jpeg,webp' ] ),
+	html( 'info_logo', '<div style="opacity:.75;font-size:.9em;margin-top:-4px">PNG (fond transparent de préférence), JPG ou WebP, 5 Mo au maximum. Il sera projeté pendant votre démonstration si votre candidature est retenue.</div>' ),
 	champ( 'radio', 'struct_forme', 'Forme juridique', [ 'req' => 1, 'inline' => 1, 'options' => [ 'Association loi 1901', 'Club sportif', 'Autre' ] ] ),
 	champ( 'text', 'struct_forme_autre', 'Si « Autre », précisez', [] ),
 	champ( 'text', 'struct_creation', 'Date (ou année) de création', [ 'width' => 50 ] ),

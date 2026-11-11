@@ -143,7 +143,9 @@ class Tkd_Gala_Admin {
 		$t = Tkd_Gala_Mails::totaux( $i );
 
 		echo '<div class="tkd-gala-detail"><div class="tkd-gala-col">';
-		echo '<h2>' . esc_html( $i->club_nom ) . '</h2>';
+		$logo = Tkd_Gala_Logos::url( intval( $i->logo_id ?? 0 ), 'medium' );
+		echo '<h2>' . ( $logo !== '' ? '<img class="tkd-gala-logo-detail" src="' . esc_url( $logo ) . '" alt=""> ' : '' ) . esc_html( $i->club_nom ) . '</h2>';
+		if ( $logo !== '' ) echo '<p class="description"><a href="' . esc_url( get_edit_post_link( intval( $i->logo_id ) ) ?: '' ) . '">Logo dans la médiathèque</a></p>';
 		echo '<p>' . esc_html( $i->representant . ' — ' . $i->role ) . '<br>📞 ' . esc_html( $i->telephone ) . ' · ✉️ <a href="mailto:' . esc_attr( $i->email ) . '">' . esc_html( $i->email ) . '</a>'
 			. ( $i->affiliation !== '' ? '<br>Affiliation FFTDA : ' . esc_html( $i->affiliation ) : '' ) . '</p>';
 		echo '<p class="description">Inscrit le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->created_at ) ) . ', modifié le ' . esc_html( mysql2date( 'd/m/Y H:i', $i->updated_at ) ) . '.<br>'
@@ -237,7 +239,7 @@ class Tkd_Gala_Admin {
 					echo '<td colspan="2"></td><td><label class="tkd-gala-retirer"><input type="checkbox" name="retirer[' . esc_attr( $d->cle ) . ']" value="1"> Retirer ce passage</label></td></tr>';
 					continue;
 				}
-				echo '<td>' . esc_html( $d->club_nom ) . ( $ext && $d->discipline !== '' ? '<br><span class="description">' . esc_html( $d->discipline ) . '</span>' : '' ) . '</td>';
+				echo '<td>' . ( (string) ( $d->logo_url ?? '' ) !== '' ? '<img class="tkd-gala-logo-mini" src="' . esc_url( $d->logo_url ) . '" alt=""> ' : '' ) . esc_html( $d->club_nom ) . ( $ext && $d->discipline !== '' ? '<br><span class="description">' . esc_html( $d->discipline ) . '</span>' : '' ) . '</td>';
 				echo '<td>' . esc_html( $d->titre !== '' ? $d->titre : '—' ) . ( $ext && $d->participants ? '<br><span class="description">' . intval( $d->participants ) . ' participant(s)</span>' : '' ) . '</td>';
 				echo '<td>' . esc_html( Tkd_Gala_Front::duree( (int) $d->duree_sec ) ) . '</td>';
 				// Couleurs : clubs et, depuis le 11/11/2026, candidatures (champs du formulaire Elementor).
@@ -376,7 +378,8 @@ class Tkd_Gala_Admin {
 			echo '<tr' . ( $ret ? ' class="tkd-gala-retenue"' : '' ) . '>';
 			echo '<td><input type="hidden" name="toutes[]" value="' . intval( $sid ) . '"><label><input type="checkbox" name="retenue[' . intval( $sid ) . ']" value="1"' . checked( $ret, true, false ) . '> Retenue</label>'
 				. '<br><a class="description" href="' . esc_url( admin_url( 'admin.php?page=e-form-submissions#/' . $sid ) ) . '">Envoi n° ' . intval( $sid ) . '</a><br><span class="description">' . esc_html( mysql2date( 'd/m/Y', $c->created_at ) ) . '</span></td>';
-			echo '<td><strong>' . $g( 'struct_nom' ) . '</strong>' . ( ! empty( $v['struct_sigle'] ) ? ' (' . $g( 'struct_sigle' ) . ')' : '' ) . '<br><span class="description">' . $g( 'struct_cp_ville' ) . '</span></td>';
+			$logo = Tkd_Gala_Logos::url( Tkd_Gala_Logos::candidature( $c, (string) $r['edition'] ), 'thumbnail' );
+			echo '<td>' . ( $logo !== '' ? '<img class="tkd-gala-logo-mini" src="' . esc_url( $logo ) . '" alt=""><br>' : '' ) . '<strong>' . $g( 'struct_nom' ) . '</strong>' . ( ! empty( $v['struct_sigle'] ) ? ' (' . $g( 'struct_sigle' ) . ')' : '' ) . '<br><span class="description">' . $g( 'struct_cp_ville' ) . '</span></td>';
 			echo '<td>' . $g( 'disc_nom' ) . ( ! empty( $v['disc_federation'] ) ? '<br><span class="description">' . $g( 'disc_federation' ) . '</span>' : '' ) . '</td>';
 			echo '<td><strong>' . $g( 'demo_titre' ) . '</strong><br>' . intval( $v['demo_duree'] ?? 0 ) . ' min · ' . intval( $v['demo_participants'] ?? 0 ) . ' participant(s) · ' . $g( 'demo_ages' )
 				. ( ! empty( $v['demo_couleur1'] ) ? '<br><span class="description">🎨 ' . $g( 'demo_couleur1' ) . ' / ' . $g( 'demo_couleur2' ) . '</span>' : '' ) . '</td>';

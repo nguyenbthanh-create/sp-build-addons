@@ -43,7 +43,7 @@ class Tkd_Gala_Projection {
 				'titre'      => $ann ? '' : (string) $d->titre,
 				'slogan'     => $ann ? (string) $d->slogan : '',
 				'message'    => $ann ? (string) $d->message : '',
-				'logo'       => $ann ? (string) $d->logo_url : '',
+				'logo'       => (string) ( $d->logo_url ?? '' ), // annonceur, club ou structure candidate
 				'heure'      => (string) ( $heures[ $d->cle ] ?? '' ),
 				'duree'      => intval( $d->duree_sec ),
 				'audio'      => $ann ? '' : (string) $d->audio_nom,

@@ -328,6 +328,14 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Liste des dossiers bloquée — test puis prod le 10/11/2026** : `uploads/`, `wp-includes/` et les dossiers des extensions affichaient leur contenu (« Index of »). Ajout de `Options -Indexes` en tête du `.htaccess` racine (hors blocs WordPress) sur les deux sites. Vérifié en prod : listes en 403 ; accueil, page du gala, PDF du règlement, wp-admin et wp-json inchangés. Juste après l'envoi, les listes restent visibles quelques secondes (prise en compte par l'hébergeur). Sauvegardes : `DEPLOIEMENT_tkd-gala_2026-11-10/prod-root-avant-indexes.htaccess` et `test-root-avant-indexes.htaccess`.
 
+**TKD Gala 1.4 : logos des clubs et des candidatures — prod le 11/11/2026** :
+- **Formulaire des clubs** : champ « Logo du club » facultatif (PNG, JPG ou WebP, 5 Mo au maximum, image vérifiée), rangé dans la **médiathèque** (média marqué `_tkd_gala_logo` = club). Son id est gardé dans `tkd_gala_inscriptions.logo_id` (DB 1.4).
+- **Candidature Elementor** : champ « Logo de la structure » (type Envoi de fichier, `struct_logo`) ajouté à l'étape Structure du modèle 6053 en prod. Elementor garde le fichier dans `uploads/elementor/forms/`, et `Tkd_Gala_Logos::candidature()` en fait une copie dans la médiathèque à la première lecture (onglet Candidatures, Conducteur, Projection) ; l'id est gardé dans `tkd_gala_externes.logo_id`.
+- **Affichage des logos** : détail du club, onglet Candidatures, Conducteur (miniature) et écran salle de la Projection (au-dessus de la discipline et du nom).
+- **Vérifié en prod** : affichage des deux champs, refus d'un fichier qui n'est pas une image, Conducteur sans erreur.
+- **Non testé** : l'enregistrement réel d'un logo dans la médiathèque (aucune fausse inscription ni candidature créée, pour éviter les mails) et le formulaire du site de test (inaccessible depuis le navigateur).
+- **Sauvegarde de la 1.3.3** : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.3.3/`.
+
 **Candidature Elementor + TKD Gala 1.3.3 : couleurs de scénographie — prod le 11/11/2026** :
 - **Formulaire de candidature** (modèle Elementor 6053 en prod) : ajout à l'étape Démonstration, après « Si « Autre », précisez », de deux listes obligatoires `demo_couleur1` et `demo_couleur2` (mêmes 10 couleurs que Gala → Réglages, option vide « — Choisir — ») et d'une note. Ajout fait par l'éditeur Elementor (`document/repeater/insert`), puis enregistré ; le générateur et le JSON du modèle sont mis à jour.
 - **TKD Gala 1.3.3** :

@@ -30,6 +30,7 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 
   On y trouve aussi les heures calculées (début + durées + battement), la durée totale et l'heure de fin, l'écoute des pistes et l'impression. À l'impression, le message d'annonce est mis en avant pour l'animateur.
 - **Annonceurs** (bloc sous le Conducteur, 1.3) : nom (les sponsors de SP Compta sont proposés à la saisie, en lecture seule), logo de la médiathèque, slogan (projeté) et message d'annonce (lu par l'animateur). « ➕ Passage » ajoute un passage de plus. La durée proposée se règle dans Réglages, « Conducteur : durée d'une annonce ». Tables `…tkd_gala_annonceurs` et `…tkd_gala_annonces`, DB 1.3.
+- **Logos** (1.4) : champ facultatif dans le formulaire des clubs et dans la candidature Elementor (`struct_logo`). Les logos sont rangés dans la **médiathèque**, puis affichés au détail du club, dans l'onglet Candidatures, au Conducteur et sur l'écran salle. Pour une candidature, la copie dans la médiathèque se fait à la première lecture (voir `includes/class-gala-logos.php`).
 - **Projection** (1.3, liens en haut du Conducteur) : `admin-post.php?action=tkd_gala_projection&vue=salle|regie`, réservé aux administrateurs.
   - **Écran salle** : logo et slogan pour une annonce, discipline et nom pour une démonstration, écran d'accueil, écran noir.
   - **Écran régie** : passage en cours avec le message à lire, chronomètre et dépassement, passage suivant, liste cliquable.

@@ -15,6 +15,7 @@ body.tkd-proj-salle { background: #000; color: #fff; overflow: hidden; cursor: n
 .tkd-proj-edition { font-size: 6vh; margin-top: 2vh; color: #f2c14e; font-weight: 300; letter-spacing: .1em; }
 .tkd-proj-accueil .tkd-proj-titre { font-size: 10vh; }
 .tkd-proj-annonce .tkd-proj-logo { display: block; margin: 0 auto; max-width: 70vw; max-height: 58vh; object-fit: contain; filter: drop-shadow(0 0 3vh rgba(255, 255, 255, .15)); }
+.tkd-proj-logo-demo { display: block; margin: 0 auto 4vh; max-width: 40vw; max-height: 32vh; object-fit: contain; filter: drop-shadow(0 0 2vh rgba(255, 255, 255, .12)); }
 .tkd-proj-slogan { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 6vh; line-height: 1.25; margin-top: 5vh; color: #f7e3a3; text-wrap: balance; }
 
 /* ─── Écran régie ─────────────────────────────────────────────── */

@@ -88,6 +88,8 @@
 .tkd-gala-duree, .tkd-gala-couleurs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tkd-gala-couleurs select { flex: 1 1 160px; }
 .tkd-gala-audio-actuel { margin: 0 0 4px; font-weight: 600; }
+.tkd-gala-logo-actuel { display: block; max-width: 180px; max-height: 110px; object-fit: contain; margin: 0 0 6px; padding: 4px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
+.tkd-gala input[type=file] { max-width: 100%; }
 .tkd-gala audio { width: 100%; max-width: 420px; display: block; margin: 4px 0; }
 
 /* Boutons */

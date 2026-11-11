@@ -65,6 +65,7 @@
 			return d;
 		}
 		d.classList.add('tkd-proj-demo');
+		if (it.logo) { var lg = el('img', 'tkd-proj-logo-demo'); lg.src = it.logo; lg.alt = ''; d.appendChild(lg); }
 		d.appendChild(el('div', 'tkd-proj-surtitre', it.discipline));
 		d.appendChild(el('h1', 'tkd-proj-titre', it.nom));
 		if (it.titre) d.appendChild(el('div', 'tkd-proj-sous', it.titre));

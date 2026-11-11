@@ -34,6 +34,7 @@ class Tkd_Gala_Candidatures {
 			audio_fichier varchar(255) NOT NULL DEFAULT '',
 			audio_nom varchar(255) NOT NULL DEFAULT '',
 			audio_taille int(11) NOT NULL DEFAULT 0,
+			logo_id bigint(20) UNSIGNED NOT NULL DEFAULT 0,
 			updated_at datetime NOT NULL,
 			PRIMARY KEY  (id),
 			UNIQUE KEY submission_id (submission_id),
@@ -179,6 +180,7 @@ class Tkd_Gala_Candidatures {
 				'audio_taille' => intval( $d->audio_taille ), 'ordre_passage' => $d->ordre_passage === null ? null : intval( $d->ordre_passage ),
 				// edition null : Tkd_Gala_Audio::chemin() lit l'édition sur l'inscription.
 				'inscription_id' => intval( $d->inscription_id ), 'edition' => null, 'submission_id' => 0, 'rang' => $rang++,
+				'logo_url' => Tkd_Gala_Logos::url( intval( $d->logo_id ?? 0 ), 'large' ),
 			] );
 		}
 		$externes = self::externes( $edition );
@@ -194,6 +196,7 @@ class Tkd_Gala_Candidatures {
 				'planches' => null, 'participants' => intval( $v['demo_participants'] ?? 0 ), 'audio_fichier' => $x->audio_fichier, 'audio_nom' => $x->audio_nom,
 				'audio_taille' => intval( $x->audio_taille ), 'ordre_passage' => $x->ordre_passage === null ? null : intval( $x->ordre_passage ),
 				'inscription_id' => 0, 'edition' => (string) $x->edition, 'submission_id' => intval( $c->id ), 'rang' => $rang++,
+				'logo_url' => Tkd_Gala_Logos::url( Tkd_Gala_Logos::candidature( $c, $edition ), 'large' ),
 			] );
 		}
 		return self::trier( $liste );

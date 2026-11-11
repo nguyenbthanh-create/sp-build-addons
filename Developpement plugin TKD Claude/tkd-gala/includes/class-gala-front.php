@@ -113,19 +113,30 @@ class Tkd_Gala_Front {
 			if ( $err !== '' ) $erreurs[] = 'Piste audio : ' . $err;
 			else $fichiers[ $cle ] = $f;
 		}
+		// Logo du club (facultatif, 11/11/2026) : contrôlé avec le reste, rangé dans la médiathèque.
+		$logo = $_FILES['logo_club'] ?? null;
+		if ( $logo && intval( $logo['error'] ?? UPLOAD_ERR_NO_FILE ) !== UPLOAD_ERR_NO_FILE ) {
+			$err = Tkd_Gala_Logos::verifier( $logo );
+			if ( $err !== '' ) { $erreurs[] = 'Logo : ' . $err; $logo = null; }
+			else $fichiers['__logo'] = $logo;
+		} else {
+			$logo = null;
+		}
 
 		if ( $erreurs ) {
 			$this->erreurs = $erreurs;
 			$this->saisie  = $data;
-			if ( $fichiers ) $this->erreurs[] = 'Rien n\'a été enregistré : sélectionnez à nouveau vos fichiers audio avant de renvoyer.';
+			if ( $fichiers ) $this->erreurs[] = 'Rien n\'a été enregistré : sélectionnez à nouveau vos fichiers (piste audio, logo) avant de renvoyer.';
 			return;
 		}
 
 		$res      = Tkd_Gala_DB::enregistrer( $ins, $data );
 		$audio_ko = 0;
 		foreach ( $fichiers as $cle => $f ) {
+			if ( $cle === '__logo' ) continue;
 			if ( ! Tkd_Gala_Audio::enregistrer_envoi( $f, $res['demo_ids'][ $cle ] ) ) $audio_ko++;
 		}
+		if ( $logo ) Tkd_Gala_Logos::enregistrer_club( $logo, intval( $res['id'] ), (string) $data['club']['nom'] );
 
 		$apres = Tkd_Gala_DB::inscription( $res['id'] );
 		Tkd_Gala_Mails::confirmation( $apres, ! $ins );
@@ -387,7 +398,18 @@ class Tkd_Gala_Front {
 				$champ( 'role', 'Rôle au sein du club', $c['role'], 'text', true, 'Ex. : président, entraîneur, secrétaire…' );
 				$champ( 'telephone', 'Numéro de téléphone', $c['telephone'], 'tel', true, '', 'tel' );
 				$champ( 'email', 'Mail', $c['email'], 'email', true, 'Votre lien personnel pour modifier l\'inscription y sera envoyé.', 'email' );
+				$logo = $ins ? Tkd_Gala_Logos::url( intval( $ins->logo_id ?? 0 ), 'medium' ) : '';
 				?>
+				<div class="tkd-gala-ligne"><label for="tg-logo">Logo du club <span class="tkd-gala-aide">(facultatif)</span></label>
+					<div>
+					<?php if ( $logo !== '' ) : ?>
+						<img class="tkd-gala-logo-actuel" src="<?php echo esc_url( $logo ); ?>" alt="Logo actuel du club">
+						<span class="tkd-gala-aide">Pour le remplacer, choisissez une autre image :</span>
+					<?php endif; ?>
+						<input type="file" id="tg-logo" name="logo_club" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+						<span class="tkd-gala-aide">PNG (fond transparent de préférence), JPG ou WebP, <?php echo esc_html( size_format( Tkd_Gala_Logos::MAX_OCTETS ) ); ?> au maximum. Il sera projeté pendant votre démonstration.</span>
+					</div>
+				</div>
 			</section>
 
 			<section class="tkd-gala-bloc">
