@@ -339,7 +339,11 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 - **Vérifications** :
   - script du formulaire testé en local (bascule équipe, listes de clubs mises à jour, repas par club, avertissement) ;
   - PHP et PHPStan sans erreur, journal PHP de la prod sans erreur après déploiement ;
-  - **non vus dans un navigateur** : l'enregistrement réel d'une équipe et les pages d'administration (Chrome déconnecté, formulaire fermé au public).
+  - **vérifié en prod ensuite (Chrome reconnecté)** :
+    - liste des inscriptions (« ⚠️ < 15 ») et Conducteur ;
+    - formulaire en équipe envoyé incomplet : les erreurs s'affichent, l'équipe, le club associé et le club de chaque démonstrateur sont conservés, et le total donne les repas par club ;
+    - refus d'une équipe sans club associé ;
+  - **non testé** : l'enregistrement réel d'une équipe (pas de fausse inscription, pour éviter les mails).
 - **Sauvegarde de la 1.4.0** : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.4.0/`.
 
 **TKD Gala 1.4 : logos des clubs et des candidatures — prod le 11/11/2026** :
