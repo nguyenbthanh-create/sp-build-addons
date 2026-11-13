@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Tkd_Gala_DB {
 
-	const DB_VERSION = '1.4'; // 1.4 (11/11/2026) : logo_id (médiathèque) sur les inscriptions et les candidatures // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement) ; 1.3 : annonceurs et leurs passages (Tkd_Gala_Annonceurs)
+	const DB_VERSION = '1.5'; // 1.5 (13/11/2026) : équipes (clubs_associes sur l'inscription, club du participant) ; 1.4 (11/11/2026) : logo_id (médiathèque) sur les inscriptions et les candidatures // 1.1 (10/11/2026) : table des candidatures retenues (Tkd_Gala_Candidatures) ; 1.2 : colonne reglement (acceptation du règlement) ; 1.3 : annonceurs et leurs passages (Tkd_Gala_Annonceurs)
 	const OPT_DB     = 'tkd_gala_db_version';
 	const OPT_REG    = 'tkd_gala_reglages';
 
@@ -48,6 +48,7 @@ class Tkd_Gala_DB {
 			consentement datetime DEFAULT NULL,
 			reglement datetime DEFAULT NULL,
 			logo_id bigint(20) UNSIGNED NOT NULL DEFAULT 0,
+			clubs_associes text,
 			paye tinyint(1) NOT NULL DEFAULT 0,
 			note_admin text,
 			created_at datetime NOT NULL,
@@ -64,6 +65,7 @@ class Tkd_Gala_DB {
 			prenom varchar(100) NOT NULL DEFAULT '',
 			date_naissance date DEFAULT NULL,
 			repas tinyint(1) NOT NULL DEFAULT 0,
+			club varchar(150) NOT NULL DEFAULT '',
 			ordre int(11) NOT NULL DEFAULT 0,
 			PRIMARY KEY  (id),
 			KEY inscription_id (inscription_id)
@@ -211,7 +213,7 @@ class Tkd_Gala_DB {
 	public static function demos_edition( string $edition ): array {
 		global $wpdb;
 		return $wpdb->get_results( $wpdb->prepare(
-			'SELECT d.*, i.club_nom, i.logo_id FROM ' . self::t_demos() . ' d INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = d.inscription_id
+			'SELECT d.*, i.club_nom, i.logo_id, i.clubs_associes FROM ' . self::t_demos() . ' d INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = d.inscription_id
 			 WHERE i.edition = %s ORDER BY d.ordre_passage IS NULL, d.ordre_passage ASC, i.id ASC, d.ordre ASC, d.id ASC',
 			$edition
 		) ) ?: [];
@@ -221,10 +223,47 @@ class Tkd_Gala_DB {
 	public static function participants_edition( string $edition ): array {
 		global $wpdb;
 		return $wpdb->get_results( $wpdb->prepare(
-			'SELECT p.*, i.club_nom FROM ' . self::t_participants() . ' p INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = p.inscription_id
+			'SELECT p.*, i.club_nom, i.clubs_associes FROM ' . self::t_participants() . ' p INNER JOIN ' . self::t_inscriptions() . ' i ON i.id = p.inscription_id
 			 WHERE i.edition = %s ORDER BY i.club_nom ASC, p.nom ASC, p.prenom ASC',
 			$edition
 		) ) ?: [];
+	}
+
+	// ─── Équipes (13/11/2026) ───────────────────────────────────────────────────
+
+	/** Minimum de démonstrateurs par équipe (règlement, article 3) : signalé, jamais bloquant. */
+	const MIN_PARTICIPANTS = 15;
+
+	/** @return string[] noms des clubs associés d'une inscription ([] = club seul) */
+	public static function associes( object $ins ): array {
+		$v = json_decode( (string) ( $ins->clubs_associes ?? '' ), true );
+		return is_array( $v ) ? array_values( array_filter( array_map( 'strval', $v ), static fn( $s ) => $s !== '' ) ) : [];
+	}
+
+	/** @return string[] tous les clubs de l'équipe, le club référent d'abord */
+	public static function clubs_equipe( object $ins ): array {
+		return array_merge( [ (string) $ins->club_nom ], self::associes( $ins ) );
+	}
+
+	/** Nom affiché (Conducteur, projection) : « TKD Le Barcarès – Tautavel », ou le club seul. */
+	public static function nom_equipe( object $ins ): string {
+		return implode( ' – ', self::clubs_equipe( $ins ) );
+	}
+
+	/** Club d'un démonstrateur (vide pour les inscriptions d'avant les équipes : club référent). */
+	public static function club_participant( object $p, object $ins ): string {
+		return (string) ( $p->club ?? '' ) !== '' ? (string) $p->club : (string) $ins->club_nom;
+	}
+
+	/** @return array<string, int> repas réservés par club de l'équipe */
+	public static function repas_par_club( object $ins ): array {
+		$out = array_fill_keys( self::clubs_equipe( $ins ), 0 );
+		foreach ( self::participants( intval( $ins->id ) ) as $p ) {
+			if ( (int) $p->repas !== 1 ) continue;
+			$c = self::club_participant( $p, $ins );
+			$out[ $c ] = ( $out[ $c ] ?? 0 ) + 1;
+		}
+		return $out;
 	}
 
 	// ─── Écriture ───────────────────────────────────────────────────────────────
@@ -250,6 +289,8 @@ class Tkd_Gala_DB {
 			'role'         => $club['role'],
 			'telephone'    => $club['telephone'],
 			'email'        => $club['email'],
+			// Équipe (13/11/2026) : noms des clubs associés (2 au plus), [] = club seul.
+			'clubs_associes' => wp_json_encode( array_values( (array) ( $club['associes'] ?? [] ) ) ),
 			'consentement' => $now,
 			'reglement'    => $now, // case « règlement accepté » obligatoire à chaque enregistrement
 			'updated_at'   => $now,
@@ -275,6 +316,7 @@ class Tkd_Gala_DB {
 				'prenom'         => $p['prenom'],
 				'date_naissance' => $p['naissance'] !== '' ? $p['naissance'] : null,
 				'repas'          => $p['repas'] ? 1 : 0,
+				'club'           => (string) ( $p['club'] ?? '' ),
 				'ordre'          => $n,
 			] );
 		}

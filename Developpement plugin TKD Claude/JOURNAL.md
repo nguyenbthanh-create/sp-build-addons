@@ -328,6 +328,20 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Liste des dossiers bloquée — test puis prod le 10/11/2026** : `uploads/`, `wp-includes/` et les dossiers des extensions affichaient leur contenu (« Index of »). Ajout de `Options -Indexes` en tête du `.htaccess` racine (hors blocs WordPress) sur les deux sites. Vérifié en prod : listes en 403 ; accueil, page du gala, PDF du règlement, wp-admin et wp-json inchangés. Juste après l'envoi, les listes restent visibles quelques secondes (prise en compte par l'hébergeur). Sauvegardes : `DEPLOIEMENT_tkd-gala_2026-11-10/prod-root-avant-indexes.htaccess` et `test-root-avant-indexes.htaccess`.
 
+**TKD Gala 1.5 : équipes de plusieurs clubs (règlement, art. 2 et 3) — prod le 13/11/2026** :
+- **Formulaire** : choix « Notre club seul / Une équipe de plusieurs clubs » ; deux clubs associés au plus (nom seulement) ; le représentant devient le référent de l'équipe.
+- **Démonstrateurs** : colonne « Club » (les clubs de l'équipe), visible seulement en équipe ; le total détaille les repas par club.
+- **Article 3** : avertissement non bloquant sous 15 démonstrateurs (formulaire, confirmation, mail, admin).
+- **Données** : `inscriptions.clubs_associes` (JSON) et `participants.club` (DB 1.5).
+- **Nom d'équipe** composé automatiquement (« TKD Le Barcarès – Tautavel ») : Conducteur, projection, CSV.
+- **Admin** : badge 👥 Équipe, repas par club (liste, détail, récapitulatif) et alerte « club présent dans plusieurs inscriptions ».
+- **CSV des démonstrateurs** : colonnes Club (du démonstrateur) et Inscription / équipe.
+- **Vérifications** :
+  - script du formulaire testé en local (bascule équipe, listes de clubs mises à jour, repas par club, avertissement) ;
+  - PHP et PHPStan sans erreur, journal PHP de la prod sans erreur après déploiement ;
+  - **non vus dans un navigateur** : l'enregistrement réel d'une équipe et les pages d'administration (Chrome déconnecté, formulaire fermé au public).
+- **Sauvegarde de la 1.4.0** : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.4.0/`.
+
 **TKD Gala 1.4 : logos des clubs et des candidatures — prod le 11/11/2026** :
 - **Formulaire des clubs** : champ « Logo du club » facultatif (PNG, JPG ou WebP, 5 Mo au maximum, image vérifiée), rangé dans la **médiathèque** (média marqué `_tkd_gala_logo` = club). Son id est gardé dans `tkd_gala_inscriptions.logo_id` (DB 1.4).
 - **Candidature Elementor** : champ « Logo de la structure » (type Envoi de fichier, `struct_logo`) ajouté à l'étape Structure du modèle 6053 en prod. Elementor garde le fichier dans `uploads/elementor/forms/`, et `Tkd_Gala_Logos::candidature()` en fait une copie dans la médiathèque à la première lecture (onglet Candidatures, Conducteur, Projection) ; l'id est gardé dans `tkd_gala_externes.logo_id`.

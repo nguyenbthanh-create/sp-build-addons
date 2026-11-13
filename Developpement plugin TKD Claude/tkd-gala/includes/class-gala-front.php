@@ -22,6 +22,7 @@ class Tkd_Gala_Front {
 	private static ?self $instance = null;
 
 	const MAX_PARTICIPANTS = 200;
+	const MAX_ASSOCIES     = 2; // règlement, article 2 : 3 clubs au plus par équipe
 
 	/** @var string[] erreurs de la dernière soumission (formulaire réaffiché avec la saisie) */
 	private array $erreurs = [];
@@ -186,6 +187,21 @@ class Tkd_Gala_Front {
 		if ( strlen( preg_replace( '/\D/', '', $club['telephone'] ) ) < 10 ) $err[] = 'Indiquez un numéro de téléphone valide.';
 		if ( ! is_email( $club['email'] ) ) $err[] = 'Indiquez une adresse mail valide : votre lien personnel y sera envoyé.';
 
+		// Équipe (13/11/2026, règlement art. 2) : jusqu'à 2 clubs associés, une seule démonstration.
+		$club['equipe']   = ( $c['equipe'] ?? '' ) === '1';
+		$club['associes'] = [];
+		if ( $club['equipe'] ) {
+			$vus = [ mb_strtolower( $club['nom'] ) => true ];
+			foreach ( array_slice( (array) ( $c['associes'] ?? [] ), 0, self::MAX_ASSOCIES ) as $a ) {
+				$a = self::txt( $a );
+				if ( $a === '' || isset( $vus[ mb_strtolower( $a ) ] ) ) continue;
+				$vus[ mb_strtolower( $a ) ] = true;
+				$club['associes'][] = $a;
+			}
+			if ( ! $club['associes'] ) $err[] = 'Équipe : indiquez le nom d\'au moins un club associé (ou choisissez « Notre club seul »).';
+		}
+		$clubs_equipe = array_merge( [ $club['nom'] ], $club['associes'] );
+
 		$participants = [];
 		$lignes_ko    = [];
 		$aujourdhui   = current_time( 'Y-m-d' );
@@ -196,7 +212,10 @@ class Tkd_Gala_Front {
 			$nai = (string) ( $p['naissance'] ?? '' );
 			if ( $nom === '' && $pre === '' && trim( $nai ) === '' ) continue; // ligne vide
 			$iso = self::date_iso( $nai );
-			$participants[] = [ 'nom' => $nom, 'prenom' => $pre, 'naissance' => $iso !== '' ? $iso : trim( $nai ), 'repas' => ! empty( $p['repas'] ) ];
+			// Club du démonstrateur : un des clubs de l'équipe, sinon le club référent.
+			$cp  = self::txt( $p['club'] ?? '' );
+			$cp  = in_array( $cp, $clubs_equipe, true ) ? $cp : $club['nom'];
+			$participants[] = [ 'nom' => $nom, 'prenom' => $pre, 'naissance' => $iso !== '' ? $iso : trim( $nai ), 'repas' => ! empty( $p['repas'] ), 'club' => $club['associes'] ? $cp : '' ];
 			if ( $nom === '' || $pre === '' || $iso === '' || $iso > $aujourdhui || $iso < '1920-01-01' ) $lignes_ko[] = count( $participants );
 		}
 		if ( ! $participants ) $err[] = 'Ajoutez au moins un démonstrateur.';
@@ -261,8 +280,9 @@ class Tkd_Gala_Front {
 	private static function data_depuis_base( object $ins ): array {
 		$p = [];
 		foreach ( Tkd_Gala_DB::participants( intval( $ins->id ) ) as $x ) {
-			$p[] = [ 'nom' => $x->nom, 'prenom' => $x->prenom, 'naissance' => (string) $x->date_naissance, 'repas' => (bool) $x->repas ];
+			$p[] = [ 'nom' => $x->nom, 'prenom' => $x->prenom, 'naissance' => (string) $x->date_naissance, 'repas' => (bool) $x->repas, 'club' => (string) ( $x->club ?? '' ) ];
 		}
+		$associes = Tkd_Gala_DB::associes( $ins );
 		$d = [];
 		foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $x ) {
 			$d[ 'e' . $x->id ] = [
@@ -273,7 +293,7 @@ class Tkd_Gala_Front {
 		}
 		if ( ! $d ) $d = self::data_vide()['demos'];
 		return [
-			'club'         => [ 'nom' => $ins->club_nom, 'affiliation' => $ins->affiliation, 'representant' => $ins->representant, 'role' => $ins->role, 'telephone' => $ins->telephone, 'email' => $ins->email ],
+			'club'         => [ 'nom' => $ins->club_nom, 'affiliation' => $ins->affiliation, 'representant' => $ins->representant, 'role' => $ins->role, 'telephone' => $ins->telephone, 'email' => $ins->email, 'equipe' => (bool) $associes, 'associes' => $associes ],
 			'participants' => $p,
 			'demos'        => $d,
 			'consentement' => ! empty( $ins->consentement ),
@@ -283,8 +303,8 @@ class Tkd_Gala_Front {
 
 	private static function data_vide(): array {
 		return [
-			'club'         => array_fill_keys( [ 'nom', 'affiliation', 'representant', 'role', 'telephone', 'email' ], '' ),
-			'participants' => [ [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false ] ],
+			'club'         => array_fill_keys( [ 'nom', 'affiliation', 'representant', 'role', 'telephone', 'email' ], '' ) + [ 'equipe' => false, 'associes' => [] ],
+			'participants' => [ [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false, 'club' => '' ] ],
 			'demos'        => [ 'n0' => [ 'id' => 0, 'titre' => '', 'duree_sec' => 0, 'couleur1' => '', 'couleur2' => '', 'planches' => 0, 'audio_nom' => '' ] ],
 			'consentement' => false,
 			'reglement'    => false,
@@ -370,6 +390,11 @@ class Tkd_Gala_Front {
 		if ( $audio_ko ) {
 			echo '<div class="tkd-gala-alerte tkd-gala-ko"><p>⚠️ ' . intval( $audio_ko ) . ' piste(s) audio n\'ont pas pu être enregistrées sur le serveur. Renvoyez-les, ou contactez l\'organisation.</p></div>';
 		}
+		// Règlement, article 3 : signalé, jamais bloquant (décision du 13/11/2026).
+		$nb = count( Tkd_Gala_DB::participants( intval( $ins->id ) ) );
+		if ( $nb < Tkd_Gala_DB::MIN_PARTICIPANTS ) {
+			echo '<div class="tkd-gala-alerte"><p>⚠️ ' . intval( $nb ) . ' démonstrateur(s) inscrit(s) : le règlement (article 3) prévoit au moins ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . ' participants par démonstration. Vous pourrez compléter la liste avec votre lien personnel.</p></div>';
+		}
 	}
 
 	private function formulaire( array $data, ?object $ins, array $r ): void {
@@ -384,15 +409,29 @@ class Tkd_Gala_Front {
 				. ( $aide ? '<span class="tkd-gala-aide">' . esc_html( $aide ) . '</span>' : '' ) . '</p>';
 		};
 		?>
-		<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( add_query_arg( 'gala_envoi', '1', self::url_page() ) ); ?>" class="tkd-gala-form" data-prix-repas="<?php echo esc_attr( (string) $prix ); ?>" novalidate>
+		<form method="post" enctype="multipart/form-data" action="<?php echo esc_url( add_query_arg( 'gala_envoi', '1', self::url_page() ) ); ?>" class="tkd-gala-form<?php echo empty( $c['equipe'] ) ? '' : ' tkd-gala-en-equipe'; ?>" data-prix-repas="<?php echo esc_attr( (string) $prix ); ?>" data-min-participants="<?php echo intval( Tkd_Gala_DB::MIN_PARTICIPANTS ); ?>" novalidate>
 			<input type="hidden" name="tkd_gala_action" value="enregistrer">
 			<input type="hidden" name="token" value="<?php echo esc_attr( $ins->token ?? '' ); ?>">
 			<p class="tkd-gala-piege" aria-hidden="true"><label>Site web <input type="text" name="site_web" tabindex="-1" autocomplete="off"></label></p>
 
 			<section class="tkd-gala-bloc">
-				<h3>1. Club</h3>
+				<h3>1. Club ou équipe</h3>
 				<?php
 				$champ( 'nom', 'Nom du club', $c['nom'], 'text', true, '', 'organization' );
+				$assoc = array_pad( array_values( (array) ( $c['associes'] ?? [] ) ), self::MAX_ASSOCIES, '' );
+				?>
+				<fieldset class="tkd-gala-ligne tkd-gala-equipe-choix"><legend>Démonstration présentée par <span class="tkd-gala-requis">*</span></legend>
+					<label class="tkd-gala-case"><input type="radio" name="club[equipe]" value="0"<?php checked( empty( $c['equipe'] ) ); ?>> Notre club seul</label>
+					<label class="tkd-gala-case"><input type="radio" name="club[equipe]" value="1"<?php checked( ! empty( $c['equipe'] ) ); ?>> Une équipe de plusieurs clubs (3 clubs au maximum)</label>
+				</fieldset>
+				<div class="tkd-gala-associes"<?php echo empty( $c['equipe'] ) ? ' hidden' : ''; ?>>
+					<p class="tkd-gala-aide">Règlement, article 2 : jusqu'à 3 clubs par équipe, une seule démonstration ; le représentant ci-dessous est le <strong>référent de l'équipe</strong>. L'équipe sera annoncée sous le nom de ses clubs (ex. : « TKD Le Barcarès – Tautavel »).</p>
+					<?php foreach ( $assoc as $k => $a ) : ?>
+					<p class="tkd-gala-ligne"><label for="tg-associe-<?php echo intval( $k ); ?>">Club associé <?php echo intval( $k + 1 ); ?><?php echo $k ? ' <span class="tkd-gala-aide">(facultatif)</span>' : ''; ?></label>
+						<input class="tkd-gala-champ" id="tg-associe-<?php echo intval( $k ); ?>" type="text" name="club[associes][]" value="<?php echo esc_attr( $a ); ?>" maxlength="150" placeholder="Nom du club"></p>
+					<?php endforeach; ?>
+				</div>
+				<?php
 				$champ( 'affiliation', 'Numéro d\'affiliation FFTDA', $c['affiliation'], 'text', false, 'Si votre club est affilié à la FFTDA.' );
 				$champ( 'representant', 'Représentant', $c['representant'], 'text', true, 'Prénom et nom de la personne à contacter.', 'name' );
 				$champ( 'role', 'Rôle au sein du club', $c['role'], 'text', true, 'Ex. : président, entraîneur, secrétaire…' );
@@ -417,9 +456,12 @@ class Tkd_Gala_Front {
 				<p class="tkd-gala-aide">Une ligne par démonstrateur. Vous avez déjà la liste dans un tableur (Excel, LibreOffice, Google Sheets) ? Sélectionnez les colonnes <em>Nom, Prénom, Date de naissance</em> (et éventuellement <em>Repas</em> : oui / non), copiez, puis utilisez « Coller depuis un tableur ».</p>
 				<div class="tkd-gala-table-wrap">
 					<table class="tkd-gala-table">
-						<thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Date de naissance</th><th>Repas <span class="tkd-gala-aide">(+<?php echo esc_html( self::montant( $prix ) ); ?>)</span></th><th></th></tr></thead>
+						<thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Date de naissance</th><th class="tkd-gala-col-club">Club</th><th>Repas <span class="tkd-gala-aide">(+<?php echo esc_html( self::montant( $prix ) ); ?>)</span></th><th></th></tr></thead>
 						<tbody class="tkd-gala-participants">
-						<?php foreach ( $data['participants'] as $i => $p ) $this->ligne_participant( (string) $i, $p ); ?>
+						<?php
+						$clubs = array_values( array_filter( array_merge( [ (string) $c['nom'] ], (array) ( $c['associes'] ?? [] ) ) ) );
+						foreach ( $data['participants'] as $i => $p ) $this->ligne_participant( (string) $i, $p, $clubs );
+						?>
 						</tbody>
 					</table>
 				</div>
@@ -437,6 +479,7 @@ class Tkd_Gala_Front {
 					</p>
 				</div>
 				<p class="tkd-gala-total" aria-live="polite"></p>
+				<p class="tkd-gala-minimum" hidden>⚠️ Le règlement (article 3) prévoit au moins <?php echo intval( Tkd_Gala_DB::MIN_PARTICIPANTS ); ?> participants par démonstration. Vous pouvez enregistrer quand même et compléter la liste plus tard avec votre lien personnel.</p>
 				<p class="tkd-gala-aide">Repas réservés aux démonstrateurs. <?php echo esc_html( $r['paiement'] ); ?></p>
 			</section>
 
@@ -459,7 +502,7 @@ class Tkd_Gala_Front {
 
 			<p class="tkd-gala-envoi"><button type="submit" class="tkd-gala-btn tkd-gala-btn-principal"><?php echo $ins ? 'Enregistrer les modifications' : 'Envoyer l\'inscription'; ?></button></p>
 
-			<template class="tkd-gala-tpl-participant"><?php $this->ligne_participant( '__i__', [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false ] ); ?></template>		</form>
+			<template class="tkd-gala-tpl-participant"><?php $this->ligne_participant( '__i__', [ 'nom' => '', 'prenom' => '', 'naissance' => '', 'repas' => false, 'club' => '' ], $clubs ); ?></template>		</form>
 		<?php if ( ! $ins ) $this->lien_vers_lien_perdu();
 	}
 
@@ -467,15 +510,20 @@ class Tkd_Gala_Front {
 		return number_format_i18n( $m, floor( $m ) == $m ? 0 : 2 ) . ' €';
 	}
 
-	private function ligne_participant( string $i, array $p ): void {
+	/** @param string[] $clubs clubs de l'équipe (le référent d'abord) ; la liste est tenue à jour par gala-front.js */
+	private function ligne_participant( string $i, array $p, array $clubs = [] ): void {
 		// Pas « p » : WordPress lit ce nom dans $_POST comme identifiant d'article (page 404 au réaffichage).
-		$n = 'dp[' . $i . ']';
+		$n   = 'dp[' . $i . ']';
+		$sel = (string) ( $p['club'] ?? '' );
 		?>
 		<tr>
 			<td class="tkd-gala-num"></td>
 			<td><input type="text" name="<?php echo esc_attr( $n ); ?>[nom]" value="<?php echo esc_attr( $p['nom'] ); ?>" aria-label="Nom" autocomplete="off"></td>
 			<td><input type="text" name="<?php echo esc_attr( $n ); ?>[prenom]" value="<?php echo esc_attr( $p['prenom'] ); ?>" aria-label="Prénom" autocomplete="off"></td>
 			<td><input type="date" name="<?php echo esc_attr( $n ); ?>[naissance]" value="<?php echo esc_attr( $p['naissance'] ); ?>" aria-label="Date de naissance" max="<?php echo esc_attr( current_time( 'Y-m-d' ) ); ?>"></td>
+			<td class="tkd-gala-col-club"><select name="<?php echo esc_attr( $n ); ?>[club]" aria-label="Club" data-valeur="<?php echo esc_attr( $sel ); ?>">
+				<?php foreach ( $clubs as $cl ) echo '<option value="' . esc_attr( $cl ) . '"' . selected( $sel, $cl, false ) . '>' . esc_html( $cl ) . '</option>'; ?>
+			</select></td>
 			<td class="tkd-gala-centre"><input type="checkbox" name="<?php echo esc_attr( $n ); ?>[repas]" value="1" aria-label="Repas"<?php checked( ! empty( $p['repas'] ) ); ?>></td>
 			<td><button type="button" class="tkd-gala-suppr" data-gala="suppr-participant" title="Retirer ce démonstrateur" aria-label="Retirer ce démonstrateur">✕</button></td>
 		</tr>

@@ -118,15 +118,34 @@ class Tkd_Gala_Admin {
 
 		if ( ! $liste ) { echo '<p>Aucune inscription pour l\'édition ' . esc_html( $r['edition'] ) . '.</p>'; return; }
 
+		// Équipes (13/11/2026) : un même club dans deux inscriptions (seul et dans une équipe, ou
+		// dans deux équipes) est signalé. Comparaison sur le nom, sans accents ni casse.
+		$cle = static fn( string $s ) => preg_replace( '/[^a-z0-9]+/', '', strtolower( remove_accents( $s ) ) );
+		$vus = [];
+		foreach ( $liste as $i ) foreach ( Tkd_Gala_DB::clubs_equipe( $i ) as $club ) $vus[ $cle( $club ) ][ intval( $i->id ) ] = $club;
+		$doublons = array_filter( $vus, static fn( $x ) => count( $x ) > 1 );
+		if ( $doublons ) {
+			echo '<div class="notice notice-warning inline"><p><strong>⚠️ Club présent dans plusieurs inscriptions :</strong> ';
+			echo esc_html( implode( ' · ', array_map( static fn( $x ) => (string) reset( $x ), $doublons ) ) );
+			echo '. Vérifiez qu\'il ne s\'est pas inscrit seul alors qu\'il fait partie d\'une équipe.</p></div>';
+		}
+
 		echo '<table class="widefat striped"><thead><tr><th>Club</th><th>Représentant</th><th>Contact</th><th>Démonstrateurs</th><th>Repas</th><th>Démonstrations</th><th>Repas payés</th><th>Modifiée le</th><th></th></tr></thead><tbody>';
 		foreach ( $liste as $i ) {
 			$t = $par[ $i->id ];
 			echo '<tr>';
-			echo '<td><strong><a href="' . esc_url( self::url( [ 'inscription' => $i->id ] ) ) . '">' . esc_html( $i->club_nom ) . '</a></strong>' . ( $i->affiliation !== '' ? '<br><span class="description">FFTDA ' . esc_html( $i->affiliation ) . '</span>' : '' ) . '</td>';
+			$assoc = Tkd_Gala_DB::associes( $i );
+			echo '<td><strong><a href="' . esc_url( self::url( [ 'inscription' => $i->id ] ) ) . '">' . esc_html( $i->club_nom ) . '</a></strong>'
+				. ( $assoc ? ' <span class="tkd-gala-badge-equipe" title="Équipe de plusieurs clubs">👥 Équipe</span><br><span class="description">avec ' . esc_html( implode( ', ', $assoc ) ) . '</span>' : '' )
+				. ( $i->affiliation !== '' ? '<br><span class="description">FFTDA ' . esc_html( $i->affiliation ) . '</span>' : '' ) . '</td>';
 			echo '<td>' . esc_html( $i->representant ) . '<br><span class="description">' . esc_html( $i->role ) . '</span></td>';
 			echo '<td><a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $i->telephone ) ) . '">' . esc_html( $i->telephone ) . '</a><br><a href="mailto:' . esc_attr( $i->email ) . '">' . esc_html( $i->email ) . '</a></td>';
-			echo '<td>' . intval( $t['participants'] ) . '</td>';
-			echo '<td>' . intval( $t['repas'] ) . ( $t['repas'] ? ' <span class="description">(' . esc_html( Tkd_Gala_Front::montant( (float) $t['montant'] ) ) . ')</span>' : '' ) . '</td>';
+			echo '<td>' . intval( $t['participants'] ) . ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ? ' <span class="tkd-gala-alerte-txt" title="Règlement, article 3 : au moins ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . ' participants">⚠️ &lt; ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . '</span>' : '' ) . '</td>';
+			$detail_repas = '';
+			if ( $assoc && $t['repas'] ) {
+				$detail_repas = '<br><span class="description">' . esc_html( implode( ' · ', array_map( static fn( $c, $n ) => $c . ' : ' . $n, array_keys( Tkd_Gala_DB::repas_par_club( $i ) ), Tkd_Gala_DB::repas_par_club( $i ) ) ) ) . '</span>';
+			}
+			echo '<td>' . intval( $t['repas'] ) . ( $t['repas'] ? ' <span class="description">(' . esc_html( Tkd_Gala_Front::montant( (float) $t['montant'] ) ) . ')</span>' : '' ) . $detail_repas . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ci-dessus
 			echo '<td>' . intval( $t['demos'] ) . ( $t['sans_audio'] ? ' <span class="tkd-gala-alerte-txt">· ' . intval( $t['sans_audio'] ) . ' sans audio</span>' : '' ) . '</td>';
 			echo '<td>' . ( $t['repas'] ? ( (int) $i->paye ? '✅ Payé' : '⏳ À encaisser' ) : '—' ) . '</td>';
 			echo '<td>' . esc_html( mysql2date( 'd/m/Y H:i', $i->updated_at ) ) . '</td>';
@@ -153,10 +172,21 @@ class Tkd_Gala_Admin {
 		echo '<p><a class="button" href="' . esc_url( Tkd_Gala_Front::lien_club( $i->token ) ) . '" target="_blank" rel="noopener">✏️ Modifier avec le formulaire du club ↗</a></p>';
 		echo '<p class="description">Lien personnel du club (à lui renvoyer si besoin) :<br><input type="text" readonly class="large-text" value="' . esc_attr( Tkd_Gala_Front::lien_club( $i->token ) ) . '" onclick="this.select()"></p>';
 
+		$assoc = Tkd_Gala_DB::associes( $i );
+		if ( $assoc ) echo '<p class="tkd-gala-equipe-admin">👥 <strong>Équipe « ' . esc_html( Tkd_Gala_DB::nom_equipe( $i ) ) . ' »</strong> — référent : ' . esc_html( $i->club_nom ) . ' ; clubs associés : ' . esc_html( implode( ', ', $assoc ) ) . '.</p>';
+
 		echo '<h3>Démonstrateurs (' . intval( $t['participants'] ) . ') — ' . intval( $t['repas'] ) . ' repas, ' . esc_html( Tkd_Gala_Front::montant( (float) $t['montant'] ) ) . '</h3>';
-		echo '<table class="widefat striped"><thead><tr><th>Nom</th><th>Prénom</th><th>Né(e) le</th><th>Repas</th></tr></thead><tbody>';
+		if ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ) echo '<p class="tkd-gala-alerte-txt">⚠️ Moins de ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . ' participants (règlement, article 3).</p>';
+		if ( $assoc && $t['repas'] ) {
+			echo '<p><strong>Repas par club :</strong> ';
+			$morceaux = [];
+			foreach ( Tkd_Gala_DB::repas_par_club( $i ) as $club => $n ) $morceaux[] = esc_html( $club ) . ' : ' . intval( $n ) . ' (' . esc_html( Tkd_Gala_Front::montant( $n * (float) $r['prix_repas'] ) ) . ')';
+			echo implode( ' · ', $morceaux ) . '</p>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ci-dessus
+		}
+		echo '<table class="widefat striped"><thead><tr><th>Nom</th><th>Prénom</th><th>Né(e) le</th>' . ( $assoc ? '<th>Club</th>' : '' ) . '<th>Repas</th></tr></thead><tbody>';
 		foreach ( Tkd_Gala_DB::participants( $id ) as $p ) {
-			echo '<tr><td>' . esc_html( $p->nom ) . '</td><td>' . esc_html( $p->prenom ) . '</td><td>' . esc_html( Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) ) . '</td><td>' . ( (int) $p->repas ? '🍽️ Oui' : 'Non' ) . '</td></tr>';
+			echo '<tr><td>' . esc_html( $p->nom ) . '</td><td>' . esc_html( $p->prenom ) . '</td><td>' . esc_html( Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) ) . '</td>'
+				. ( $assoc ? '<td>' . esc_html( Tkd_Gala_DB::club_participant( $p, $i ) ) . '</td>' : '' ) . '<td>' . ( (int) $p->repas ? '🍽️ Oui' : 'Non' ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
 
@@ -582,9 +612,10 @@ class Tkd_Gala_Admin {
 
 		$l = [];
 		foreach ( Tkd_Gala_DB::participants_edition( $r['edition'] ) as $p ) {
-			$l[] = [ $p->club_nom, $p->nom, $p->prenom, Tkd_Gala_Front::date_fr( (string) $p->date_naissance ), (int) $p->repas ? 'oui' : 'non' ];
+			// $p porte club_nom et clubs_associes de son inscription (participants_edition()).
+			$l[] = [ Tkd_Gala_DB::club_participant( $p, $p ), Tkd_Gala_DB::nom_equipe( $p ), $p->nom, $p->prenom, Tkd_Gala_Front::date_fr( (string) $p->date_naissance ), (int) $p->repas ? 'oui' : 'non' ];
 		}
-		self::csv( 'gala-' . $e . '-demonstrateurs.csv', [ 'Club', 'Nom', 'Prénom', 'Date de naissance', 'Repas' ], $l );
+		self::csv( 'gala-' . $e . '-demonstrateurs.csv', [ 'Club', 'Inscription / équipe', 'Nom', 'Prénom', 'Date de naissance', 'Repas' ], $l );
 	}
 
 	public function action_zip(): void {

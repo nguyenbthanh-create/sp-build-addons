@@ -47,13 +47,25 @@ class Tkd_Gala_Mails {
 		if ( $ins->affiliation !== '' ) $s .= '  Affiliation FFTDA : ' . $ins->affiliation . "\n";
 		$s .= '  Représentant : ' . $ins->representant . ' (' . $ins->role . ")\n";
 		$s .= '  Téléphone : ' . $ins->telephone . "\n";
-		$s .= '  Mail : ' . $ins->email . "\n\n";
+		$s .= '  Mail : ' . $ins->email . "\n";
+		$assoc = Tkd_Gala_DB::associes( $ins );
+		if ( $assoc ) $s .= '  Équipe : ' . Tkd_Gala_DB::nom_equipe( $ins ) . ' (référent : ' . $ins->club_nom . ")\n";
+		$s .= "\n";
 
 		$s .= 'DÉMONSTRATEURS (' . $t['participants'] . ")\n";
 		foreach ( Tkd_Gala_DB::participants( intval( $ins->id ) ) as $p ) {
-			$s .= '  • ' . $p->nom . ' ' . $p->prenom . ' — né(e) le ' . Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) . ( (int) $p->repas ? ' — repas' : '' ) . "\n";
+			$s .= '  • ' . $p->nom . ' ' . $p->prenom . ' — né(e) le ' . Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) . ( $assoc ? ' — ' . Tkd_Gala_DB::club_participant( $p, $ins ) : '' ) . ( (int) $p->repas ? ' — repas' : '' ) . "\n";
 		}
-		$s .= '  Repas : ' . $t['repas'] . ' × ' . Tkd_Gala_Front::montant( (float) $r['prix_repas'] ) . ' = ' . Tkd_Gala_Front::montant( (float) $t['montant'] ) . ( $t['repas'] ? ' — ' . $r['paiement'] : '' ) . "\n\n";
+		if ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ) {
+			$s .= '  ⚠️ Le règlement (article 3) prévoit au moins ' . Tkd_Gala_DB::MIN_PARTICIPANTS . " participants par démonstration.\n";
+		}
+		$s .= '  Repas : ' . $t['repas'] . ' × ' . Tkd_Gala_Front::montant( (float) $r['prix_repas'] ) . ' = ' . Tkd_Gala_Front::montant( (float) $t['montant'] ) . ( $t['repas'] ? ' — ' . $r['paiement'] : '' ) . "\n";
+		if ( $assoc && $t['repas'] ) {
+			foreach ( Tkd_Gala_DB::repas_par_club( $ins ) as $club => $n ) {
+				$s .= '    ' . $club . ' : ' . $n . ' repas = ' . Tkd_Gala_Front::montant( $n * (float) $r['prix_repas'] ) . "\n";
+			}
+		}
+		$s .= "\n";
 
 		$s .= "DÉMONSTRATION\n";
 		foreach ( Tkd_Gala_DB::demos( intval( $ins->id ) ) as $d ) {

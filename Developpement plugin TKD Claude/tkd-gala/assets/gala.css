@@ -88,6 +88,17 @@
 .tkd-gala-duree, .tkd-gala-couleurs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .tkd-gala-couleurs select { flex: 1 1 160px; }
 .tkd-gala-audio-actuel { margin: 0 0 4px; font-weight: 600; }
+/* Équipes (13/11/2026) : colonne Club seulement pour une équipe */
+.tkd-gala-col-club { display: none; }
+.tkd-gala-en-equipe .tkd-gala-col-club { display: table-cell; }
+.tkd-gala-col-club select { max-width: 160px; }
+.tkd-gala-equipe-choix { border: 0; padding: 0; margin: 0 0 12px; }
+.tkd-gala-equipe-choix legend { font-weight: 600; margin-bottom: 4px; padding: 0; }
+.tkd-gala-equipe-choix .tkd-gala-case { display: block; margin: 2px 0; }
+.tkd-gala-associes { border-left: 3px solid #1d2b53; padding: 4px 0 4px 12px; margin: 0 0 12px; }
+.tkd-gala-associes[hidden] { display: none; }
+.tkd-gala-minimum { background: #fff8e5; border-left: 4px solid #dba617; padding: 8px 12px; border-radius: 4px; }
+.tkd-gala-minimum[hidden] { display: none; }
 .tkd-gala-logo-actuel { display: block; max-width: 180px; max-height: 110px; object-fit: contain; margin: 0 0 6px; padding: 4px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
 .tkd-gala input[type=file] { max-width: 100%; }
 .tkd-gala audio { width: 100%; max-width: 420px; display: block; margin: 4px 0; }

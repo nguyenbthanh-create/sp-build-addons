@@ -29,19 +29,73 @@
 		return (Math.round(m * 100) / 100).toLocaleString('fr-FR', { minimumFractionDigits: m % 1 ? 2 : 0 }) + ' €';
 	}
 
+	// ── Équipe de plusieurs clubs (règlement, art. 2) ───────────────────────
+	var minimum   = parseInt(form.getAttribute('data-min-participants'), 10) || 0;
+	var blocAssoc = form.querySelector('.tkd-gala-associes');
+
+	function enEquipe() {
+		var r = form.querySelector('input[name="club[equipe]"]:checked');
+		return !!r && r.value === '1';
+	}
+
+	// Clubs de l'équipe : le club référent puis les clubs associés renseignés (sans doublon).
+	function clubs() {
+		var liste = [], vus = {};
+		var champs = [form.querySelector('input[name="club[nom]"]')];
+		if (enEquipe()) champs = champs.concat([].slice.call(form.querySelectorAll('input[name="club[associes][]"]')));
+		champs.forEach(function (c) {
+			var v = c ? c.value.trim() : '';
+			if (v && !vus[v.toLowerCase()]) { vus[v.toLowerCase()] = true; liste.push(v); }
+		});
+		return liste;
+	}
+
+	function remplirSelect(sel, liste) {
+		var actuel = sel.value || sel.getAttribute('data-valeur') || '';
+		sel.innerHTML = '';
+		liste.forEach(function (c) {
+			var o = document.createElement('option');
+			o.value = c; o.textContent = c;
+			if (c === actuel) o.selected = true;
+			sel.appendChild(o);
+		});
+		sel.removeAttribute('data-valeur');
+	}
+
+	function majEquipe() {
+		var equipe = enEquipe();
+		form.classList.toggle('tkd-gala-en-equipe', equipe);
+		if (blocAssoc) blocAssoc.hidden = !equipe;
+		var liste = clubs();
+		[].forEach.call(tbody.querySelectorAll('select[name$="[club]"]'), function (s) { remplirSelect(s, liste); });
+		var selTpl = tplP.content ? tplP.content.querySelector('select[name$="[club]"]') : null;
+		if (selTpl) remplirSelect(selTpl, liste);
+	}
+
 	function rafraichir() {
 		var lignes = tbody.querySelectorAll('tr');
-		var nb = 0, repas = 0;
+		var nb = 0, repas = 0, parClub = {};
 		[].forEach.call(lignes, function (tr, i) {
 			tr.querySelector('.tkd-gala-num').textContent = i + 1;
 			var nom = tr.querySelector('input[name$="[nom]"]').value.trim();
 			var pre = tr.querySelector('input[name$="[prenom]"]').value.trim();
 			if (nom || pre) {
 				nb++;
-				if (tr.querySelector('input[name$="[repas]"]').checked) repas++;
+				if (tr.querySelector('input[name$="[repas]"]').checked) {
+					repas++;
+					var s = tr.querySelector('select[name$="[club]"]');
+					var c = s && s.value ? s.value : '';
+					parClub[c] = (parClub[c] || 0) + 1;
+				}
 			}
 		});
-		totalEl.textContent = nb + ' démonstrateur' + (nb > 1 ? 's' : '') + ' · ' + repas + ' repas' + (repas ? ' · ' + euros(repas * prix) + ' à régler' : '');
+		var txt = nb + ' démonstrateur' + (nb > 1 ? 's' : '') + ' · ' + repas + ' repas' + (repas ? ' · ' + euros(repas * prix) + ' à régler' : '');
+		if (enEquipe() && repas) {
+			txt += ' (' + Object.keys(parClub).map(function (c) { return (c || '?') + ' : ' + parClub[c]; }).join(' · ') + ')';
+		}
+		totalEl.textContent = txt;
+		var alerte = form.querySelector('.tkd-gala-minimum');
+		if (alerte) alerte.hidden = !(minimum && nb > 0 && nb < minimum);
 	}
 
 	function ligneVide(tr) {
@@ -108,8 +162,15 @@
 		rafraichir();
 	});
 
-	form.addEventListener('input', rafraichir);
-	form.addEventListener('change', rafraichir);
+	form.addEventListener('input', function (e) {
+		var n = e.target && e.target.name;
+		if (n === 'club[nom]' || n === 'club[associes][]') majEquipe();
+		rafraichir();
+	});
+	form.addEventListener('change', function (e) {
+		if (e.target && e.target.name === 'club[equipe]') majEquipe();
+		rafraichir();
+	});
 
 	// Coller directement dans la première cellule du tableau : même import que le bouton.
 	tbody.addEventListener('paste', function (e) {
@@ -134,6 +195,7 @@
 		if (btn.getAttribute('data-texte')) btn.textContent = btn.getAttribute('data-texte');
 	});
 
+	majEquipe();
 	rafraichir();
 	var alerte = document.querySelector('.tkd-gala .tkd-gala-ko, .tkd-gala .tkd-gala-ok');
 	if (alerte && alerte.scrollIntoView) alerte.scrollIntoView({ block: 'start' });
