@@ -3,7 +3,7 @@
  * Plugin Name: TKD Gala
  * Plugin URI:  https://tkdclaira.fr
  * Description: Inscriptions des clubs invités au gala des arts martiaux (sans compte WordPress : lien personnel par club), participants, repas, démonstrations et pistes audio.
- * Version:     1.5.0
+ * Version:     1.6.0
  * Author:      TKD Claira
  * Text Domain: tkd-gala
  * Requires PHP: 8.0
@@ -23,7 +23,7 @@
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-define( 'TKD_GALA_VERSION', '1.5.0' );
+define( 'TKD_GALA_VERSION', '1.6.0' );
 define( 'TKD_GALA_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TKD_GALA_URL', plugin_dir_url( __FILE__ ) );
 
@@ -31,6 +31,7 @@ require_once TKD_GALA_DIR . 'includes/class-gala-db.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-candidatures.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-annonceurs.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-logos.php';
+require_once TKD_GALA_DIR . 'includes/class-gala-relance.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-projection.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-audio.php';
 require_once TKD_GALA_DIR . 'includes/class-gala-mails.php';
@@ -44,6 +45,8 @@ register_activation_hook( __FILE__, [ 'Tkd_Gala_DB', 'installer' ] );
 add_action( 'plugins_loaded', [ 'Tkd_Gala_DB', 'maybe_upgrade' ] );
 
 Tkd_Gala_Candidatures::init(); // contrôle des couleurs du formulaire de candidature Elementor
+Tkd_Gala_Relance::init();      // relance quotidienne des inscriptions incomplètes (WP-Cron)
+register_deactivation_hook( __FILE__, [ 'Tkd_Gala_Relance', 'deplanifier' ] );
 Tkd_Gala_Audio::get_instance();
 Tkd_Gala_Front::get_instance();
 if ( is_admin() ) { Tkd_Gala_Admin::get_instance(); Tkd_Gala_Projection::get_instance(); }

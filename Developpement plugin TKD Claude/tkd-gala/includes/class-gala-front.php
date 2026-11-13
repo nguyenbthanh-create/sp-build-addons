@@ -216,11 +216,14 @@ class Tkd_Gala_Front {
 			$cp  = self::txt( $p['club'] ?? '' );
 			$cp  = in_array( $cp, $clubs_equipe, true ) ? $cp : $club['nom'];
 			$participants[] = [ 'nom' => $nom, 'prenom' => $pre, 'naissance' => $iso !== '' ? $iso : trim( $nai ), 'repas' => ! empty( $p['repas'] ), 'club' => $club['associes'] ? $cp : '' ];
-			if ( $nom === '' || $pre === '' || $iso === '' || $iso > $aujourdhui || $iso < '1920-01-01' ) $lignes_ko[] = count( $participants );
+			// Date de naissance facultative à l'inscription (13/11/2026) : à compléter avant la date
+			// limite (rappels + relance automatique) ; une date saisie doit être valide.
+			$date_ko = trim( $nai ) !== '' && ( $iso === '' || $iso > $aujourdhui || $iso < '1920-01-01' );
+			if ( $nom === '' || $pre === '' || $date_ko ) $lignes_ko[] = count( $participants );
 		}
 		if ( ! $participants ) $err[] = 'Ajoutez au moins un démonstrateur.';
 		if ( count( $participants ) > self::MAX_PARTICIPANTS ) $err[] = 'Trop de démonstrateurs (' . self::MAX_PARTICIPANTS . ' au maximum).';
-		if ( $lignes_ko ) $err[] = 'Démonstrateurs : nom, prénom et date de naissance valide obligatoires (ligne' . ( count( $lignes_ko ) > 1 ? 's ' : ' ' ) . implode( ', ', $lignes_ko ) . ').';
+		if ( $lignes_ko ) $err[] = 'Démonstrateurs : nom et prénom obligatoires, date de naissance valide si elle est indiquée (ligne' . ( count( $lignes_ko ) > 1 ? 's ' : ' ' ) . implode( ', ', $lignes_ko ) . ').';
 
 		$couleurs = Tkd_Gala_DB::couleurs();
 		$anciennes = [];
@@ -390,10 +393,12 @@ class Tkd_Gala_Front {
 		if ( $audio_ko ) {
 			echo '<div class="tkd-gala-alerte tkd-gala-ko"><p>⚠️ ' . intval( $audio_ko ) . ' piste(s) audio n\'ont pas pu être enregistrées sur le serveur. Renvoyez-les, ou contactez l\'organisation.</p></div>';
 		}
-		// Règlement, article 3 : signalé, jamais bloquant (décision du 13/11/2026).
-		$nb = count( Tkd_Gala_DB::participants( intval( $ins->id ) ) );
-		if ( $nb < Tkd_Gala_DB::MIN_PARTICIPANTS ) {
-			echo '<div class="tkd-gala-alerte"><p>⚠️ ' . intval( $nb ) . ' démonstrateur(s) inscrit(s) : le règlement (article 3) prévoit au moins ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . ' participants par démonstration. Vous pourrez compléter la liste avec votre lien personnel.</p></div>';
+		// Éléments à compléter (dates de naissance, musique, minimum de 15) : signalés, jamais bloquants.
+		$manques = Tkd_Gala_Mails::a_completer( $ins );
+		if ( $manques ) {
+			echo '<div class="tkd-gala-alerte"><p><strong>⚠️ À compléter' . ( $r['date_limite'] ? ' avant le ' . esc_html( self::date_fr( (string) $r['date_limite'] ) ) : '' ) . '</strong>, avec votre lien personnel :</p><ul>';
+			foreach ( $manques as $m ) echo '<li>' . esc_html( $m ) . '</li>';
+			echo '</ul></div>';
 		}
 	}
 
@@ -453,7 +458,7 @@ class Tkd_Gala_Front {
 
 			<section class="tkd-gala-bloc">
 				<h3>2. Démonstrateurs</h3>
-				<p class="tkd-gala-aide">Une ligne par démonstrateur. Vous avez déjà la liste dans un tableur (Excel, LibreOffice, Google Sheets) ? Sélectionnez les colonnes <em>Nom, Prénom, Date de naissance</em> (et éventuellement <em>Repas</em> : oui / non), copiez, puis utilisez « Coller depuis un tableur ».</p>
+				<p class="tkd-gala-aide">Une ligne par démonstrateur. Vous avez déjà la liste dans un tableur (Excel, LibreOffice, Google Sheets) ? Sélectionnez les colonnes <em>Nom, Prénom, Date de naissance</em> (et éventuellement <em>Repas</em> : oui / non), copiez, puis utilisez « Coller depuis un tableur ».<br>La date de naissance peut être ajoutée plus tard : elle sera à compléter avant la date limite<?php echo $r['date_limite'] ? ' (' . esc_html( self::date_fr( (string) $r['date_limite'] ) ) . ')' : ''; ?>, avec votre lien personnel.</p>
 				<div class="tkd-gala-table-wrap">
 					<table class="tkd-gala-table">
 						<thead><tr><th>#</th><th>Nom</th><th>Prénom</th><th>Date de naissance</th><th class="tkd-gala-col-club">Club</th><th>Repas <span class="tkd-gala-aide">(+<?php echo esc_html( self::montant( $prix ) ); ?>)</span></th><th></th></tr></thead>
@@ -499,6 +504,8 @@ class Tkd_Gala_Front {
 				<p><label class="tkd-gala-case"><input type="checkbox" name="reglement" value="1" required<?php checked( ! empty( $data['reglement'] ) ); ?>> <span>J'ai lu et j'accepte, au nom du club et de ses démonstrateurs, le <a href="<?php echo esc_url( $r['url_reglement'] ); ?>" target="_blank" rel="noopener">règlement des démonstrations (PDF)</a>.</span> <span class="tkd-gala-requis">*</span></label></p>
 				<?php endif; ?>
 			</section>
+
+			<div class="tkd-gala-a-completer" hidden data-limite="<?php echo esc_attr( $r['date_limite'] ? self::date_fr( (string) $r['date_limite'] ) : '' ); ?>"><p><strong>À compléter plus tard</strong> (vous pouvez enregistrer dès maintenant) :</p><ul></ul></div>
 
 			<p class="tkd-gala-envoi"><button type="submit" class="tkd-gala-btn tkd-gala-btn-principal"><?php echo $ins ? 'Enregistrer les modifications' : 'Envoyer l\'inscription'; ?></button></p>
 

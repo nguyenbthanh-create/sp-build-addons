@@ -120,6 +120,8 @@ class Tkd_Gala_DB {
 			'heure_debut'   => '14:00',   // conducteur : heure de la première démonstration
 			'battement_sec' => 60,        // conducteur : temps entre deux démonstrations
 			'duree_annonce' => 30,        // conducteur : durée proposée pour un nouveau passage d'annonceur (secondes)
+			'relance_active' => 1,        // relance des inscriptions incomplètes (Tkd_Gala_Relance)
+			'relance_jours'  => 7,        // … à partir de date limite − N jours
 			'couleurs'      => "Rouge\nBleu\nVert\nJaune\nOrange\nViolet\nRose\nBlanc\nCyan\nOr",
 			'paiement'      => 'Les repas sont à régler sur place, le jour du gala.',
 			'texte_rgpd'    => "Les noms, prénoms et dates de naissance des démonstrateurs servent uniquement à l'organisation du gala (liste des participants, repas). Ils sont supprimés au plus tard un mois après le gala.",

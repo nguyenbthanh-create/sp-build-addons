@@ -35,7 +35,44 @@ class Tkd_Gala_Mails {
 			'demos'        => count( $d ),
 			'sans_audio'   => count( array_filter( $d, static fn( $x ) => (string) $x->audio_fichier === '' ) ),
 			'planches'     => array_sum( array_map( static fn( $x ) => (int) $x->planches, $d ) ),
+			'sans_date'    => count( array_filter( $p, static fn( $x ) => empty( $x->date_naissance ) ) ),
 		];
+	}
+
+	/**
+	 * Ce qui reste à compléter (13/11/2026), en phrases courtes ; [] = inscription complète.
+	 * Sert au formulaire (après enregistrement), aux mails, à l'admin et à la relance.
+	 *
+	 * @return string[]
+	 */
+	public static function a_completer( object $ins ): array {
+		$out  = [];
+		$sans = array_values( array_filter( Tkd_Gala_DB::participants( intval( $ins->id ) ), static fn( $x ) => empty( $x->date_naissance ) ) );
+		if ( $sans ) {
+			$noms  = array_map( static fn( $x ) => trim( $x->prenom . ' ' . $x->nom ), array_slice( $sans, 0, 12 ) );
+			$out[] = count( $sans ) . ' démonstrateur(s) sans date de naissance : ' . implode( ', ', $noms ) . ( count( $sans ) > 12 ? '…' : '' ) . '.';
+		}
+		$t = self::totaux( $ins );
+		if ( $t['sans_audio'] ) $out[] = 'Piste audio de la démonstration pas encore envoyée.';
+		if ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ) {
+			$out[] = $t['participants'] . ' démonstrateur(s) : le règlement (article 3) prévoit au moins ' . Tkd_Gala_DB::MIN_PARTICIPANTS . ' participants.';
+		}
+		return $out;
+	}
+
+	/** Relance avant la date limite (Tkd_Gala_Relance) : ce qui manque + lien personnel. */
+	public static function relance( object $ins ): bool {
+		$r       = Tkd_Gala_DB::reglages();
+		$manques = self::a_completer( $ins );
+		if ( ! $manques ) return false;
+		$sujet = self::prefixe() . ' — inscription à compléter (' . $ins->club_nom . ')';
+		$c  = 'Bonjour ' . $ins->representant . ",\n\n";
+		$c .= 'L\'inscription de ' . Tkd_Gala_DB::nom_equipe( $ins ) . ' au gala est bien enregistrée, mais il reste des éléments à compléter'
+			. ( $r['date_limite'] ? ' avant le ' . Tkd_Gala_Front::date_fr( (string) $r['date_limite'] ) . ' inclus' : '' ) . " :\n\n";
+		foreach ( $manques as $m ) $c .= '  • ' . $m . "\n";
+		$c .= "\nVotre lien personnel pour compléter l'inscription :\n" . Tkd_Gala_Front::lien_club( $ins->token ) . "\n\n";
+		$c .= "Merci, et à bientôt au gala !\n\n-- \n" . get_option( 'blogname', 'Club' );
+		return self::envoyer( $ins->email, $sujet, $c, (string) $r['email_orga'] );
 	}
 
 	/** Récapitulatif lisible d'une inscription (mails et page en lecture seule). */
@@ -52,12 +89,16 @@ class Tkd_Gala_Mails {
 		if ( $assoc ) $s .= '  Équipe : ' . Tkd_Gala_DB::nom_equipe( $ins ) . ' (référent : ' . $ins->club_nom . ")\n";
 		$s .= "\n";
 
+		$manques = self::a_completer( $ins );
+		if ( $manques ) {
+			$s .= '⚠️ À COMPLÉTER' . ( $r['date_limite'] ? ' AVANT LE ' . Tkd_Gala_Front::date_fr( (string) $r['date_limite'] ) : '' ) . " (avec le lien personnel)\n";
+			foreach ( $manques as $m ) $s .= '  • ' . $m . "\n";
+			$s .= "\n";
+		}
+
 		$s .= 'DÉMONSTRATEURS (' . $t['participants'] . ")\n";
 		foreach ( Tkd_Gala_DB::participants( intval( $ins->id ) ) as $p ) {
-			$s .= '  • ' . $p->nom . ' ' . $p->prenom . ' — né(e) le ' . Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) . ( $assoc ? ' — ' . Tkd_Gala_DB::club_participant( $p, $ins ) : '' ) . ( (int) $p->repas ? ' — repas' : '' ) . "\n";
-		}
-		if ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ) {
-			$s .= '  ⚠️ Le règlement (article 3) prévoit au moins ' . Tkd_Gala_DB::MIN_PARTICIPANTS . " participants par démonstration.\n";
+			$s .= '  • ' . $p->nom . ' ' . $p->prenom . ( empty( $p->date_naissance ) ? ' — date de naissance à compléter' : ' — né(e) le ' . Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) ) . ( $assoc ? ' — ' . Tkd_Gala_DB::club_participant( $p, $ins ) : '' ) . ( (int) $p->repas ? ' — repas' : '' ) . "\n";
 		}
 		$s .= '  Repas : ' . $t['repas'] . ' × ' . Tkd_Gala_Front::montant( (float) $r['prix_repas'] ) . ' = ' . Tkd_Gala_Front::montant( (float) $t['montant'] ) . ( $t['repas'] ? ' — ' . $r['paiement'] : '' ) . "\n";
 		if ( $assoc && $t['repas'] ) {

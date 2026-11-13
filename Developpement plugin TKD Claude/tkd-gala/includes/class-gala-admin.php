@@ -24,7 +24,7 @@ class Tkd_Gala_Admin {
 
 	private function __construct() {
 		add_action( 'admin_menu', [ $this, 'menu' ] );
-		foreach ( [ 'reglages', 'paye', 'supprimer', 'ordre', 'export', 'zip', 'purger', 'candidatures', 'annonceur', 'annonceur_supprimer', 'passage' ] as $a ) {
+		foreach ( [ 'reglages', 'paye', 'supprimer', 'ordre', 'export', 'zip', 'purger', 'candidatures', 'annonceur', 'annonceur_supprimer', 'passage', 'relancer' ] as $a ) {
 			add_action( 'admin_post_tkd_gala_' . $a, [ $this, 'action_' . $a ] );
 		}
 	}
@@ -78,6 +78,7 @@ class Tkd_Gala_Admin {
 		if ( $ko ) echo '<div class="notice notice-error"><p>' . intval( $ko ) . ' piste(s) audio refusée(s) : ' . esc_html( sanitize_text_field( wp_unslash( $_GET['audio_err'] ?? '' ) ) ) . '</p></div>';
 		$m    = sanitize_key( $_GET['fait'] ?? '' );
 		if ( isset( $msgs[ $m ] ) ) echo '<div class="notice notice-success is-dismissible"><p>' . esc_html( $msgs[ $m ] ) . '</p></div>';
+		if ( $m === 'relance' ) echo '<div class="notice notice-success is-dismissible"><p>Relance envoyée à ' . intval( $_GET['n'] ?? 0 ) . ' club(s) dont l\'inscription est incomplète.</p></div>';
 		if ( $m === 'purge' ) echo '<div class="notice notice-success"><p>' . intval( $_GET['n'] ?? 0 ) . ' inscription(s) et leurs pistes audio supprimées.</p></div>';
 
 		$page = Tkd_Gala_Front::url_page();
@@ -92,7 +93,7 @@ class Tkd_Gala_Admin {
 
 	private function onglet_inscriptions( array $r ): void {
 		$liste = Tkd_Gala_DB::inscriptions( $r['edition'] );
-		$tot   = [ 'participants' => 0, 'repas' => 0, 'montant' => 0, 'demos' => 0, 'sans_audio' => 0, 'planches' => 0 ];
+		$tot   = [ 'participants' => 0, 'repas' => 0, 'montant' => 0, 'demos' => 0, 'sans_audio' => 0, 'planches' => 0, 'sans_date' => 0 ];
 		$par   = [];
 		foreach ( $liste as $i ) {
 			$par[ $i->id ] = Tkd_Gala_Mails::totaux( $i );
@@ -103,7 +104,7 @@ class Tkd_Gala_Admin {
 		echo '<div class="tkd-gala-cartes">';
 		foreach ( [
 			[ count( $liste ), 'clubs' ], [ $tot['participants'], 'démonstrateurs' ], [ $tot['repas'], 'repas (' . Tkd_Gala_Front::montant( (float) $tot['montant'] ) . ')' ],
-			[ $tot['demos'], 'démonstrations' ], [ Tkd_Gala_Front::duree( $duree ), 'de démonstrations' ], [ $tot['planches'], 'planches' ], [ $tot['sans_audio'], 'piste(s) audio manquante(s)' ],
+			[ $tot['demos'], 'démonstrations' ], [ Tkd_Gala_Front::duree( $duree ), 'de démonstrations' ], [ $tot['planches'], 'planches' ], [ $tot['sans_audio'], 'piste(s) audio manquante(s)' ], [ $tot['sans_date'], 'date(s) de naissance manquante(s)' ],
 		] as $c ) {
 			echo '<div class="tkd-gala-carte"><strong>' . esc_html( (string) $c[0] ) . '</strong><span>' . esc_html( $c[1] ) . '</span></div>';
 		}
@@ -130,7 +131,7 @@ class Tkd_Gala_Admin {
 			echo '. Vérifiez qu\'il ne s\'est pas inscrit seul alors qu\'il fait partie d\'une équipe.</p></div>';
 		}
 
-		echo '<table class="widefat striped"><thead><tr><th>Club</th><th>Représentant</th><th>Contact</th><th>Démonstrateurs</th><th>Repas</th><th>Démonstrations</th><th>Repas payés</th><th>Modifiée le</th><th></th></tr></thead><tbody>';
+		echo '<table class="widefat striped"><thead><tr><th>Club</th><th>Représentant</th><th>Contact</th><th>Démonstrateurs</th><th>Repas</th><th>Démonstrations</th><th>À compléter</th><th>Repas payés</th><th>Modifiée le</th><th></th></tr></thead><tbody>';
 		foreach ( $liste as $i ) {
 			$t = $par[ $i->id ];
 			echo '<tr>';
@@ -147,6 +148,8 @@ class Tkd_Gala_Admin {
 			}
 			echo '<td>' . intval( $t['repas'] ) . ( $t['repas'] ? ' <span class="description">(' . esc_html( Tkd_Gala_Front::montant( (float) $t['montant'] ) ) . ')</span>' : '' ) . $detail_repas . '</td>'; // phpcs:ignore WordPress.Security.EscapeOutput -- échappé ci-dessus
 			echo '<td>' . intval( $t['demos'] ) . ( $t['sans_audio'] ? ' <span class="tkd-gala-alerte-txt">· ' . intval( $t['sans_audio'] ) . ' sans audio</span>' : '' ) . '</td>';
+			$manque = array_filter( [ $t['sans_date'] ? $t['sans_date'] . ' date(s)' : '', $t['sans_audio'] ? 'musique' : '', $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ? '< ' . Tkd_Gala_DB::MIN_PARTICIPANTS . ' part.' : '' ] );
+			echo '<td>' . ( $manque ? '<span class="tkd-gala-alerte-txt">⚠️ ' . esc_html( implode( ' · ', $manque ) ) . '</span>' : '✅' ) . '</td>';
 			echo '<td>' . ( $t['repas'] ? ( (int) $i->paye ? '✅ Payé' : '⏳ À encaisser' ) : '—' ) . '</td>';
 			echo '<td>' . esc_html( mysql2date( 'd/m/Y H:i', $i->updated_at ) ) . '</td>';
 			echo '<td><a class="button button-small" href="' . esc_url( self::url( [ 'inscription' => $i->id ] ) ) . '">Détail</a></td>';
@@ -176,7 +179,12 @@ class Tkd_Gala_Admin {
 		if ( $assoc ) echo '<p class="tkd-gala-equipe-admin">👥 <strong>Équipe « ' . esc_html( Tkd_Gala_DB::nom_equipe( $i ) ) . ' »</strong> — référent : ' . esc_html( $i->club_nom ) . ' ; clubs associés : ' . esc_html( implode( ', ', $assoc ) ) . '.</p>';
 
 		echo '<h3>Démonstrateurs (' . intval( $t['participants'] ) . ') — ' . intval( $t['repas'] ) . ' repas, ' . esc_html( Tkd_Gala_Front::montant( (float) $t['montant'] ) ) . '</h3>';
-		if ( $t['participants'] < Tkd_Gala_DB::MIN_PARTICIPANTS ) echo '<p class="tkd-gala-alerte-txt">⚠️ Moins de ' . intval( Tkd_Gala_DB::MIN_PARTICIPANTS ) . ' participants (règlement, article 3).</p>';
+		$manques = Tkd_Gala_Mails::a_completer( $i );
+		if ( $manques ) {
+			echo '<div class="tkd-gala-a-completer-admin"><strong>⚠️ À compléter par le club</strong><ul>';
+			foreach ( $manques as $m ) echo '<li>' . esc_html( $m ) . '</li>';
+			echo '</ul></div>';
+		}
 		if ( $assoc && $t['repas'] ) {
 			echo '<p><strong>Repas par club :</strong> ';
 			$morceaux = [];
@@ -185,7 +193,8 @@ class Tkd_Gala_Admin {
 		}
 		echo '<table class="widefat striped"><thead><tr><th>Nom</th><th>Prénom</th><th>Né(e) le</th>' . ( $assoc ? '<th>Club</th>' : '' ) . '<th>Repas</th></tr></thead><tbody>';
 		foreach ( Tkd_Gala_DB::participants( $id ) as $p ) {
-			echo '<tr><td>' . esc_html( $p->nom ) . '</td><td>' . esc_html( $p->prenom ) . '</td><td>' . esc_html( Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) ) . '</td>'
+			$sans_date = empty( $p->date_naissance );
+			echo '<tr' . ( $sans_date ? ' class="tkd-gala-sans-date"' : '' ) . '><td>' . esc_html( $p->nom ) . '</td><td>' . esc_html( $p->prenom ) . '</td><td>' . ( $sans_date ? '<span class="tkd-gala-alerte-txt">à compléter</span>' : esc_html( Tkd_Gala_Front::date_fr( (string) $p->date_naissance ) ) ) . '</td>'
 				. ( $assoc ? '<td>' . esc_html( Tkd_Gala_DB::club_participant( $p, $i ) ) . '</td>' : '' ) . '<td>' . ( (int) $p->repas ? '🍽️ Oui' : 'Non' ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
@@ -471,6 +480,9 @@ class Tkd_Gala_Admin {
 		$ligne( 'Mail de l\'organisation', $in( 'email_orga', 'email', 'class="regular-text"' ), 'Reçoit un mail à chaque inscription ou modification.' );
 		$ligne( 'Conducteur : début', $in( 'heure_debut', 'time' ) );
 		$ligne( 'Conducteur : battement', $in( 'battement_sec', 'number', 'min="0" step="5" class="small-text"' ) . ' secondes', 'Temps entre deux démonstrations.' );
+		$ligne( 'Relance des inscriptions incomplètes', '<label><input type="checkbox" name="r[relance_active]" value="1"' . checked( ! empty( $r['relance_active'] ), true, false ) . '> Envoyer automatiquement un rappel</label> '
+			. $in( 'relance_jours', 'number', 'min="0" step="1" class="small-text"' ) . ' jours avant la date limite',
+			'Un seul mail par club, s\'il manque des dates de naissance, la piste audio ou s\'il y a moins de ' . Tkd_Gala_DB::MIN_PARTICIPANTS . ' démonstrateurs. L\'organisation reçoit un compte rendu.' );
 		$ligne( 'Conducteur : durée d\'une annonce', $in( 'duree_annonce', 'number', 'min="0" step="5" class="small-text"' ) . ' secondes', 'Proposée pour chaque nouveau passage d\'annonceur ; modifiable ensuite passage par passage.' );
 		$ligne( 'Couleurs proposées', '<textarea name="r[couleurs]" rows="8" class="regular-text">' . esc_textarea( (string) $r['couleurs'] ) . '</textarea>', 'Une couleur par ligne : à voir avec la personne qui gère l\'éclairage.' );
 		$ligne( 'Paiement des repas', '<textarea name="r[paiement]" rows="2" class="large-text">' . esc_textarea( (string) $r['paiement'] ) . '</textarea>' );
@@ -480,6 +492,21 @@ class Tkd_Gala_Admin {
 		echo '</table>';
 		submit_button( 'Enregistrer les réglages' );
 		echo '</form>';
+
+		// Relance des inscriptions incomplètes : état et envoi immédiat.
+		$debut    = Tkd_Gala_Relance::jour_relance();
+		$envoyees = Tkd_Gala_Relance::envoyees();
+		$incompl  = array_filter( Tkd_Gala_DB::inscriptions( (string) $r['edition'] ), static fn( $i ) => (bool) Tkd_Gala_Mails::a_completer( $i ) );
+		echo '<hr><h2>Relance des inscriptions incomplètes</h2><p>';
+		if ( empty( $r['relance_active'] ) )      echo 'Relance automatique <strong>désactivée</strong>.';
+		elseif ( $debut === '' )                   echo 'Relance automatique en attente : renseignez la <strong>date limite</strong>.';
+		else                                       echo 'Relance automatique à partir du <strong>' . esc_html( Tkd_Gala_Front::date_fr( $debut ) ) . '</strong> (un mail par club incomplet, une seule fois).';
+		echo '<br>' . intval( count( $incompl ) ) . ' inscription(s) incomplète(s) aujourd\'hui ; ' . intval( count( $envoyees ) ) . ' relance(s) déjà envoyée(s)' . ( $envoyees ? ' (dernière le ' . esc_html( mysql2date( 'd/m/Y H:i', (string) max( $envoyees ) ) ) . ')' : '' ) . '.</p>';
+		if ( $incompl ) {
+			self::form_debut( 'relancer', 'onsubmit="return confirm(\'Envoyer maintenant la relance aux ' . intval( count( $incompl ) ) . ' club(s) incomplet(s) ?\')"' );
+			submit_button( 'Relancer maintenant les ' . count( $incompl ) . ' club(s) incomplet(s)', 'secondary', 'submit', false );
+			echo '</form>';
+		}
 
 		echo '<hr><h2>Après le gala : supprimer les données</h2><p class="description">Supprime toutes les inscriptions de l\'édition ' . esc_html( $r['edition'] ) . ' (clubs, démonstrateurs, démonstrations) et toutes les pistes audio. Irréversible : faites d\'abord vos exports.</p>';
 		self::form_debut( 'purger', 'onsubmit="return confirm(\'Supprimer définitivement toutes les données de cette édition ?\')"' );
@@ -510,6 +537,8 @@ class Tkd_Gala_Admin {
 			'heure_debut'   => preg_match( '/^\d{1,2}:\d{2}$/', (string) ( $in['heure_debut'] ?? '' ) ) ? (string) $in['heure_debut'] : '14:00',
 			'battement_sec' => max( 0, intval( $in['battement_sec'] ?? 60 ) ),
 			'duree_annonce' => max( 0, intval( $in['duree_annonce'] ?? 30 ) ),
+			'relance_active' => empty( $in['relance_active'] ) ? 0 : 1,
+			'relance_jours'  => max( 0, min( 60, intval( $in['relance_jours'] ?? 7 ) ) ),
 			'couleurs'      => implode( "\n", $couleurs ?: Tkd_Gala_DB::couleurs() ),
 			'paiement'      => sanitize_textarea_field( (string) ( $in['paiement'] ?? '' ) ),
 			'texte_rgpd'    => sanitize_textarea_field( (string) ( $in['texte_rgpd'] ?? '' ) ),
@@ -565,6 +594,13 @@ class Tkd_Gala_Admin {
 			}
 		}
 		wp_safe_redirect( self::url( [ 'onglet' => 'conducteur', 'fait' => 'ordre' ] ) );
+		exit;
+	}
+
+	public function action_relancer(): void {
+		self::garde( 'relancer' );
+		$n = Tkd_Gala_Relance::relancer( true );
+		wp_safe_redirect( self::url( [ 'onglet' => 'reglages', 'fait' => 'relance', 'n' => $n ] ) );
 		exit;
 	}
 

@@ -328,6 +328,21 @@ Vérifié : `debug.log` → **403** sur la prod et sur le site de test (même r�
 
 **Liste des dossiers bloquée — test puis prod le 10/11/2026** : `uploads/`, `wp-includes/` et les dossiers des extensions affichaient leur contenu (« Index of »). Ajout de `Options -Indexes` en tête du `.htaccess` racine (hors blocs WordPress) sur les deux sites. Vérifié en prod : listes en 403 ; accueil, page du gala, PDF du règlement, wp-admin et wp-json inchangés. Juste après l'envoi, les listes restent visibles quelques secondes (prise en compte par l'hébergeur). Sauvegardes : `DEPLOIEMENT_tkd-gala_2026-11-10/prod-root-avant-indexes.htaccess` et `test-root-avant-indexes.htaccess`.
 
+**TKD Gala 1.6 : « à compléter » et relance automatique — prod le 13/11/2026** (retour d'un test sur le site de test : la date de naissance obligatoire bloquait l'inscription) :
+- **Date de naissance facultative** : seuls le nom et le prénom sont obligatoires, et une date saisie doit être valide. La piste audio était déjà facultative.
+- **Rappel « À compléter » non bloquant** (dates manquantes, musique, moins de 15 démonstrateurs, via `Tkd_Gala_Mails::a_completer()`) :
+  - dans le formulaire, en direct ;
+  - après l'enregistrement ;
+  - dans le mail récapitulatif (rubrique en tête) ;
+  - dans l'admin : colonne « À compléter », carte « dates manquantes », lignes sans date surlignées dans le détail.
+- **Relance automatique** (`includes/class-gala-relance.php`, WP-Cron quotidien vers 9 h) :
+  - à partir de date limite − N jours (Réglages, 7 par défaut, désactivable) jusqu'à la date limite ;
+  - un seul mail par club incomplet, noté dans l'option `tkd_gala_relances` ; compte rendu à l'organisation ;
+  - bouton « Relancer maintenant » dans Réglages.
+- **Vérifié en prod** : admin (colonne et carte), Réglages (relance prévue à partir du 08/01/2027), rappel en direct dans le formulaire, aucune erreur de date à l'envoi.
+- **Non testés** : l'envoi réel de la relance et le passage de la tâche planifiée (premier passage prévu le 08/01/2027).
+- **Sauvegarde de la 1.5.0** : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.5.0/`.
+
 **TKD Gala 1.5 : équipes de plusieurs clubs (règlement, art. 2 et 3) — prod le 13/11/2026** :
 - **Formulaire** : choix « Notre club seul / Une équipe de plusieurs clubs » ; deux clubs associés au plus (nom seulement) ; le représentant devient le référent de l'équipe.
 - **Démonstrateurs** : colonne « Club » (les clubs de l'équipe), visible seulement en équipe ; le total détaille les repas par club.

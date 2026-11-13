@@ -99,6 +99,11 @@
 .tkd-gala-associes[hidden] { display: none; }
 .tkd-gala-minimum { background: #fff8e5; border-left: 4px solid #dba617; padding: 8px 12px; border-radius: 4px; }
 .tkd-gala-minimum[hidden] { display: none; }
+.tkd-gala-a-completer { background: #fff8e5; border-left: 4px solid #dba617; padding: 8px 14px; border-radius: 4px; margin: 0 0 14px; }
+.tkd-gala-a-completer[hidden] { display: none; }
+.tkd-gala-a-completer p { margin: 0 0 4px; }
+.tkd-gala-a-completer ul { margin: 0 0 0 1.2em; padding: 0; }
+.tkd-gala-a-completer-limite { list-style: none; margin-left: -1.2em; font-style: italic; opacity: .8; }
 .tkd-gala-logo-actuel { display: block; max-width: 180px; max-height: 110px; object-fit: contain; margin: 0 0 6px; padding: 4px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; }
 .tkd-gala input[type=file] { max-width: 100%; }
 .tkd-gala audio { width: 100%; max-width: 420px; display: block; margin: 4px 0; }

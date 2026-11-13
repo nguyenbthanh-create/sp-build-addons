@@ -96,6 +96,37 @@
 		totalEl.textContent = txt;
 		var alerte = form.querySelector('.tkd-gala-minimum');
 		if (alerte) alerte.hidden = !(minimum && nb > 0 && nb < minimum);
+		aCompleter();
+	}
+
+	// « À compléter plus tard » (13/11/2026) : dates de naissance et musique sont facultatives à
+	// l'inscription ; on les rappelle sans bloquer l'envoi (rappel aussi par mail et relance).
+	function aCompleter() {
+		var bloc = form.querySelector('.tkd-gala-a-completer');
+		if (!bloc) return;
+		var ul = bloc.querySelector('ul');
+		var items = [];
+		var sansDate = 0;
+		[].forEach.call(tbody.querySelectorAll('tr'), function (tr) {
+			var nom = tr.querySelector('input[name$="[nom]"]').value.trim();
+			var pre = tr.querySelector('input[name$="[prenom]"]').value.trim();
+			if ((nom || pre) && !tr.querySelector('input[name$="[naissance]"]').value) sansDate++;
+		});
+		if (sansDate) items.push(sansDate + ' démonstrateur' + (sansDate > 1 ? 's' : '') + ' sans date de naissance');
+		[].forEach.call(form.querySelectorAll('.tkd-gala-demo'), function (fs) {
+			var f = fs.querySelector('input[type=file]');
+			if (!fs.getAttribute('data-audio') && !(f && f.files && f.files.length)) items.push('piste audio pas encore envoyée');
+		});
+		ul.innerHTML = '';
+		items.forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+		var lim = bloc.getAttribute('data-limite');
+		if (items.length && lim) {
+			var li = document.createElement('li');
+			li.textContent = 'à ajouter avec votre lien personnel jusqu\'au ' + lim + ' inclus';
+			li.className = 'tkd-gala-a-completer-limite';
+			ul.appendChild(li);
+		}
+		bloc.hidden = !items.length;
 	}
 
 	function ligneVide(tr) {
