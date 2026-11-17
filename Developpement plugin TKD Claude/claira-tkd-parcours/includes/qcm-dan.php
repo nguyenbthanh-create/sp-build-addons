@@ -2,7 +2,7 @@
 /**
  * Module « QCM Dan » : révision du QCU du Module B de l'examen Dan FFTDA.
  *
- * - Données : data/qcm-dan.json, extrait des 32 quiz officiels de la FFTDA
+ * - Données : data/qcm-dan.js, extrait des 32 quiz officiels de la FFTDA
  *   (outils/qcm-dan/ pour régénérer le fichier quand la FFTDA met ses PDF à jour).
  * - Tableau de bord (TKD Parcours > QCM Dan) : recherche par mot(s) avec la bonne
  *   réponse, sélection de questions, tirage au sort, impression sujet / corrigé,
@@ -20,16 +20,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 const CLAIRA_TKD_QCM_OPTION = 'claira_tkd_qcm_examens';
 
-/** URL du fichier de données, versionnée par sa date de modification. */
-function claira_tkd_qcm_data_url() {
-	$fichier = CLAIRA_TKD_PLUGIN_DIR . 'data/qcm-dan.json';
-	$version = file_exists( $fichier ) ? (string) filemtime( $fichier ) : CLAIRA_TKD_PLUGIN_VERSION;
-	return add_query_arg( 'v', $version, CLAIRA_TKD_PLUGIN_URL . 'data/qcm-dan.json' );
-}
-
+/**
+ * Styles et scripts du module. Les questions sont livrées en JavaScript
+ * (data/qcm-dan.js, window.ClairaQcmDonnees) et non en .json : le .htaccess
+ * du plugin interdit tous les .json (fichiers de développement).
+ * Version des données = date du fichier, pour qu'une mise à jour des
+ * questions ne reste pas en cache.
+ */
 function claira_tkd_qcm_enqueue() {
+	$donnees = CLAIRA_TKD_PLUGIN_DIR . 'data/qcm-dan.js';
+	$version = file_exists( $donnees ) ? (string) filemtime( $donnees ) : CLAIRA_TKD_PLUGIN_VERSION;
 	wp_enqueue_style( 'claira-tkd-qcm', CLAIRA_TKD_PLUGIN_URL . 'assets/css/qcm-dan.css', array(), CLAIRA_TKD_PLUGIN_VERSION );
-	wp_enqueue_script( 'claira-tkd-qcm', CLAIRA_TKD_PLUGIN_URL . 'assets/js/qcm-dan.js', array(), CLAIRA_TKD_PLUGIN_VERSION, true );
+	wp_enqueue_script( 'claira-tkd-qcm-donnees', CLAIRA_TKD_PLUGIN_URL . 'data/qcm-dan.js', array(), $version, true );
+	wp_enqueue_script( 'claira-tkd-qcm', CLAIRA_TKD_PLUGIN_URL . 'assets/js/qcm-dan.js', array( 'claira-tkd-qcm-donnees' ), CLAIRA_TKD_PLUGIN_VERSION, true );
 }
 
 /** Examens blancs enregistrés : code => array( titre, ids, duree, cree ). */
@@ -76,7 +79,6 @@ function claira_tkd_qcm_shortcode( $atts ) {
 
 	$config = array(
 		'mode'      => 'site',
-		'dataUrl'   => claira_tkd_qcm_data_url(),
 		'questions' => max( 5, min( 100, absint( $atts['questions'] ) ) ),
 		'duree'     => max( 1, min( 120, absint( $atts['duree'] ) ) ),
 		'examen'    => null,
@@ -191,7 +193,6 @@ function claira_tkd_qcm_render_admin_page() {
 	$page_url = claira_tkd_qcm_page_url();
 	$config   = array(
 		'mode'    => 'admin',
-		'dataUrl' => claira_tkd_qcm_data_url(),
 	);
 	?>
 	<div class="wrap claira-qcm-admin">

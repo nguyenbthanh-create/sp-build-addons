@@ -852,15 +852,14 @@
 	function demarrer( racineEl ) {
 		var cfg;
 		try { cfg = JSON.parse( racineEl.getAttribute( 'data-config' ) ); } catch ( e ) { return; }
-		fetch( cfg.dataUrl, { credentials: 'same-origin' } )
-			.then( function ( r ) { if ( ! r.ok ) { throw new Error( r.status ); } return r.json(); } )
-			.then( function ( donnees ) {
-				var moteur = new Moteur( donnees );
-				if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); } else { site( moteur, racineEl, cfg ); }
-			} )
-			.catch( function () {
-				racineEl.querySelector( '.claira-qcm-app' ).innerHTML = '<p class="claira-qcm-info">Impossible de charger les questions. Rechargez la page.</p>';
-			} );
+		// Questions fournies par data/qcm-dan.js (chargé juste avant ce fichier).
+		var donnees = window.ClairaQcmDonnees;
+		if ( ! donnees || ! donnees.questions ) {
+			racineEl.querySelector( '.claira-qcm-app' ).innerHTML = '<p class="claira-qcm-info">Impossible de charger les questions. Rechargez la page.</p>';
+			return;
+		}
+		var moteur = new Moteur( donnees );
+		if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); } else { site( moteur, racineEl, cfg ); }
 	}
 
 	function init() { document.querySelectorAll( '.claira-qcm[data-config]' ).forEach( demarrer ); }

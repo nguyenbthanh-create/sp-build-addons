@@ -1,9 +1,9 @@
 <?php
 /**
  * Transforme la sortie de extraire-quiz.php en fichier de données du module
- * « QCM Dan » de Claira TKD Parcours (claira-tkd-parcours/data/qcm-dan.json).
+ * « QCM Dan » de Claira TKD Parcours (claira-tkd-parcours/data/qcm-dan.js).
  *
- * Usage : php construire-json.php quiz-brut.json ../../claira-tkd-parcours/data/qcm-dan.json
+ * Usage : php construire-json.php quiz-brut.json ../../claira-tkd-parcours/data/qcm-dan.js
  *
  * Format produit (compact) :
  *   { "maj": "AAAA-MM-JJ", "themes": [ {id, nom, titre, source, pdf} ],
@@ -75,5 +75,7 @@ foreach ( $brut as $t ) {
 		$out['questions'][] = array( $ti, $q['n'], $q['q'], $q['r'], $q['ok'], $q['src'] );
 	}
 }
-file_put_contents( $argv[2], json_encode( $out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) );
+// Fichier JavaScript (et non .json, refusé par le .htaccess du plugin) : window.ClairaQcmDonnees.
+$json = json_encode( $out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG );
+file_put_contents( $argv[2], "/* Questions du Module B FFTDA : généré par outils/qcm-dan/construire-json.php, ne pas modifier à la main. */\nwindow.ClairaQcmDonnees = " . $json . ";\n" );
 printf( "%d thèmes, %d questions -> %s\n", count( $out['themes'] ), count( $out['questions'] ), $argv[2] );

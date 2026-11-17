@@ -14,6 +14,7 @@
 #   .\deployer.ps1 -Cible prod -Prod                   la prod exige -Prod (feu vert de l'utilisateur)
 #   .\deployer.ps1 -Cible test -Verifier               compare seulement les tailles, n'envoie rien
 #   .\deployer.ps1 -Cible prod -Prod -Restaurer <dossier de sauvegarde>   retour arrière
+#   .\deployer.ps1 -Cible test -Extension claira-tkd-parcours -Dossier ..\DEPLOIEMENT_…   autre extension (17/11/2026)
 #
 # Les fichiers à SUPPRIMER éventuels (LISTE.txt) ne sont jamais supprimés par ce script.
 
@@ -22,15 +23,19 @@ param(
     [string] $Dossier,
     [switch] $Prod,
     [switch] $Verifier,
-    [string] $Restaurer
+    [string] $Restaurer,
+    [ValidateSet( 'sp_build', 'sp-compta', 'tkd-cotisations', 'claira-tkd-parcours', 'tkd-gala' )] [string] $Extension = 'sp_build',
+    # Nom de la session WinSCP enregistrée. Au PC maison (17/11/2026) elle s'appelle
+    # « tkdclad@ftp.cluster121.hosting.ovh.net » : même serveur OVH que cluster021.
+    [string] $Session = 'tkdclad@ftp.cluster021.hosting.ovh.net'
 )
 
 $ErrorActionPreference = 'Stop'
 $winscp  = 'C:\Program Files (x86)\WinSCP\WinSCP.com'
-$session = 'tkdclad@ftp.cluster021.hosting.ovh.net'
+$session = $Session
 $racine  = Split-Path $PSScriptRoot -Parent
 # Chemins complets : la session enregistrée s'ouvre par défaut dans le dossier de la PROD.
-$base    = @{ test = '/dev.tkdclaira.fr/wp-content/plugins/sp_build/'; prod = '/www/wp-content/plugins/sp_build/' }[ $Cible ]
+$base    = @{ test = "/dev.tkdclaira.fr/wp-content/plugins/$Extension/"; prod = "/www/wp-content/plugins/$Extension/" }[ $Cible ]
 
 if ( $Cible -eq 'prod' -and -not $Prod ) { Write-Host 'La prod exige -Prod (feu vert explicite de l''utilisateur).' -ForegroundColor Red; exit 1 }
 if ( -not ( Test-Path $winscp ) ) { Write-Host "WinSCP introuvable : $winscp" -ForegroundColor Red; exit 1 }
@@ -40,8 +45,8 @@ if ( $Restaurer ) {
 } elseif ( $Dossier ) {
     $source = ( Resolve-Path $Dossier ).Path
 } else {
-    $d = Get-ChildItem $racine -Directory -Filter 'DEPLOIEMENT_*_sp_build_*' | Sort-Object Name | Select-Object -Last 1
-    if ( -not $d ) { Write-Host 'Aucun dossier DEPLOIEMENT_*_sp_build_* trouvé.' -ForegroundColor Red; exit 1 }
+    $d = Get-ChildItem $racine -Directory -Filter "DEPLOIEMENT_*_$( $Extension )_*" | Sort-Object Name | Select-Object -Last 1
+    if ( -not $d ) { Write-Host "Aucun dossier DEPLOIEMENT_*_$( $Extension )_* trouvé." -ForegroundColor Red; exit 1 }
     $source = $d.FullName
 }
 
