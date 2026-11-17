@@ -514,7 +514,11 @@ Autres constats de l'audit, non traités :
   - IllustrationPied en 900 px, qualité 78 (affichée en 416 px) ;
   - logo-tkd-claira.png en 600 px.
   - Originaux dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-images-originales-2026-11-17/`.
-- **En attente de l'accord de l'utilisateur** : passer `bur`, `les-entraineurs` et `event-blocks` en brouillon, puis désactiver SportsPress Pro.
+- **Fait avec l'accord de l'utilisateur** : `bur` (2752), `les-entraineurs` (2871) et `event-blocks` (1999) sont en brouillon, et **SportsPress Pro est désactivé** (pas supprimé : les 65 fiches d'élèves restent en base).
+- **Vérifié en prod** :
+  - `/player/…`, `/staff/…` et `/sponsor/…` renvoient vers l'accueil ;
+  - l'API `sportspress/v2` répond 404 et le sitemap ne liste plus que les grades TKD Parcours ;
+  - les 14 pages principales répondent 200, sans erreur PHP.
 
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
