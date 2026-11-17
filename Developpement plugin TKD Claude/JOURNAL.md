@@ -567,3 +567,8 @@ Détails :
 ---
 
 *Créé le 11/09/2026. Sections 6 et 7 ajoutées le 06/10/2026, audit de sécurité et section 8 le 07/10/2026, étape 6 le 08/10/2026.*
+
+**Application /app/ : bouton « Réviser le QCM Dan » + TKD Parcours 1.14.1 (retour à l'application) — site de test le 17/11/2026 vers 15 h 53** (sp_build `e911bb6`, Claira `c9725d9`, dossiers `DEPLOIEMENT_2026-11-17_sp_build_e911bb6` et `…_claira-tkd-parcours_c9725d9`).
+- Choix de l'utilisateur : bouton sur l'Accueil, et bouton de retour sur la page du QCM.
+- iPhone : lien dans la même fenêtre ; le scope « / » de l'application garde la page dans l'application installée, qui voit `spcal_jwt`. Aucun jeton dans l'adresse.
+- Vérifié sur le test : `SPCAL.qcmUrl` = `/revision-qcm-dan/`, nouveau `app.js` chargé, page en 1.14.1 avec « ← Retour à l'application » en venant de `/app/`. **Reste** : essai avec le lien d'un adhérent Ado/Adulte, sur iPhone installé ; `-Verifier` de contrôle ; prod sur feu vert (envoyer Claira puis sp_build).
