@@ -502,6 +502,20 @@ Autres constats de l'audit, non traités :
   - carte et vidéos testées au clic dans Chrome.
 - **Restent, sans cookies** : les miniatures de la Vidéothèque (i.ytimg.com) et une image Facebook (fbcdn) dans l'article Halloween.
 
+**Sortie de SportsPress et allègement des images — prod le 17/11/2026** (l'utilisateur n'utilise aucune fonction de SportsPress Pro ; les élèves sont gérés par sp-build) :
+- **Dépendances vérifiées** :
+  - sp-build ne s'appuie sur SportsPress que pour un import facultatif (`class-ajax.php::import_sportpress`) ;
+  - côté pages, seules Partenaires (`[sponsors]`), `bur` et `les-entraineurs` (`[staff_list]`) et `event-blocks` (`[event_blocks]`) en dépendent ;
+  - l'en-tête Elementor 4351 utilisait la taille d'image `sportspress-fit-medium`, passée à `medium`.
+- **Page Partenaires (2744)** : le shortcode `[sponsors]` est remplacé par un conteneur Elementor (9e92c0c) de 16 widgets Image (logo de la médiathèque, lien, largeur 200 px, hauteur 110 px, contain), dans le même ordre. IdaCréa et DG Gestion n'ont pas de lien, car il menait à leur fiche SportsPress. Texte alternatif « Logo … » ajouté aux 16 médias.
+- **Cache PHP** : `.ovhconfig` (racine FTP) a déjà `environment=production`, ce qui active OPcache chez OVH. L'avertissement de Santé du site vient de ce qu'OPcache n'y est pas consultable. Temps de réponse mesuré : environ 0,65 s par page.
+- **Images de l'accueil réencodées sous le même nom**, pour 2 349 Ko au lieu de 1 447 Ko :
+  - slider (Silder1/2/3-3, Gemini) en JPEG qualité 75, 1 920 px au maximum ;
+  - IllustrationPied en 900 px, qualité 78 (affichée en 416 px) ;
+  - logo-tkd-claira.png en 600 px.
+  - Originaux dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-images-originales-2026-11-17/`.
+- **En attente de l'accord de l'utilisateur** : passer `bur`, `les-entraineurs` et `event-blocks` en brouillon, puis désactiver SportsPress Pro.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
