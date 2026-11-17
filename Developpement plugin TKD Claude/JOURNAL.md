@@ -456,7 +456,10 @@ Autres constats de l'audit, non traités :
 - **Apprendre en musique (Elementor 5636)** : « attendre! » devient « attendre ! ».
 - **Encadrement** : le texte vient de SP Calendar → Entraîneurs & Bureau (fiches 1, 2, 3, 7 et 9). « 2° degré » devient « 2e degré », « KUKKIIWON » devient « KUKKIWON », « 1e Dan » devient « 1er Dan » et « Asistant » devient « Assistant ».
 - **Vérifié en ligne** : plus aucune des anciennes formes sur ces pages.
-- **Non corrigé** : « Levé de jambe tendue » dans le programme des grades (TKD Parcours).
+- **TKD Parcours** : « Levé de jambe tendue » devient « Levée de jambe tendue ». La correction est faite :
+  - dans les grades 3374 (Baby 19e) et 3434 (Ado/Adulte 10e), via l'écran d'édition ;
+  - dans le référentiel `includes/import.php`, déposé en test et en prod (fichiers identiques au dépôt avant le dépôt), pour qu'un nouvel import ne réintroduise pas la faute ;
+  - dans la maquette `technique_adoadulte.html`.
 
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.

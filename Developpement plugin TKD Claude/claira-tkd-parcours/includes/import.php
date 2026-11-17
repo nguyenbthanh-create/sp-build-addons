@@ -308,7 +308,7 @@ function claira_tkd_get_import_data() {
             'min_age'     => '11',
             'title'       => 'Blanche',
             'tech_bras'   => "Joomok Jireugui - Poing niveau moyen\nArae Makki - Blocage bas",
-            'tech_jambes' => "Ap Cha Oligui - Levé de jambe tendue\nAp Tchagui - Coup de pied de face",
+            'tech_jambes' => "Ap Cha Oligui - Levée de jambe tendue\nAp Tchagui - Coup de pied de face",
             'poomsae'     => 'Taegeuk 1 (Il Jang) complet',
         ),
         array(
