@@ -395,6 +395,46 @@ Sauvegarde de la 1.2 : `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-1.2.0/`.
 
 **SP Compta 0.2.0 : justificatifs protégés + mu-plugin `tkd-medias-prives.php` — test puis prod le 10/11/2026** : les justificatifs (dépenses, recettes, contrats de sponsor) allaient dans la médiathèque publique (adresse devinable, liste de tous les médias publique via `/wp-json/wp/v2/media`). Désormais : rangement dans `uploads/sp-compta/AAAA/MM/` fermé au web, consultation par `admin-post.php?action=sp_compta_fichier&id=…` réservée à `sp_compta_manager`, justificatifs masqués de la médiathèque (`src/Media/JustificatifStorage.php`) ; déplacement automatique des anciens au premier wp-admin d'un compte trésorerie (`JustificatifMigration.php`, options `sp_compta_justificatifs_proteges` / `_journal`). Le mu-plugin réserve `/wp/v2/media` aux comptes connectés. Test : 37 justificatifs déplacés, tous ouverts par leur lien, anciennes adresses 404, dossier 403, REST 401 ; **envoi d'un nouveau justificatif non testé** (Chrome bloqué par l'authentification du test). Prod : 66 déplacés (42 dépenses, 21 recettes, 3 sponsors), tous ouverts, anciennes adresses 404, aucune erreur PHP. Le test avait encore SP Compta du 08/09 : mis à jour en entier (ancienne copie dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-test-sp-compta/`). Sauvegarde prod : `sauvegarde-prod-sp-compta-0.1.0/`. **Restent publics** (hors SP Compta, à trier par l'utilisateur) : `2026/11/CW202611090270.pdf`, `2026/10/FA2609-0009.pdf` et `-1.pdf`, `2026/09/sfr-facture-0626381514-0.pdf`, `2026/04/Renfo.csv`, `2025/12/log_file_2025-12-15__*.txt`, `2026/04/wetransfer_…zip`.
 
+**Audit du site et mu-plugin `tkd-securite.php` — test puis prod le 17/11/2026** (feu vert de l'utilisateur pour la prod). L'audit, fait côté public puis dans l'admin, montrait :
+- les identifiants de connexion des comptes publiés par `/wp-json/wp/v2/users` et `?author=1` ;
+- aucune limite d'essais sur `wp-login.php`, et 6 comptes administrateurs ;
+- aucun en-tête de sécurité, avec la version PHP et le `readme.html` visibles.
+
+Corrections :
+- **Mu-plugin `mu-plugins/tkd-securite.php`** :
+  - API des comptes réservée aux connectés (401) ;
+  - `?author=` et `/author/…` redirigés vers l'accueil pour les visiteurs ;
+  - comptes retirés du sitemap et des aperçus oEmbed ;
+  - 5 échecs de connexion bloquent l'adresse IP 15 minutes (transient `tkd_secu_echecs_<md5 IP>`) ;
+  - même message d'erreur pour un identifiant inconnu ou un mauvais mot de passe ;
+  - plus de balise `generator`.
+- **`.htaccess` racine (test et prod)** :
+  - HSTS 1 an, `nosniff`, `X-Frame-Options: SAMEORIGIN`, `Referrer-Policy` ;
+  - `X-Powered-By` retiré ;
+  - `readme.html`, `license.txt` et `wp-config-sample.php` refusés.
+  - Anciens fichiers : `DEPLOIEMENT_tkd-gala_2026-11-10/{prod,test}-root-avant-securite.htaccess`.
+
+Vérifié en prod : tous les points ci-dessus, plus l'admin et l'éditeur Elementor. Sur le test, seuls les en-têtes ont pu être vérifiés, car l'authentification HTTP bloque les outils.
+
+Restent à décider par l'utilisateur :
+- passer de 6 à 2 administrateurs ;
+- le compte de test THANHTEST et le compte TKDCLAIRA ;
+- les rôles orphelins de WP ERP ;
+- la double authentification (extension « Two Factor ») ;
+- fermer les commentaires.
+
+Autres constats de l'audit, non traités :
+- inscriptions au gala fermées ;
+- fiches SportsPress des élèves publiques et indexées (RGPD) ;
+- aucun bandeau cookies, alors que le SDK Facebook et Google Fonts sont chargés ;
+- aucune page de mentions légales ;
+- pages cassées : `/tarif/` (Supsystic), `/members/`, `/register/`, `/user/` (Ultimate Member), `/ma-fiche/`, `/2422-2/` ;
+- pages de démo du thème encore publiques ;
+- OPcache et cache de pages inactifs ;
+- mise à jour de SportsPress Pro en attente ;
+- accents manquants dans SP Compta ;
+- coquilles sur l'accueil et la page Tarif.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
