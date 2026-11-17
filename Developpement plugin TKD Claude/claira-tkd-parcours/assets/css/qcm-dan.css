@@ -1,0 +1,163 @@
+/* ==========================================================================
+   QCM Dan (Module B FFTDA) : [claira_qcm_dan] et TKD Parcours > QCM Dan.
+   Même charte que le reste du plugin : liseré rouge, Montserrat majuscules
+   pour les titres, gris discrets. Les règles de bouton neutralisent le thème.
+   ========================================================================== */
+.claira-qcm {
+  --sp-red: #D4000F; --sp-ink: #222; --sp-muted: #6b6b6b; --sp-line: #e8e5e2;
+  --qcm-ok: #1f7a3a; --qcm-ok-bg: #e7f5ec; --qcm-ko: #b3261e; --qcm-ko-bg: #fdecea;
+  color: var(--sp-ink);
+  text-align: left;
+}
+.claira-qcm { max-width: 900px; margin: 0 auto; }
+.claira-qcm-head { text-align: center; margin-bottom: 20px; }
+.claira-qcm-head h2 {
+  font-family: 'Montserrat', sans-serif; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; font-size: 1.5rem; margin: 0 0 6px;
+}
+.claira-qcm-head h2::after { content: ''; display: block; width: 48px; height: 3px; background: var(--sp-red); margin: 10px auto 0; }
+.claira-qcm-head p { color: var(--sp-muted); margin: 0; }
+.claira-qcm-chargement, .claira-qcm-info { color: var(--sp-muted); font-size: .95em; }
+
+/* Boutons */
+.claira-qcm .claira-qcm-btn, .claira-qcm-projection .claira-qcm-btn {
+  display: inline-block; padding: 9px 16px; border: 1px solid var(--sp-line, #e8e5e2); border-radius: 4px;
+  background: #fff; color: var(--sp-ink, #222); font: inherit; font-size: .95em; line-height: 1.3;
+  cursor: pointer; text-transform: none; letter-spacing: normal; box-shadow: none;
+}
+.claira-qcm .claira-qcm-btn:hover { border-color: #bbb; }
+.claira-qcm .claira-qcm-btn:disabled, .claira-qcm-projection .claira-qcm-btn:disabled { opacity: .4; cursor: default; }
+.claira-qcm .claira-qcm-btn-principal, .claira-qcm-projection .claira-qcm-btn-principal { background: #D4000F; border-color: #D4000F; color: #fff; }
+.claira-qcm .claira-qcm-btn-principal:hover { background: #b0000c; color: #fff; }
+
+/* Barre de recherche */
+.claira-qcm-barre { background: #fff; border: 1px solid var(--sp-line); border-radius: 6px; box-shadow: inset 3px 0 0 var(--sp-red); padding: 14px 16px; margin-bottom: 12px; }
+.claira-qcm-ligne { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.claira-qcm-ligne + .claira-qcm-ligne { margin-top: 10px; }
+.claira-qcm .claira-qcm-champ { flex: 1 1 260px; min-width: 0; padding: 9px 12px; font-size: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+.claira-qcm .claira-qcm-select { max-width: 100%; padding: 6px 8px; }
+.claira-qcm-options label { white-space: nowrap; font-size: .92em; }
+.claira-qcm-aide { color: var(--sp-muted); font-size: .85em; }
+
+/* Cartes de question */
+.claira-qcm-resultats { display: grid; gap: 10px; }
+.claira-qcm-carte { background: #fff; border: 1px solid var(--sp-line); border-radius: 6px; padding: 12px 16px; }
+.claira-qcm-carte.is-choisie { border-color: var(--sp-red); box-shadow: inset 3px 0 0 var(--sp-red); }
+.claira-qcm-carte-tete { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.claira-qcm-carte-tete .claira-qcm-choix { order: 2; }
+.claira-qcm-theme { font-family: 'Montserrat', sans-serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sp-muted); }
+.claira-qcm-question { font-weight: 600; margin: 6px 0 8px; font-size: 1.02em; }
+.claira-qcm-reponses { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.claira-qcm-reponses li { padding: 5px 8px; border-radius: 4px; margin: 0; }
+.claira-qcm-reponses li.is-bonne { background: var(--qcm-ok-bg); color: var(--qcm-ok); font-weight: 600; }
+.claira-qcm-reponses li.is-fausse { background: var(--qcm-ko-bg); color: var(--qcm-ko); }
+.claira-qcm-lettre { display: inline-block; min-width: 1.4em; font-weight: 700; }
+.claira-qcm-source { color: var(--sp-muted); font-size: .82em; margin: 8px 0 0; }
+.claira-qcm mark { background: #fff3a8; color: inherit; padding: 0 1px; }
+
+/* Onglets (site) */
+.claira-qcm-onglets { display: flex; gap: 4px; border-bottom: 2px solid var(--sp-line); margin-bottom: 14px; flex-wrap: wrap; }
+.claira-qcm .claira-qcm-onglets button {
+  background: none; border: 0; border-bottom: 3px solid transparent; margin-bottom: -2px; padding: 10px 14px;
+  font-family: 'Montserrat', sans-serif; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--sp-muted); cursor: pointer; box-shadow: none; border-radius: 0;
+}
+.claira-qcm .claira-qcm-onglets button.is-actif { color: var(--sp-ink); border-bottom-color: var(--sp-red); }
+
+/* Examen / révision */
+.claira-qcm-accueil, .claira-qcm-examen, .claira-qcm-ecran { background: #fff; border: 1px solid var(--sp-line); border-radius: 6px; padding: 16px; }
+.claira-qcm-examen .claira-qcm-ecran { border: 0; padding: 8px 0; }
+.claira-qcm-examen-tete { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--sp-line); padding-bottom: 10px; }
+.claira-qcm-compteur { color: var(--sp-muted); font-size: .9em; }
+.claira-qcm-chrono { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 1.1em; }
+.claira-qcm-chrono.is-urgent { color: var(--sp-red); }
+.claira-qcm-propositions { display: grid; gap: 8px; }
+.claira-qcm .claira-qcm-proposition {
+  display: block; width: 100%; text-align: left; padding: 11px 14px; border: 1px solid #d6d3d0; border-radius: 6px;
+  background: #fff; color: var(--sp-ink); font: inherit; cursor: pointer; text-transform: none; letter-spacing: normal; box-shadow: none;
+}
+.claira-qcm .claira-qcm-proposition:hover:not(:disabled) { border-color: var(--sp-red); }
+.claira-qcm .claira-qcm-proposition.is-coche { border-color: var(--sp-red); background: #fff5f5; box-shadow: inset 3px 0 0 var(--sp-red); }
+.claira-qcm .claira-qcm-proposition.is-bonne { border-color: var(--qcm-ok); background: var(--qcm-ok-bg); color: var(--qcm-ok); font-weight: 600; opacity: 1; }
+.claira-qcm .claira-qcm-proposition.is-fausse { border-color: var(--qcm-ko); background: var(--qcm-ko-bg); color: var(--qcm-ko); opacity: 1; }
+.claira-qcm-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; align-items: center; }
+.claira-qcm-grille { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 14px; }
+.claira-qcm .claira-qcm-grille button {
+  width: 34px; height: 30px; padding: 0; border: 1px solid #d6d3d0; border-radius: 4px; background: #fff;
+  color: var(--sp-muted); font-size: .8em; cursor: pointer; box-shadow: none;
+}
+.claira-qcm .claira-qcm-grille button.is-repondue { background: #eee; color: var(--sp-ink); }
+.claira-qcm .claira-qcm-grille button.is-courante { border-color: var(--sp-red); color: var(--sp-red); font-weight: 700; }
+.claira-qcm-bilan { text-align: center; padding: 18px; border-radius: 6px; margin: 10px 0 14px; }
+.claira-qcm-bilan.is-reussi { background: var(--qcm-ok-bg); color: var(--qcm-ok); }
+.claira-qcm-bilan.is-echec { background: var(--qcm-ko-bg); color: var(--qcm-ko); }
+.claira-qcm-bilan p { margin: 0; }
+.claira-qcm-score { font-size: 2.2em; font-weight: 800; }
+.claira-qcm-carte.is-erreur { box-shadow: inset 3px 0 0 var(--qcm-ko); }
+.claira-qcm-carte.is-juste { box-shadow: inset 3px 0 0 var(--qcm-ok); }
+.claira-qcm-verdict { font-size: .8em; font-weight: 700; }
+.is-erreur .claira-qcm-verdict { color: var(--qcm-ko); }
+.is-juste .claira-qcm-verdict { color: var(--qcm-ok); }
+.claira-qcm-resultats.is-erreurs-seules .is-juste { display: none; }
+.claira-qcm-filtre { display: block; margin-bottom: 10px; font-size: .9em; }
+
+/* Tableau de bord */
+.claira-qcm-admin .claira-qcm { max-width: none; }
+.claira-qcm-admin-grille { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; margin-top: 12px; }
+.claira-qcm-panneau { position: sticky; top: 46px; background: #fff; border: 1px solid #dcdcde; border-radius: 6px; padding: 4px 16px 16px; max-height: calc(100vh - 70px); overflow: auto; }
+.claira-qcm-panneau h2 { font-size: 1.1em; }
+.claira-qcm-panneau h3 { font-size: .95em; margin: 16px 0 6px; }
+.claira-qcm-nb { font-size: 1.3em; font-weight: 700; color: #D4000F; margin: 4px 0 8px; }
+.claira-qcm-boutons { display: flex; flex-wrap: wrap; gap: 6px; }
+.claira-qcm-formes { display: grid; gap: 6px; }
+.claira-qcm-formes .button { text-align: left; }
+.claira-qcm-themes-tirage { max-height: 200px; overflow: auto; border: 1px solid #eee; padding: 6px; font-size: .9em; }
+.claira-qcm-themes-tirage label { display: block; }
+.claira-qcm-tirage summary { cursor: pointer; font-weight: 600; margin-top: 10px; }
+.claira-qcm-examens .claira-qcm-lien { width: 26em; max-width: 100%; }
+.claira-qcm-admin .claira-qcm-test { max-width: 900px; }
+@media (max-width: 960px) {
+  .claira-qcm-admin-grille { grid-template-columns: 1fr; }
+  .claira-qcm-panneau { position: static; max-height: none; }
+}
+
+/* Projection plein écran */
+.claira-qcm-projection {
+  position: fixed; inset: 0; z-index: 100000; background: #111; color: #fff; display: flex; flex-direction: column;
+  padding: 2vh 4vw; font-family: inherit; outline: none;
+}
+.claira-qcm-projection-tete { display: flex; justify-content: space-between; align-items: center; gap: 20px; font-size: 1.1rem; color: #bbb; }
+.claira-qcm-projection .claira-qcm-chrono { background: none; border: 1px solid #555; color: #fff; border-radius: 4px; padding: 4px 12px; font-size: 1.4rem; cursor: pointer; }
+.claira-qcm-projection .claira-qcm-chrono.is-urgent { color: #ff5a5f; border-color: #ff5a5f; }
+.claira-qcm-fermer { background: none; border: 0; color: #bbb; font-size: 1.6rem; cursor: pointer; }
+.claira-qcm-projection-corps { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 1400px; margin: 0 auto; width: 100%; }
+.claira-qcm-projection-num { color: #D4000F; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 1vh; }
+.claira-qcm-projection-question { font-size: clamp(1.4rem, 3.4vw, 2.8rem); font-weight: 700; line-height: 1.25; margin: 0 0 3vh; }
+.claira-qcm-projection-reponses { list-style: none; padding: 0; margin: 0; display: grid; gap: 1.6vh; font-size: clamp(1.1rem, 2.4vw, 2rem); }
+.claira-qcm-projection-reponses li { padding: 1vh 1.5vw; border-radius: 8px; background: #222; }
+.claira-qcm-projection-reponses b { color: #D4000F; margin-right: .6em; }
+.claira-qcm-projection-reponses li.is-bonne { background: #1f7a3a; }
+.claira-qcm-projection-reponses li.is-bonne b { color: #fff; }
+.claira-qcm-projection-reponses li.is-pale { opacity: .35; }
+.claira-qcm-projection-source { color: #aaa; margin-top: 2vh; font-size: 1.1rem; }
+.claira-qcm-projection-pied { display: flex; justify-content: center; gap: 12px; }
+.claira-qcm-projection-pied .claira-qcm-btn { font-size: 1.1rem; padding: 10px 22px; background: #222; color: #fff; border-color: #444; }
+.claira-qcm-projection-pied .claira-qcm-btn-principal { background: #D4000F; border-color: #D4000F; }
+
+/* Impression (sujet / corrigé) */
+#claira-qcm-impression { display: none; }
+@media print {
+  body.claira-qcm-imprime > *:not(#claira-qcm-impression) { display: none !important; }
+  body.claira-qcm-imprime #claira-qcm-impression { display: block; color: #000; font: 11pt/1.35 Arial, sans-serif; }
+  body.claira-qcm-imprime { background: #fff; padding: 0; margin: 0; }
+  html.wp-toolbar { padding-top: 0 !important; }
+}
+.claira-qcm-feuille h1 { font-size: 16pt; margin: 0 0 6pt; }
+.claira-qcm-entete { border: 1px solid #000; padding: 6pt; margin-bottom: 10pt; font-size: 10pt; }
+.claira-qcm-sujet > li { break-inside: avoid; margin-bottom: 8pt; }
+.claira-qcm-sujet p { margin: 0 0 3pt; font-weight: bold; }
+.claira-qcm-sujet ul { list-style: none; margin: 0; padding-left: 8pt; }
+.claira-qcm-sujet small { font-weight: normal; color: #444; }
+.claira-qcm-saut { break-before: page; }
+.claira-qcm-grille-corrige { border-collapse: collapse; margin-bottom: 12pt; }
+.claira-qcm-grille-corrige td { border: 1px solid #000; padding: 3pt 8pt; }

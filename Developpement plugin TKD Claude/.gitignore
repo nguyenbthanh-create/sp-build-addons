@@ -12,3 +12,6 @@
 
 # Journal local des envois (outils/deployer.ps1)
 /outils/deploiements.log
+
+# Outil d'extraction des quiz QCM Dan : dependance Composer locale
+/outils/qcm-dan/vendor/
