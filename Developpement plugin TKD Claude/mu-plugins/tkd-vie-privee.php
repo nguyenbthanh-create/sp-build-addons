@@ -62,7 +62,6 @@ add_filter( 'elementor/widget/render_content', static function ( $contenu, $widg
 	$lien = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( (string) ( $q['q'] ?? '' ) );
 
 	$contenu = preg_replace( '~(<iframe[^>]*\s)src="[^"]+"~i', '$1data-tkd-src="' . esc_attr( $src ) . '"', (string) $contenu, 1 );
-	$GLOBALS['tkd_vie_privee_carte'] = true;
 
 	return '<div class="tkd-carte">' . $contenu
 		. '<div class="tkd-carte-voile"><button type="button" class="tkd-carte-bouton">📍 Afficher la carte</button>'
@@ -70,8 +69,9 @@ add_filter( 'elementor/widget/render_content', static function ( $contenu, $widg
 		. '<a href="' . esc_url( $lien ) . '" target="_blank" rel="noopener noreferrer">Ouvrir dans Google Maps</a></span></div></div>';
 }, 10, 2 );
 
+// Style et script toujours ajoutés (moins de 1 Ko) : Elementor met en cache le rendu de ses
+// widgets, le filtre ci-dessus ne passe donc pas à chaque affichage de la page.
 add_action( 'wp_footer', static function () {
-	if ( empty( $GLOBALS['tkd_vie_privee_carte'] ) ) return;
 	?>
 	<style>
 	.tkd-carte{position:relative}

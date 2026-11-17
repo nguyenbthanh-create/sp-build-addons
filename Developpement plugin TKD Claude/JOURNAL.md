@@ -482,6 +482,26 @@ Autres constats de l'audit, non traités :
 - **Liens** : aucun menu ni contenu ne pointait vers `panier-2` ; WooCommerce construit ses liens à partir de l'id de la page.
 - **Vérifié** : `/panier-2/` mène au panier, `/commander/` redirige vers `/panier/` quand le panier est vide, et la boutique fonctionne.
 
+**Vie privée et mentions légales — prod le 17/11/2026** (accord de l'utilisateur). Choix fait : pas de bandeau de consentement. Les traceurs sont supprimés à la source, car la CNIL n'exige pas de bandeau pour les cookies indispensables, et une modale Elementor ne bloquerait aucun script.
+- **Réglages en prod** :
+  - Elementor : « Charger les polices Google localement » activé ;
+  - SportsPress : module Facebook désactivé (SDK Facebook sur toutes les pages, aucun widget utilisé) ;
+  - WooCommerce : attribution des commandes désactivée (cookies `sbjs_*`).
+- **Mu-plugin `mu-plugins/tkd-vie-privee.php`** :
+  - Lato et Droid Sans du thème servies depuis `mu-plugins/tkd-polices/` (woff2 latin et latin-ext, licence OFL), avec les poignées `rookie-lato` et `premier-droid-sans` remplacées ;
+  - plus de prefetch vers Google Fonts ;
+  - la carte Google Maps d'Elementor (page Contact) s'affiche au clic, avec un lien « Ouvrir dans Google Maps ».
+  - **Piège** : Elementor met en cache le rendu de ses widgets, donc le style et le script de la carte sont ajoutés sur toutes les pages, et non selon un indicateur posé pendant le rendu (première version corrigée).
+- **TKD Parcours 1.12** : les vidéos des grades deviennent un bouton « Lire la vidéo ». Le lecteur youtube-nocookie ou Vimeo (`dnt=1`) se charge au clic et le bouton revient à la fermeture de la fenêtre. Le test a été entièrement synchronisé, car sa version était plus ancienne ; sauvegarde de la prod 1.11 dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-parcours-1.11.0/`.
+- **Pages** :
+  - **Mentions légales (6124, `/mentions-legales/`)** créée et ajoutée au menu « Accès rapide » (élément 6127). Elle contient l'éditeur, le directeur de la publication (Noé PETIT DE MIRBECK, président, à confirmer par l'utilisateur), l'hébergeur OVH, la propriété intellectuelle, le droit à l'image, les données et les cookies.
+  - **Politique de confidentialité (3)** : les deux mentions « à compléter » (lien de gestion des cookies, hébergeur) sont remplacées et la date de mise à jour passe au 17/11/2026.
+- **Vérifié en prod** :
+  - plus aucun appel à Google Fonts, Facebook ni sourcebuster ;
+  - aucun cookie posé par le serveur pour un visiteur ;
+  - carte et vidéos testées au clic dans Chrome.
+- **Restent, sans cookies** : les miniatures de la Vidéothèque (i.ytimg.com) et une image Facebook (fbcdn) dans l'article Halloween.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
