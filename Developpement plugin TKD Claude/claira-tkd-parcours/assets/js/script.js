@@ -138,6 +138,13 @@
         // rechargement ci-dessous relancerait la lecture en autoplay, fenêtre fermée).
         modal.dispatchEvent(new CustomEvent('claira-tkd-fermeture'));
 
+        // Vidéo lancée depuis un bouton « Lire la vidéo » : on remet le bouton (le lecteur
+        // est en autoplay, le recharger relancerait la lecture fenêtre fermée).
+        modal.querySelectorAll('.claira-tkd-video-facade[data-lance]').forEach(function (zone) {
+            zone.innerHTML = zone.dataset.lance;
+            zone.removeAttribute('data-lance');
+        });
+
         var iframes = modal.querySelectorAll('iframe');
         iframes.forEach(function(iframe) {
             var src = iframe.src;
@@ -187,6 +194,25 @@
                 }
             });
         }
+    });
+
+    /* ── Vidéo d'un grade : lecteur chargé au clic (claira_tkd_get_video_embed_html) ── */
+
+    document.addEventListener('click', function (event) {
+        var bouton = event.target.closest ? event.target.closest('.claira-tkd-video-lancer') : null;
+        if (!bouton) {
+            return;
+        }
+        var zone = bouton.parentNode;
+        var iframe = document.createElement('iframe');
+        iframe.src = bouton.dataset.embed;
+        iframe.title = 'Vidéo';
+        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+        zone.dataset.lance = zone.innerHTML;
+        zone.innerHTML = '';
+        zone.appendChild(iframe);
     });
 
     /* ── Vidéothèque ([claira_tkd_videotheque], includes/videotheque.php) ── */

@@ -74,17 +74,28 @@ function claira_tkd_get_video_embed_html( $video_url ) {
     }
 
     $embed_url = '';
-    
+    $service   = '';
+
+    // Lecteur chargé au clic seulement (17/11/2026) : aucun cookie YouTube ou Vimeo tant que
+    // le visiteur n'a pas lancé la vidéo (recommandation CNIL pour les contenus tiers).
     if ( preg_match( '/youtu\.be\/([a-zA-Z0-9_-]+)/', $video_url, $matches ) ) {
-        $embed_url = 'https://www.youtube.com/embed/' . $matches[1];
-    } elseif ( preg_match( '/(?:youtube\.com\/(?:watch\?.*v=|embed\/|shorts\/))([a-zA-Z0-9_-]+)/', $video_url, $matches ) ) {
-        $embed_url = 'https://www.youtube.com/embed/' . $matches[1];
+        $embed_url = 'https://www.youtube-nocookie.com/embed/' . $matches[1] . '?autoplay=1&rel=0';
+        $service   = 'YouTube';
+    } elseif ( preg_match( '/(?:youtube(?:-nocookie)?\.com\/(?:watch\?.*v=|embed\/|shorts\/))([a-zA-Z0-9_-]+)/', $video_url, $matches ) ) {
+        $embed_url = 'https://www.youtube-nocookie.com/embed/' . $matches[1] . '?autoplay=1&rel=0';
+        $service   = 'YouTube';
     } elseif ( preg_match( '/vimeo\.com\/(\d+)/', $video_url, $matches ) ) {
-        $embed_url = 'https://player.vimeo.com/video/' . $matches[1];
+        $embed_url = 'https://player.vimeo.com/video/' . $matches[1] . '?autoplay=1&dnt=1';
+        $service   = 'Vimeo';
     }
 
     if ( $embed_url ) {
-        return '<div class="claira-tkd-video-container"><iframe src="' . esc_url( $embed_url ) . '" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>';
+        return '<div class="claira-tkd-video-container claira-tkd-video-facade">'
+            . '<button type="button" class="claira-tkd-video-lancer" data-embed="' . esc_url( $embed_url ) . '">'
+            . '<span class="claira-tkd-video-lancer-icone" aria-hidden="true">▶</span>'
+            . '<span class="claira-tkd-video-lancer-texte">' . esc_html__( 'Lire la vidéo', 'claira-tkd-parcours' ) . '</span>'
+            . '<span class="claira-tkd-video-lancer-note">' . esc_html( sprintf( __( 'Hébergée sur %s : le lecteur ne se charge qu\'au clic.', 'claira-tkd-parcours' ), $service ) ) . '</span>'
+            . '</button></div>';
     }
 
     $ext = pathinfo( parse_url( $video_url, PHP_URL_PATH ), PATHINFO_EXTENSION );
