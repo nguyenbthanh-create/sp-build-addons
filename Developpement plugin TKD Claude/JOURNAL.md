@@ -435,6 +435,19 @@ Autres constats de l'audit, non traités :
 - accents manquants dans SP Compta ;
 - coquilles sur l'accueil et la page Tarif.
 
+**Pages cassées corrigées — prod le 17/11/2026** (accord de l'utilisateur pour les 13 brouillons) :
+- **Lien du pied de page** : « Tarifs » (élément 4445 du menu « Accès rapide », id 79) pointe vers la page 5558 `/tarif-2026-2027/` au lieu de l'ancienne page 4017 `/tarif/`.
+- **Redirection** : `RedirectMatch 301 ^/tarif/?$` vers `/tarif-2026-2027/`, ajoutée au `.htaccess` racine de la prod.
+- **13 pages passées en brouillon**, récupérables dans Pages → Brouillons :
+  - 4017 `tarif` (Supsystic désinstallé) ;
+  - 19 `members`, 16 `user`, 18 `register`, 21 `account`, 17 `login`, 20 `logout`, 22 `password-reset` (Ultimate Member désinstallé) ;
+  - 2633 `ma-fiche` (ancien shortcode `[sp_fiche_eleve]`, la vraie page est `fiche-membre`) ;
+  - 2422 `2422-2` (le tournoi 2421 n'existe plus) ;
+  - 3937 `admin-grade-parcours` (shortcode `[claira_tkd_admin]` retiré du plugin) ;
+  - 3875 `erp-subscription` (WP ERP) ;
+  - 45 `home` (vide, ancien thème).
+- **Vérifié** : ces adresses répondent 404, les pages principales 200, et le sitemap ne les liste plus.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
