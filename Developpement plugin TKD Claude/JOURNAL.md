@@ -520,6 +520,29 @@ Autres constats de l'audit, non traités :
   - l'API `sportspress/v2` répond 404 et le sitemap ne liste plus que les grades TKD Parcours ;
   - les 14 pages principales répondent 200, sans erreur PHP.
 
+**TKD Parcours 1.13 (QCM Dan) — site de test le 17/11/2026** (`3c727bb`, dossier `DEPLOIEMENT_2026-11-17_claira-tkd-parcours_3c727bb`, envoi depuis le PC maison).
+- **Envoi** : `outils\deployer.ps1` a deux nouveaux paramètres. `-Extension` permet d'envoyer une autre extension que sp_build. `-Session` donne le nom de la session WinSCP enregistrée : sur le PC maison, elle s'appelle `tkdclad@ftp.cluster121.hosting.ovh.net`, même serveur que cluster021.
+- **Pièges** :
+  - Le `.htaccess` de Claira refuse tous les `.json`. Les questions sont donc livrées en `data/qcm-dan.js`.
+  - Après l'envoi de 15 h 12, annoncé conforme, deux fichiers avaient repris leur version précédente dix minutes plus tard (cause inconnue). Il a fallu les renvoyer à 15 h 23. Depuis, ils sont stables (deux contrôles par FTP et par HTTP). **Après un envoi, refaire `-Verifier` quelques minutes plus tard.**
+  - Le premier envoi portait déjà le numéro 1.13.0 : un rechargement forcé du navigateur a été nécessaire sur le test. La prod n'est pas concernée.
+- **Page créée sur le test** (accord de l'utilisateur) : « Révision QCM Dan » (5619, `/revision-qcm-dan/`), avec `[claira_qcm_dan]`.
+- **Vérifié sur le test** :
+  - TKD Parcours → QCM Dan : 724 questions, 32 thèmes, recherche et sélection ;
+  - examen enregistré, lien `?examen=…` ouvert, examen passé et corrigé, puis examen supprimé ;
+  - page publique : recherche, examen blanc 30 questions / 15 min, sans défilement horizontal.
+- **Prod le 17/11/2026 à 15 h 27** (feu vert de l'utilisateur). La prod était bien en 1.12.0. L'envoi s'est fait en deux temps :
+  1. les 4 nouveaux fichiers d'abord (dossier `…_3c727bb_etape1-nouveaux-fichiers`) ;
+  2. puis le paquet complet.
+
+  Ainsi, le fichier principal n'a jamais chargé un `includes/qcm-dan.php` absent. La 1.12 est sauvegardée dans `…_3c727bb\sauvegarde-prod-2026-11-17_152757\`. Les tailles sont conformes juste après l'envoi et au nouveau contrôle.
+- **Page créée en prod** (accord de l'utilisateur) : « Révision QCM Dan » (6139, `/revision-qcm-dan/`). Elle n'est **pas encore dans le menu**.
+- **Vérifié en prod** :
+  - l'accueil répond 200, sans erreur PHP ;
+  - TKD Parcours → QCM Dan : 724 questions ;
+  - page publique : 3 onglets, la recherche « code moral » donne 18 questions, sans défilement horizontal.
+- **Retour arrière** : `deployer.ps1 -Cible prod -Prod -Extension claira-tkd-parcours -Session tkdclad@ftp.cluster121.hosting.ovh.net -Restaurer <sauvegarde-prod-…>`. Les nouveaux fichiers peuvent rester.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
