@@ -543,6 +543,22 @@ Autres constats de l'audit, non traités :
   - page publique : 3 onglets, la recherche « code moral » donne 18 questions, sans défilement horizontal.
 - **Retour arrière** : `deployer.ps1 -Cible prod -Prod -Extension claira-tkd-parcours -Session tkdclad@ftp.cluster121.hosting.ovh.net -Restaurer <sauvegarde-prod-…>`. Les nouveaux fichiers peuvent rester.
 
+**TKD Parcours 1.14 : QCM Dan réservé aux adhérents. Test puis prod le 17/11/2026 vers 15 h 38** (`60949ed`, feu vert de l'utilisateur). L'utilisateur a choisi :
+- la reconnaissance par l'application `/app/`, car les adhérents n'ont pas de compte WordPress ;
+- la page réservée, et pas seulement l'entrée de menu.
+
+Détails :
+- **Règle** : adhérent actif, adhésion à jour, catégorie Ado / Adulte, connecté à `/app/` sur l'appareil. Les comptes WordPress du club ont toujours accès. Voir `claira-tkd-parcours/EVOLUTION.md`.
+- **Envoi en deux temps** : d'abord `…_60949ed_etape1` (assets et `includes/qcm-dan.php`, compatibles avec le fichier principal 1.13), puis le paquet complet. Les sauvegardes 1.13 sont dans `…_60949ed_etape1\sauvegarde-prod-2026-11-17_153840` et `…_60949ed\sauvegarde-prod-2026-11-17_153845`. Le nouveau code n'est apparu dans le HTML de la prod qu'après quelques secondes (cache PHP).
+- **Menu « TKD Claira » (37), sous « Révision » (3104)** :
+  - test : entrée 5621 → page 5619 ;
+  - **prod : entrée 6140 → page 6139**, ordre 7, après « Apprendre en musique ».
+- **Vérifié** :
+  - compte admin (Chrome) : entrée visible, aussi en version mobile ;
+  - visiteur non connecté (navigateur sans session, prod) : entrée cachée dans le sous-menu Révision et page « Réservé aux adhérents du club » avec le bouton vers l'application ;
+  - le cas « adhérent connecté à l'application » a été testé hors WordPress, avec l'API simulée. **Il reste à essayer en vrai avec le lien d'un adhérent Ado/Adulte.**
+- **Suite prévue (« dans un second temps »)** : accès depuis l'application `/app/` de sp_build, pour les Ado / Adulte (onglet ou lien). Sur iPhone, l'application installée ne partage pas sa session avec Safari.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
