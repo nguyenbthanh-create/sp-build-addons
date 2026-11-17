@@ -448,6 +448,16 @@ Autres constats de l'audit, non traités :
   - 45 `home` (vide, ancien thème).
 - **Vérifié** : ces adresses répondent 404, les pages principales 200, et le sitemap ne les liste plus.
 
+**Coquilles corrigées — prod le 17/11/2026** :
+- **Accueil (Elementor 3670, slider 9cdda72)** : « est sortie » devient « est sorti », « séances hebdomadaire » devient « hebdomadaires ».
+- **Pied de page (Elementor 4428)** : « 6653 Claira » devient « 66530 Claira ».
+- **Tarif 2026-2027 (Elementor 5558)** : « 2 cours de hebdomadaires » devient « 2 cours hebdomadaires » (6 grilles), « 1 Cours » devient « 1 cours » (2 grilles), et le bouton « demandez le » devient « demandez-le ».
+- **CGV (page 5896)** : le titre devient « CONDITIONS GÉNÉRALES… ». L'adresse reste `condition-generales-de-vente-cgv`.
+- **Apprendre en musique (Elementor 5636)** : « attendre! » devient « attendre ! ».
+- **Encadrement** : le texte vient de SP Calendar → Entraîneurs & Bureau (fiches 1, 2, 3, 7 et 9). « 2° degré » devient « 2e degré », « KUKKIIWON » devient « KUKKIWON », « 1e Dan » devient « 1er Dan » et « Asistant » devient « Assistant ».
+- **Vérifié en ligne** : plus aucune des anciennes formes sur ces pages.
+- **Non corrigé** : « Levé de jambe tendue » dans le programme des grades (TKD Parcours).
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
