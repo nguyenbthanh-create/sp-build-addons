@@ -53,16 +53,78 @@ function claira_tkd_qcm_nettoyer_ids( $brut ) {
 	return array_slice( array_keys( $ids ), 0, 200 );
 }
 
-/** Page du site qui contient le shortcode (pour construire les liens d'examen). */
-function claira_tkd_qcm_page_url() {
+/** Première page publiée qui contient un shortcode donné (adresse vide si aucune). */
+function claira_tkd_qcm_page_avec( $shortcode ) {
 	$pages = get_posts( array(
 		'post_type'      => array( 'page', 'post' ),
 		'post_status'    => 'publish',
-		's'              => '[claira_qcm_dan',
+		's'              => '[' . $shortcode,
 		'posts_per_page' => 1,
 		'fields'         => 'ids',
 	) );
 	return $pages ? get_permalink( $pages[0] ) : '';
+}
+
+/** Page du site qui contient le shortcode (pour construire les liens d'examen). */
+function claira_tkd_qcm_page_url() {
+	return claira_tkd_qcm_page_avec( 'claira_qcm_dan' );
+}
+
+/* --------------------------------------------------------------------------
+ * Accès réservé (17/11/2026) : la page et son entrée de menu ne s'affichent
+ * qu'aux adhérents actifs, à jour et de catégorie Ado / Adulte, connectés à
+ * l'application du club /app/ (sp_build) sur cet appareil. Les adhérents n'ont
+ * pas de compte WordPress : on lit la session de l'application (localStorage
+ * « spcal_jwt ») et on interroge sp_build (GET spcal/v1/eleve/me), voir
+ * assets/js/qcm-acces.js. Les comptes WordPress du club (bureau, encadrement)
+ * ont toujours accès. Les questions viennent de PDF publics de la FFTDA : c'est
+ * une réservation de confort, pas une protection des données.
+ * ----------------------------------------------------------------------- */
+
+const CLAIRA_TKD_QCM_CLASSE_MENU = 'claira-qcm-reserve';
+
+/** Compte WordPress du club (bureau, encadrement) ? Un simple client de la boutique ne compte pas. */
+function claira_tkd_qcm_acces_compte() {
+	return is_user_logged_in() && (
+		current_user_can( 'edit_posts' )
+		|| current_user_can( 'sp_gestion_adhesions' )
+		|| current_user_can( 'sp_cal_voir_planning' )
+	);
+}
+
+/** Les entrées de menu qui mènent à une page du QCM reçoivent la classe « réservé ». */
+function claira_tkd_qcm_menu_classes( $items ) {
+	foreach ( $items as $item ) {
+		if ( 'post_type' !== $item->type || ! in_array( $item->object, array( 'page', 'post' ), true ) ) {
+			continue;
+		}
+		$contenu = (string) get_post_field( 'post_content', (int) $item->object_id );
+		if ( '' !== $contenu && has_shortcode( $contenu, 'claira_qcm_dan' ) ) {
+			$item->classes   = (array) $item->classes;
+			$item->classes[] = CLAIRA_TKD_QCM_CLASSE_MENU;
+		}
+	}
+	return $items;
+}
+
+/**
+ * En tête de chaque page du site : l'entrée réservée est cachée tant que l'accès
+ * n'est pas confirmé (classe « claira-qcm-ok » sur <html>), puis le contrôle.
+ */
+function claira_tkd_qcm_acces_head() {
+	echo '<style id="claira-qcm-acces-css">html:not(.claira-qcm-ok) .' . esc_attr( CLAIRA_TKD_QCM_CLASSE_MENU ) . '{display:none!important}</style>' . "\n";
+	if ( claira_tkd_qcm_acces_compte() ) {
+		wp_print_inline_script_tag( "document.documentElement.classList.add('claira-qcm-ok');window.ClairaQcmAcces=true;" );
+		return;
+	}
+	$script = CLAIRA_TKD_PLUGIN_DIR . 'assets/js/qcm-acces.js';
+	if ( ! file_exists( $script ) ) {
+		return;
+	}
+	wp_print_inline_script_tag(
+		'window.ClairaQcmAccesApi=' . wp_json_encode( esc_url_raw( rest_url( 'spcal/v1/eleve/me' ) ) ) . ";\n"
+		. file_get_contents( $script ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- fichier local du plugin.
+	);
 }
 
 /* --------------------------------------------------------------------------
@@ -82,6 +144,8 @@ function claira_tkd_qcm_shortcode( $atts ) {
 		'questions' => max( 5, min( 100, absint( $atts['questions'] ) ) ),
 		'duree'     => max( 1, min( 120, absint( $atts['duree'] ) ) ),
 		'examen'    => null,
+		// Accès réservé : lien vers l'application du club pour se connecter.
+		'appUrl'    => claira_tkd_qcm_page_avec( 'sp_cal_app' ),
 	);
 
 	$code = isset( $_GET['examen'] ) ? sanitize_key( wp_unslash( $_GET['examen'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- lecture seule d'un lien partagé.

@@ -1,5 +1,15 @@
 # Evolution log
 
+## 2026-11-17 — QCM Dan réservé aux adhérents (v1.14.0)
+
+- **Accès** (décision de l'utilisateur du 17/11/2026) : la page `[claira_qcm_dan]` et son entrée de menu ne s'affichent qu'aux adhérents **actifs, à jour de leur adhésion** (statut ≠ « expire »), de **catégorie Ado / Adulte**, et **connectés à l'application du club `/app/`** sur l'appareil.
+  - Les adhérents n'ont pas de compte WordPress : `assets/js/qcm-acces.js`, imprimé dans `<head>` de chaque page, lit la session de l'application (`localStorage` « spcal_jwt ») et interroge sp_build (`GET spcal/v1/eleve/me`, en-tête `X-Spcal-Jwt`). Le résultat est gardé 6 h par session (`claira_qcm_acces`).
+  - Les comptes WordPress du club (`edit_posts`, `sp_gestion_adhesions` ou `sp_cal_voir_planning`) ont toujours accès, reconnus côté serveur. Un simple client de la boutique n'est pas reconnu.
+- **Menu** : toute entrée de menu qui mène à une page contenant `[claira_qcm_dan]` reçoit la classe `claira-qcm-reserve` (filtre `wp_nav_menu_objects`). Elle est cachée par CSS tant que `<html>` n'a pas la classe `claira-qcm-ok`. Il n'y a rien à régler dans l'éditeur de menu.
+- **Page** : sans accès, elle affiche « Réservé aux adhérents du club » avec un lien vers l'application (page qui contient `[sp_cal_app]`). Les liens d'examen `?examen=…` sont soumis à la même règle. Le tableau de bord n'est pas concerné.
+- **Limite** : les questions (`data/qcm-dan.js`) restent téléchargeables, car elles viennent de PDF publics de la FFTDA. C'est une réservation de confort. Sur iPhone, une application installée sur l'écran d'accueil ne partage pas sa session avec Safari : l'accès depuis l'application elle-même est l'étape suivante (onglet ou lien dans `/app/` pour les Ado / Adulte).
+- **Testé hors WordPress** (banc d'essai, API de sp_build simulée), avec 7 cas : visiteur, Ado à jour, adhésion expirée, Enfant, Adulte « expire bientôt », session invalide, compte du club. Entrée de menu et page conformes dans chaque cas. PHPCS et PHPStan sans erreur.
+
 ## 2026-11-17 — QCM Dan : révision du Module B (v1.13.0)
 
 - **Données** : `data/qcm-dan.js` (`window.ClairaQcmDonnees`, pas de .json : refusé par le `.htaccess` du plugin), extrait des 32 quiz « Module B » de la FFTDA (fftda.fr > Réglementation), soit 724 questions à 4 réponses avec la source (article de règlement). La bonne réponse n'est indiquée que par du texte vert dans les PDF : l'outil `outils/qcm-dan/` lit la couleur (voir son `LISEZMOI.md` pour régénérer). Chaque question a exactement une bonne réponse ; plusieurs vérifiées à la main contre les PDF.

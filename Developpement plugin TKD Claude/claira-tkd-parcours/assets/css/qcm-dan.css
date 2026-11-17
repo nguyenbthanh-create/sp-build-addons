@@ -161,3 +161,8 @@
 .claira-qcm-saut { break-before: page; }
 .claira-qcm-grille-corrige { border-collapse: collapse; margin-bottom: 12pt; }
 .claira-qcm-grille-corrige td { border: 1px solid #000; padding: 3pt 8pt; }
+
+/* Accès réservé (v1.14.0) */
+.claira-qcm-refus { text-align: center; }
+.claira-qcm-refus h3 { margin-top: 0; }
+.claira-qcm .claira-qcm-refus a.claira-qcm-btn { text-decoration: none; }

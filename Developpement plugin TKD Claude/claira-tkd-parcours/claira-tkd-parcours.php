@@ -3,7 +3,7 @@
  * Plugin Name: Claira TKD Parcours
  * Plugin URI:  https://example.com/
  * Description: Interface ludique de suivi des grades TKD avec contenu texte, ressources téléchargeables et vidéos URL.
- * Version:     1.13.0
+ * Version:     1.14.0
  * Author:      Claira
  * Text Domain: claira-tkd-parcours
  * Domain Path: /languages
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 define( 'CLAIRA_TKD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CLAIRA_TKD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.13.0' );
+define( 'CLAIRA_TKD_PLUGIN_VERSION', '1.14.0' );
 
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/post-types.php';
 require_once CLAIRA_TKD_PLUGIN_DIR . 'includes/shortcodes.php';
@@ -47,6 +47,9 @@ add_shortcode( 'claira_tkd_parcours_tableau', 'claira_tkd_progression_table_shor
 add_shortcode( 'claira_tkd_schema_grades', 'claira_tkd_schema_grades_shortcode' );
 add_shortcode( 'claira_tkd_videotheque', 'claira_tkd_videotheque_shortcode' );
 add_shortcode( 'claira_qcm_dan', 'claira_tkd_qcm_shortcode' );
+// QCM Dan réservé aux adhérents : entrée de menu cachée par défaut, contrôle d'accès en tête de page.
+add_filter( 'wp_nav_menu_objects', 'claira_tkd_qcm_menu_classes' );
+add_action( 'wp_head', 'claira_tkd_qcm_acces_head', 1 );
 
 add_action( 'plugins_loaded', 'claira_tkd_load_textdomain' );
 

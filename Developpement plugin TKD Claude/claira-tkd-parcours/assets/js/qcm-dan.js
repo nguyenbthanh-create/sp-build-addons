@@ -859,7 +859,31 @@
 			return;
 		}
 		var moteur = new Moteur( donnees );
-		if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); } else { site( moteur, racineEl, cfg ); }
+		if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); return; }
+		// Site : réservé aux adhérents (contrôle de assets/js/qcm-acces.js, imprimé dans <head>).
+		attendreAcces( function ( ok ) {
+			if ( ok ) { site( moteur, racineEl, cfg ); } else { refus( racineEl, cfg ); }
+		} );
+	}
+
+	function attendreAcces( suite ) {
+		var d = document.documentElement, fait = false;
+		function fin( ok ) { if ( ! fait ) { fait = true; suite( ok ); } }
+		if ( d.classList.contains( 'claira-qcm-ok' ) ) { fin( true ); return; }
+		if ( d.classList.contains( 'claira-qcm-non' ) ) { fin( false ); return; }
+		document.addEventListener( 'claira-qcm-acces', function ( e ) { fin( !! e.detail ); } );
+		setTimeout( function () { fin( d.classList.contains( 'claira-qcm-ok' ) ); }, 10000 );
+	}
+
+	function refus( racineEl, cfg ) {
+		var app = racineEl.querySelector( '.claira-qcm-app' );
+		app.innerHTML = '';
+		app.appendChild( el( 'div', { class: 'claira-qcm-accueil claira-qcm-refus' }, [
+			el( 'h3', { text: 'Réservé aux adhérents du club' } ),
+			el( 'p', { text: 'La révision du QCM Dan est ouverte aux adhérents Ado et Adulte dont l’adhésion est à jour.' } ),
+			el( 'p', { text: 'Connectez-vous d’abord à l’application du club sur cet appareil avec votre lien personnel, puis revenez sur cette page.' } ),
+			cfg.appUrl ? el( 'p', {}, [ el( 'a', { class: 'claira-qcm-btn claira-qcm-btn-principal', href: cfg.appUrl, text: 'Ouvrir l’application du club' } ) ] ) : null
+		] ) );
 	}
 
 	function init() { document.querySelectorAll( '.claira-qcm[data-config]' ).forEach( demarrer ); }
