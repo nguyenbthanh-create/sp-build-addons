@@ -461,6 +461,18 @@ Autres constats de l'audit, non traités :
   - dans le référentiel `includes/import.php`, déposé en test et en prod (fichiers identiques au dépôt avant le dépôt), pour qu'un nouvel import ne réintroduise pas la faute ;
   - dans la maquette `technique_adoadulte.html`.
 
+**Pages de démo du thème à la corbeille — prod le 17/11/2026** (demande de l'utilisateur, récupérables 30 jours dans Pages → Corbeille) :
+- 2 `page-d-exemple` (WordPress) ;
+- 2101 `news-style-blog`, 651 `blog`, 1391 `fixtures-results`, 640 `standings-archives` ;
+- 1877 `league-tables` et ses sous-pages 1894, 1892, 1890, 1882, 1888 et 1886 (démo SportsPress et Premier, 2014-2016).
+
+**Gardées** :
+- 5703 `panier-2` : c'est la page Panier de WooCommerce ;
+- 5846 `shop` : retravaillée le 20/10/2026 ;
+- 2065 `staff` et 1999 `event-blocks` : traduites en décembre 2025.
+
+1999 a été remontée au premier niveau (`/event-blocks/`), car son parent 1391 est à la corbeille. Le menu 9 « Primary Menu », qui contenait ces pages, n'est utilisé par aucun en-tête.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
