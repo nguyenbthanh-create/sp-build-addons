@@ -473,6 +473,15 @@ Autres constats de l'audit, non traités :
 
 1999 a été remontée au premier niveau (`/event-blocks/`), car son parent 1391 est à la corbeille. Le menu 9 « Primary Menu », qui contenait ces pages, n'est utilisé par aucun en-tête.
 
+**Doublons supprimés et panier renommé — prod le 17/11/2026** :
+- **À la corbeille** :
+  - 2065 `staff`, en doublon avec `membres-encadrement` ;
+  - 2639 `panier`, ancienne page Panier qui n'était plus celle de WooCommerce.
+- **Panier renommé** : la page Panier de WooCommerce (5703, `woocommerce_cart_page_id`) passe de `panier-2` à `panier`.
+- **Redirection** : `RedirectMatch 301 ^/panier-2(/.*)?$` vers `/panier$1` dans le `.htaccess` racine de la prod, car WordPress ne redirige pas les anciennes adresses des pages. Les paramètres d'URL (`?add-to-cart=…`) sont conservés.
+- **Liens** : aucun menu ni contenu ne pointait vers `panier-2` ; WooCommerce construit ses liens à partir de l'id de la page.
+- **Vérifié** : `/panier-2/` mène au panier, `/commander/` redirige vers `/panier/` quand le panier est vide, et la boutique fonctionne.
+
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.
