@@ -17,6 +17,8 @@
 }
 .claira-qcm-head h2::after { content: ''; display: block; width: 48px; height: 3px; background: var(--sp-red); margin: 10px auto 0; }
 .claira-qcm-head p { color: var(--sp-muted); margin: 0; }
+.claira-qcm-retour { margin: 0 0 14px; }
+.claira-qcm .claira-qcm-retour .claira-qcm-btn { text-decoration: none; }
 .claira-qcm-chargement, .claira-qcm-info { color: var(--sp-muted); font-size: .95em; }
 
 /* Boutons */

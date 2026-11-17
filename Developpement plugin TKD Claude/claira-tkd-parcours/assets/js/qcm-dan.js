@@ -860,10 +860,29 @@
 		}
 		var moteur = new Moteur( donnees );
 		if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); return; }
+		boutonRetour( racineEl, cfg );
 		// Site : réservé aux adhérents (contrôle de assets/js/qcm-acces.js, imprimé dans <head>).
 		attendreAcces( function ( ok ) {
 			if ( ok ) { site( moteur, racineEl, cfg ); } else { refus( racineEl, cfg ); }
 		} );
+	}
+
+	/* « ← Retour à l'application » (17/11/2026) : l'application installée sur l'écran d'accueil
+	 * (mode autonome) n'a pas de bouton « Précédent ». Affiché dans ce mode, ou si l'on arrive
+	 * depuis la page de l'application (bouton « Réviser le QCM Dan » de son Accueil). */
+	function boutonRetour( racineEl, cfg ) {
+		if ( ! cfg.appUrl ) { return; }
+		var CLE = 'claira_qcm_depuis_app', vient = false, autonome = false;
+		try {
+			vient = !! document.referrer && new URL( document.referrer ).pathname === new URL( cfg.appUrl, location.href ).pathname;
+			if ( vient ) { window.sessionStorage.setItem( CLE, '1' ); } else { vient = window.sessionStorage.getItem( CLE ) === '1'; }
+		} catch ( e ) { /* ancien navigateur ou stockage indisponible */ }
+		try { autonome = window.navigator.standalone === true || window.matchMedia( '(display-mode: standalone)' ).matches; } catch ( e ) { /* rien */ }
+		if ( ! vient && ! autonome ) { return; }
+		racineEl.insertBefore(
+			el( 'p', { class: 'claira-qcm-retour' }, [ el( 'a', { class: 'claira-qcm-btn', href: cfg.appUrl, text: '← Retour à l’application' } ) ] ),
+			racineEl.firstChild
+		);
 	}
 
 	function attendreAcces( suite ) {
