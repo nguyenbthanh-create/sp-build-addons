@@ -494,7 +494,7 @@ Autres constats de l'audit, non traités :
   - **Piège** : Elementor met en cache le rendu de ses widgets, donc le style et le script de la carte sont ajoutés sur toutes les pages, et non selon un indicateur posé pendant le rendu (première version corrigée).
 - **TKD Parcours 1.12** : les vidéos des grades deviennent un bouton « Lire la vidéo ». Le lecteur youtube-nocookie ou Vimeo (`dnt=1`) se charge au clic et le bouton revient à la fermeture de la fenêtre. Le test a été entièrement synchronisé, car sa version était plus ancienne ; sauvegarde de la prod 1.11 dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-parcours-1.11.0/`.
 - **Pages** :
-  - **Mentions légales (6124, `/mentions-legales/`)** créée et ajoutée au menu « Accès rapide » (élément 6127). Elle contient l'éditeur, le directeur de la publication (Noé PETIT DE MIRBECK, président, à confirmer par l'utilisateur), l'hébergeur OVH, la propriété intellectuelle, le droit à l'image, les données et les cookies.
+  - **Mentions légales (6124, `/mentions-legales/`)** créée et ajoutée au menu « Accès rapide » (élément 6127). Elle contient l'éditeur, le directeur de la publication (Noé PETIT DE MIRBECK, président, confirmé par l'utilisateur), l'hébergeur OVH, la propriété intellectuelle, le droit à l'image, les données et les cookies.
   - **Politique de confidentialité (3)** : les deux mentions « à compléter » (lien de gestion des cookies, hébergeur) sont remplacées et la date de mise à jour passe au 17/11/2026.
 - **Vérifié en prod** :
   - plus aucun appel à Google Fonts, Facebook ni sourcebuster ;
