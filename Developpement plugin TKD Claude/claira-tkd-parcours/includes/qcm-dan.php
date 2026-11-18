@@ -165,6 +165,12 @@ function claira_tkd_qcm_rest_peut_noter( WP_REST_Request $req ) {
 	if ( strlen( $jwt ) < 20 || strlen( $jwt ) > 2000 ) {
 		return false;
 	}
+	// Tri rapide avant d'interroger sp_build : forme « a.b.c », adhérent et date d'expiration à venir.
+	$parts = explode( '.', $jwt );
+	$corps = 3 === count( $parts ) ? json_decode( (string) base64_decode( strtr( $parts[1], '-_', '+/' ) ), true ) : null;
+	if ( ! is_array( $corps ) || empty( $corps['eid'] ) || (int) ( $corps['exp'] ?? 0 ) < time() ) {
+		return false;
+	}
 	$cle = 'claira_qcm_jwt_' . md5( $jwt );
 	$ok  = get_transient( $cle );
 	if ( false === $ok ) {
