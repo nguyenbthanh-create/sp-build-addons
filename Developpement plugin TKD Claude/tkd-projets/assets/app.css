@@ -222,3 +222,4 @@ body.tkdp-map-open { overflow: hidden; }
 .tkdp-add-placeholder { display: block; min-height: 4px; }
 .tkdp-map-links { font-size: 12px; }
 .tkdp-modal [disabled] { background: #f6f7f7; color: #50575e; }
+.tkdp-modal .tkdp-team-list select { width: auto; flex: none; }
