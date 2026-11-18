@@ -64,6 +64,7 @@
 .claira-qcm-reponses li.is-fausse { background: var(--qcm-ko-bg); color: var(--qcm-ko); }
 .claira-qcm-lettre { display: inline-block; min-width: 1.4em; font-weight: 700; }
 .claira-qcm-source { color: var(--sp-muted); font-size: .82em; margin: 8px 0 0; }
+.claira-qcm-note { background: #fff8e1; border-left: 3px solid #f0b400; border-radius: 4px; padding: 8px 10px; margin: 10px 0 0; font-size: .9em; line-height: 1.45; }
 .claira-qcm mark { background: #fff3a8; color: inherit; padding: 0 1px; }
 
 /* Onglets (site) */

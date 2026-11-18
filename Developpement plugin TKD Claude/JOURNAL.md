@@ -725,3 +725,7 @@ Détails :
   - Projet d'essai supprimé ; rien n'a été créé dans la trésorerie.
   - Sans erreur PHP : Projets, Réglages, Gala, Trésorerie → Projets et l'accueil du site.
   - **Reste à l'utilisateur** : cocher les gestionnaires et choisir le président (*Projets → Réglages*), puis cocher le président dans « Accès bureau ».
+
+## 18/11/2026 — QCM Dan 1.14.6 : les deux dates de création de la FFTDA
+
+- Les quiz officiels posent deux questions : 1er septembre 1995 (le CNT devient la FFTDA, historique) et 14 octobre 1994 (fondation selon les statuts). « création FFTDA » sort maintenant les deux, avec un encadré « À retenir ». Nouvel objet `COMPLEMENTS` dans qcm-dan.js. Vérifié hors WordPress ; pas encore sur le test ni en prod.

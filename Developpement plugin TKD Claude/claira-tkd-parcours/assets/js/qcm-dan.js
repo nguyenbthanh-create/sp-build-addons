@@ -124,6 +124,17 @@
 		return diff + ( a.length - i ) + ( b.length - j ) <= 1;
 	}
 
+	// Compléments du club pour certaines questions (data/qcm-dan.js est régénéré depuis les PDF FFTDA : ne rien y écrire).
+	// « mots » : mots-clés cachés qui font trouver la question ; « note » : encadré « À retenir » sous la question.
+	// 18/11/2026 : la création de la FFTDA est demandée à l'examen ; les quiz officiels ont deux questions, deux dates.
+	var NOTE_FFTDA = 'Deux dates officielles, chacune avec sa question dans les quiz FFTDA : le 14 octobre 1994, la FFTDA est fondée ' +
+		'(statuts déposés à la Préfecture de Police de Paris, article 1er des statuts) ; le 1er septembre 1995, le CNT se transforme en FFTDA ' +
+		'(historique fédéral). Lisez bien l\'énoncé : « selon les statuts » → 1994 ; « le 1er septembre 1995 » ou « historique » → 1995.';
+	var COMPLEMENTS = {
+		'quiz_historique_federal_fftda#10': { mots: 'création fondation naissance date FFTDA fédération', note: NOTE_FFTDA },
+		'quiz_statuts_fftda#1': { mots: 'création naissance date', note: NOTE_FFTDA }
+	};
+
 	function Moteur( donnees ) {
 		var self = this;
 		this.themes = donnees.themes;
@@ -140,6 +151,8 @@
 		this.index = {};
 		this.questions.forEach( function ( q ) {
 			var champs = [ [ q.q, 4 ], [ q.r[ q.ok ], 3 ], [ q.src + ' ' + self.themes[ q.t ].nom, 1 ] ];
+			var plus = COMPLEMENTS[ q.id ];
+			if ( plus ) { q.note = plus.note || ''; if ( plus.mots ) { champs.push( [ plus.mots, 4 ] ); } }
 			q.r.forEach( function ( r, k ) { if ( k !== q.ok ) { champs.push( [ r, 1 ] ); } } );
 			q.texte = normaliser( [ q.q ].concat( q.r, [ q.src ] ).join( ' ' ) );
 			champs.forEach( function ( c ) {
@@ -247,6 +260,7 @@
 			tete,
 			el( 'p', { class: 'claira-qcm-question', html: surligne( q.q, res ) } ),
 			reponses,
+			q.note ? el( 'p', { class: 'claira-qcm-note', text: '💡 À retenir : ' + q.note } ) : null,
 			el( 'p', { class: 'claira-qcm-source' }, [
 				'Source : ' + q.src + ' — ',
 				el( 'a', { href: th.pdf, target: '_blank', rel: 'noopener', text: 'quiz FFTDA (PDF)' } )
