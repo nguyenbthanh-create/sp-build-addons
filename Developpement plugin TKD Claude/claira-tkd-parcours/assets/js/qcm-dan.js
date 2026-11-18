@@ -129,7 +129,8 @@
 	// 18/11/2026 : la création de la FFTDA est demandée à l'examen ; les quiz officiels ont deux questions, deux dates.
 	var NOTE_FFTDA = 'Deux dates officielles, chacune avec sa question dans les quiz FFTDA : le 14 octobre 1994, la FFTDA est fondée ' +
 		'(statuts déposés à la Préfecture de Police de Paris, article 1er des statuts) ; le 1er septembre 1995, le CNT se transforme en FFTDA ' +
-		'(historique fédéral). Lisez bien l\'énoncé : « selon les statuts » → 1994 ; « le 1er septembre 1995 » ou « historique » → 1995.';
+		'(historique fédéral). Aux annales 2e Dan 2022/2023, « Quelle est la date de création de la FFTDA ? » est rangée dans l\'historique : ' +
+		'réponse attendue, le 1er septembre 1995. Seul un énoncé qui cite les statuts appelle le 14 octobre 1994.';
 	var COMPLEMENTS = {
 		'quiz_historique_federal_fftda#10': { mots: 'création fondation naissance date FFTDA fédération', note: NOTE_FFTDA },
 		'quiz_statuts_fftda#1': { mots: 'création naissance date', note: NOTE_FFTDA }

@@ -18,6 +18,8 @@ Vérifié hors WordPress :
 - « création FFTDA », « date de création de la FFTDA » et « naissance FFTDA » donnent les deux questions en tête, avec la note ;
 - « DAC » est inchangé.
 
+Ajout du même jour : les annales 2e Dan 2022/2023 (PDF « QCM 2e Dan MAJ sept 2023 », énoncés sans réponses) posent « Quelle est la date de création de la FFTDA ? » dans la partie historique. La note l'indique : réponse attendue, le 1er septembre 1995 ; le 14 octobre 1994 seulement si l'énoncé cite les statuts.
+
 ## 2026-11-18 — QCM Dan : « date de création de la FFTDA » trouvée (v1.14.5, test puis prod le 18/11/2026 vers 13 h 30)
 
 Retour d'un adhérent : à l'examen, il a eu la question de la date de création de la FFTDA. La page https://www.fftda.fr/fr/99-historique-federal.html était déjà couverte par le quiz officiel « Historique fédéral » ; la question des statuts (« Quand et où la FFTDA a-t-elle été fondée… ») était aussi dans les données. Le problème venait de la recherche : « date de création de la FFTDA » ne trouvait rien.
