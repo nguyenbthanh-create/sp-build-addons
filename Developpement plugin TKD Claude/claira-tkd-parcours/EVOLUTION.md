@@ -1,5 +1,36 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : 10 questions d'arbitrage des annales (v1.14.7)
+
+Demande de l'utilisateur : ajouter les questions d'arbitrage des annales 1er et 2e Dan 2022/2023. Elles ont été écartées en 1.14.6 faute de source. Les réponses ont depuis été lues dans les textes de fftda.fr → Compétition → Règlement / Inscription / Dérogation :
+- Règles d'arbitrage des compétitions combats (CD octobre 2022) ;
+- Réglementation des compétitions (version du 30/09/2025) ;
+- Règlement compétitions poomsae (CD septembre 2025) ;
+- Catégories d'âge et de poids combat, saison 2026/2027.
+
+Questions ajoutées dans `QUESTIONS_CLUB`, n° 6 à 15 :
+- base des quotas de qualifiés (nombre de licenciés de la Ligue la saison précédente, barème en note) ;
+- points valides cadets, juniors, seniors ;
+- forme des aires : combat carrée 8 × 8 ou octogonale, poomsae 10 × 10 ;
+- zones de point juniors et seniors ;
+- pesée générale ;
+- 10 catégories de poids juniors masculins et 8 seniors féminines, avec la grille en note ;
+- validation au plastron : pied par le PSS, poing par les juges ;
+- cas du recours vidéo ;
+- conséquences d'un Gam-jeom.
+
+Non ajoutées, car déjà dans les quiz officiels :
+- l'âge de référence (Règlement des compétitions n° 1) ;
+- la tenue du coach (n° 40) ;
+- le meilleur des 3 rounds (Combat minimes n° 11) ;
+- les critères poomsae (Poomsae n° 34).
+
+Non ajoutée non plus : le nombre de catégories d'âge en championnat de Ligue poomsae, car le texte ne précise pas lesquelles s'appliquent à la Ligue.
+
+Vérifié hors WordPress :
+- 739 questions ;
+- chaque question sort sur ses mots (poids juniors, recours vidéo, PSS poing, aire octogonale, zones de point…).
+
 ## 2026-11-18 — QCM Dan : synonymes, repli, questions du club, deux dates FFTDA (v1.14.6, test puis prod le 18/11/2026 à 14 h 09)
 
 Demandé par l'utilisateur : « Tout, puis prod ».

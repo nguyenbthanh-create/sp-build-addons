@@ -189,7 +189,7 @@
 	// Même forme que data/qcm-dan.js : [ n°, question, réponses, index de la bonne, source ] ; thème ajouté à la fin (les n° des autres ne bougent pas).
 	var THEME_CLUB = {
 		id: 'club_annales', nom: 'Annales (ajouts du club)', titre: 'Questions des annales absentes des quiz officiels',
-		source: 'Annales FFTDA 2e Dan 2022/2023 ; réponses : fftda.fr — Historique fédéral (https://www.fftda.fr/fr/99-historique-federal.html)', pdf: ''
+		source: 'Annales FFTDA 1er et 2e Dan 2022/2023 ; réponses : fftda.fr — Historique fédéral (https://www.fftda.fr/fr/99-historique-federal.html) et règlements de compétition (https://www.fftda.fr/fr/16-reglement-inscription-derogation.html)', pdf: ''
 	};
 	var QUESTIONS_CLUB = [
 		[ 1, 'Quelle est la date de création de la FFTDA ?',
@@ -206,14 +206,67 @@
 			'World Taekwondo, publication des 40 ans (2013) ; fftda.fr/fr/99 donne l\'année 1973 (annales 2e Dan, n° 5)' ],
 		[ 5, 'En quelle année a eu lieu la première démonstration de Taekwondo en France ?',
 			[ '1969', '1968', '1973', '1984' ], 1,
-			'fftda.fr/fr/99 – 1968, Coupe de France de Karaté à Fontainebleau (annales 2e Dan, n° 6)' ]
+			'fftda.fr/fr/99 – 1968, Coupe de France de Karaté à Fontainebleau (annales 2e Dan, n° 6)' ],
+		// Arbitrage (ajout du 18/11/2026) : annales 1er et 2e Dan 2022/2023, partie arbitrage. Réponses lues dans les textes FFTDA
+		// de fftda.fr → Compétition → Règlement / Inscription / Dérogation (sources datées : à revoir à chaque nouvelle version).
+		[ 6, 'Sur quelle base est défini le nombre de qualifiés de chaque Ligue aux championnats de France combat (cadets, juniors, seniors) ?',
+			[ 'Les résultats de la Ligue au championnat de France précédent', 'Le nombre de licenciés de la Ligue la saison précédente',
+				'Le nombre de clubs affiliés dans la Ligue', 'Un quota fixe de 3 qualifiés par catégorie pour toutes les Ligues' ], 1,
+			'Réglementation des compétitions FFTDA, version du 30/09/2025, art. 2.5.2.1 (annales, arbitrage n° 2)' ],
+		[ 7, 'Quels sont les points valides en combat pour les catégories cadets, juniors et seniors ?',
+			[ 'Poing au plastron 1 ; pied au plastron 2 ; pied retourné au plastron 4 ; pied à la tête 3 ; pied retourné à la tête 5 ; 1 point à l\'adversaire par Gam-jeom',
+				'Poing au plastron 1 ; pied au plastron 1 ; pied à la tête 2 ; tout coup retourné 3',
+				'Poing au plastron 2 ; pied au plastron 3 ; pied à la tête 4 ; pied retourné à la tête 6',
+				'Plastron uniquement : poing 1, pied 2, pied retourné 4 ; la tête ne marque pas' ], 0,
+			'Règles d\'arbitrage des compétitions combats FFTDA, CD octobre 2022, art. 12.3 (annales, arbitrage n° 3)' ],
+		[ 8, 'Quelle est la forme des aires de compétition utilisées officiellement en combat (kyorugi) et en poomsae ?',
+			[ 'Combat : rond de 8 m de diamètre ; poomsae : carré de 8 m × 8 m',
+				'Combat : aire de combat carrée de 8 m × 8 m ou octogonale (environ 8 m) ; poomsae : carré de 10 m × 10 m (12 m × 12 m par équipes)',
+				'Combat et poomsae : carré de 12 m × 12 m', 'Combat : octogone de 10 m ; poomsae : rectangle de 10 m × 8 m' ], 1,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 3.1 ; Règlement compétitions poomsae FFTDA, sept. 2025 (annales, arbitrage n° 4)' ],
+		[ 9, 'En compétition combat juniors et seniors, quelles sont les zones de point autorisées ?',
+			[ 'Le plastron uniquement, au poing et au pied',
+				'Le tronc protégé par le plastron (poing et pied) et la tête au-dessus du cou (pied seulement)',
+				'Le tronc, la tête et les cuisses',
+				'La tête uniquement au pied et le dos au poing' ], 1,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 11.2 et 12.1 (annales, arbitrage n° 6)' ],
+		[ 10, 'Lors de la pesée générale d\'une compétition combat seniors, combien de fois un compétiteur peut-il se peser ?',
+			[ 'Une seule fois, sans aucun rattrapage', 'Autant de fois qu\'il le souhaite pendant deux heures',
+				'Une fois ; s\'il n\'a pas le poids, une nouvelle pesée est possible dans le temps de pesée accordé', 'Trois fois au maximum' ], 2,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 9.4 (annales, arbitrage n° 7)' ],
+		[ 11, 'Combien y a-t-il de catégories de poids en compétition kyorugi individuel juniors masculins ?',
+			[ '8', '4', '10', '12' ], 2,
+			'Catégories d\'âge et de poids combat FFTDA, saison 2026/2027 (annales, arbitrage n° 10)' ],
+		[ 12, 'Combien y a-t-il de catégories de poids en compétition kyorugi individuel seniors féminines ?',
+			[ '10', '8', '6', '5' ], 1,
+			'Catégories d\'âge et de poids combat FFTDA, saison 2026/2027 (annales, arbitrage n° 11)' ],
+		[ 13, 'En combat avec le système de pointage électronique (P.S.S.), par quoi sont validés les coups de pied et les coups de poing au plastron ?',
+			[ 'Les deux par le plastron électronique', 'Les deux par les juges',
+				'Le coup de pied par le plastron électronique (PSS) ; le coup de poing par les juges, avec leurs boîtiers de pointage',
+				'Les deux par l\'arbitre central' ], 2,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 12.2.3 et 13.1 (annales, arbitrage n° 13)' ],
+		[ 14, 'En compétition kyorugi, quand le coach peut-il demander un recours vidéo ?',
+			[ 'À tout moment, pour contester n\'importe quel point',
+				'Dans des cas précis (pénalité contre son combattant, coup de pied à la tête non compté, points additionnels, erreur de temps…), jamais pour un coup au plastron compté par le PSS',
+				'Uniquement à la fin de chaque round', 'Seulement pour contester un point au plastron enregistré par le PSS' ], 1,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 21.1 et 21.2 (annales, arbitrage n° 14)' ],
+		[ 15, 'Quelles sont les conséquences d\'un Gam-jeom (avertissement) pour un combattant cadet, junior ou senior ?',
+			[ 'Un point est retiré à son propre score ; 3 Gam-jeom entraînent la disqualification',
+				'Un point est donné à l\'adversaire ; 5 Gam-jeom dans un round font perdre ce round (meilleur des 3 rounds), 10 Gam-jeom font perdre le match',
+				'Aucun point ; c\'est un simple rappel à l\'ordre', 'Deux points sont donnés à l\'adversaire ; 4 Gam-jeom font perdre le match' ], 1,
+			'Règles d\'arbitrage combats FFTDA 2022, art. 14.3, 14.7 et 14.7.1 (annales, arbitrage n° 15)' ]
 	];
 	var NOTES_CLUB = {
 		'club_annales#1': NOTE_FFTDA,
 		'club_annales#2': 'Liste de l\'historique fédéral au 18/11/2026. Denis Odjo, d\'abord président par intérim (4 juillet 2015), est élu le 18 décembre 2016. Vérifiez qu\'aucune élection n\'a eu lieu depuis.',
+		'club_annales#6': 'Barème : moins de 1 000 licenciés, 1 qualifié par catégorie ; 1 000 à 1 999, 2 ; 2 000 à 2 999, 3 ; 3 000 à 4 499, 4 ; 4 500 à 6 999, 5 ; 7 000 à 9 999, 6 ; plus de 10 000, 8.',
+		'club_annales#11': 'Juniors masculins : -45, -48, -51, -55, -59, -63, -68, -73, -78 et +78 kg. Il existe aussi 5 catégories « olympiques » juniors. Vérifiez la grille de la saison en cours.',
+		'club_annales#12': 'Seniors féminines : -46, -49, -53, -57, -62, -67, -73 et +73 kg. Il existe aussi 4 catégories olympiques (-49, -57, -67, +67). Vérifiez la grille de la saison en cours.',
+		'club_annales#14': 'Un recours par combat ; le coach le garde si sa demande est acceptée. Seule l\'action des 5 secondes avant la demande est revue.',
 		'club_annales#5': 'Ne pas confondre : 1968, démonstration de l\'équipe coréenne à Fontainebleau ; 1969, le Taekwondo est introduit en France par Maître Lee Kwan Young.'
 	};
 	Object.keys( NOTES_CLUB ).forEach( function ( id ) { COMPLEMENTS[ id ] = { note: NOTES_CLUB[ id ] }; } );
+	COMPLEMENTS[ 'club_annales#6' ].mots = 'quota quotas qualification'; // l'énoncé des annales parle de « quotas »
 
 	// Ajoute le thème et les questions du club aux données FFTDA (une seule fois).
 	function ajouterClub( donnees ) {
