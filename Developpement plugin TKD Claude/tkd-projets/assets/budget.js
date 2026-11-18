@@ -14,6 +14,14 @@
 		return (v > 0 ? '+ ' : v < 0 ? '− ' : '') + txt;
 	}
 
+	/** Montant d'une ligne pour le champ de saisie : 90.5 → « 90,50 » ; texte en cours de saisie gardé tel quel. */
+	function montantSaisi(v) {
+		if (v === '' || v === null || v === undefined) {
+			return '';
+		}
+		return typeof v === 'number' ? v.toFixed(2).replace('.', ',') : String(v);
+	}
+
 	function cls(n) {
 		return n > 0 ? 'is-pos' : n < 0 ? 'is-neg' : '';
 	}
@@ -104,7 +112,7 @@
 				+ '<td><select data-field="sens">' + Object.keys(SENS).map((s) => '<option value="' + s + '"' + (s === l.sens ? ' selected' : '') + '>' + SENS[s] + '</option>').join('') + '</select></td>'
 				+ '<td><select data-field="categorie">' + categoryOptions(l.sens, l.categorie) + '</select></td>'
 				+ '<td><input type="text" data-field="libelle" maxlength="191" value="' + esc(l.libelle) + '" placeholder="ex. Location de la salle"></td>'
-				+ '<td><input type="text" data-field="montant" inputmode="decimal" class="num" value="' + esc(l.montant ? String(l.montant).replace('.', ',') : '') + '" placeholder="0,00"> €</td>'
+				+ '<td><input type="text" data-field="montant" inputmode="decimal" class="num" value="' + esc(montantSaisi(l.montant)) + '" placeholder="0,00"> €</td>'
 				+ '<td><button type="button" class="tkdp-file-remove" data-budget="remove" aria-label="Retirer la ligne">×</button></td></tr>').join('')
 				: '<tr><td colspan="5" class="tkdp-file-empty">Aucune ligne prévue pour l\'instant.</td></tr>';
 			return '<h3>Budget prévu</h3><table class="widefat tkdp-budget-lines"><thead><tr><th>Sens</th><th>Catégorie</th><th>Libellé</th><th>Montant prévu</th><th></th></tr></thead>'
