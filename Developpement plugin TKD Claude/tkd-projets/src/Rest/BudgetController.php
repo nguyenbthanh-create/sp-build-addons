@@ -3,6 +3,7 @@
 namespace TkdProjets\Rest;
 
 use TkdProjets\Compta;
+use TkdProjets\Gala;
 use TkdProjets\Repository\Projects;
 use WP_Error;
 use WP_REST_Request;
@@ -89,6 +90,14 @@ final class BudgetController {
 		foreach ( $api->saisons() as $s ) {
 			if ( $s['id'] === ( $id ? $api->projet( $id )['exercice_id'] : $saison ) ) {
 				$out['saison'] = $s;
+			}
+		}
+		$out['suggestions'] = array();
+		if ( 'gala' === $project->type && Gala::available() ) {
+			$g = Gala::summary( (string) $project->gala_edition !== '' ? (string) $project->gala_edition : Gala::currentEdition() );
+			$s = $g ? Gala::repasSuggestion( $g['repas'], $g['prix_repas'] ) : null;
+			if ( $s ) {
+				$out['suggestions'][] = $s;
 			}
 		}
 		if ( $id ) {

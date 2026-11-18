@@ -237,3 +237,10 @@ body.tkdp-map-open { overflow: hidden; }
 .tkdp-budget-lines select[data-field="categorie"] { max-width: 260px; }
 .tkdp-budget-depense { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 12px 16px; max-width: 900px; }
 .tkdp-budget-depense textarea { width: 100%; }
+
+/* 2.2 : onglet Gala */
+.tkdp-gala-cards { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0 18px; max-width: 1000px; }
+.tkdp-gala-card { background: #fff; border: 1px solid #dcdcde; border-top: 4px solid #8e44ad; border-radius: 8px; padding: 10px 14px; min-width: 170px; flex: 1 1 170px; }
+.tkdp-gala-card strong { display: block; font-size: 20px; margin-bottom: 4px; }
+.tkdp-gala-card span { color: #50575e; font-size: 12px; }
+.tkdp-gala-card.is-alert { border-top-color: #d63638; }

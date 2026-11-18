@@ -4,6 +4,7 @@ namespace TkdProjets\Admin;
 
 use TkdProjets\Access;
 use TkdProjets\Compta;
+use TkdProjets\Gala;
 use TkdProjets\Policy;
 use TkdProjets\Types;
 use TkdProjets\Validation;
@@ -58,7 +59,8 @@ final class Page {
 		wp_enqueue_script( 'tkdp-zones-export', TKDP_URL . 'assets/zones-export.js', array(), TKDP_VERSION, true );
 		wp_enqueue_script( 'tkdp-zones', TKDP_URL . 'assets/zones.js', array( 'tkdp-zones-export' ), TKDP_VERSION, true );
 		wp_enqueue_script( 'tkdp-budget', TKDP_URL . 'assets/budget.js', array(), TKDP_VERSION, true );
-		wp_enqueue_script( 'tkdp-app', TKDP_URL . 'assets/app.js', array( 'wp-api-fetch', 'tkdp-zones', 'tkdp-budget' ), TKDP_VERSION, true );
+		wp_enqueue_script( 'tkdp-gala', TKDP_URL . 'assets/gala.js', array(), TKDP_VERSION, true );
+		wp_enqueue_script( 'tkdp-app', TKDP_URL . 'assets/app.js', array( 'wp-api-fetch', 'tkdp-zones', 'tkdp-budget', 'tkdp-gala' ), TKDP_VERSION, true );
 		wp_localize_script(
 			'tkdp-app',
 			'TKDP',
@@ -68,6 +70,7 @@ final class Page {
 				'isGestionnaire' => Access::isGestionnaire(),
 				'canListUsers'   => Access::canListUsers(),
 				'canViewBudget'  => Compta::canViewBudget(),
+				'galaAvailable'  => Gala::available(),
 				'canUpload'      => current_user_can( 'upload_files' ),
 				'types'          => Types::all(),
 				'teamRoles'      => array(

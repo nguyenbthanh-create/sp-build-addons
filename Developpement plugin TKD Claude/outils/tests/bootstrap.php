@@ -123,6 +123,6 @@ require TESTS_RACINE . 'sp_build/includes/class-tenues.php';
 require TESTS_RACINE . 'sp_build/includes/class-carte.php';
 
 // TKD Projets 2.0 (18/11/2026) : règles pures, sans WordPress.
-foreach ( array( 'Policy', 'Validation', 'Types', 'ZoneLinks', 'Attachments' ) as $tkdp_classe ) {
+foreach ( array( 'Policy', 'Validation', 'Types', 'ZoneLinks', 'Attachments', 'Gala' ) as $tkdp_classe ) {
 	require TESTS_RACINE . 'tkd-projets/src/' . $tkdp_classe . '.php';
 }

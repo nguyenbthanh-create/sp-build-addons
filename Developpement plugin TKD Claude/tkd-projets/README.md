@@ -45,11 +45,24 @@ Tout passe par `SpCompta\Integration\ProjetsApi` (SP Compta 0.4.0 ou plus). TKD 
 - **Synchronisation** : modifier le projet TKD (nom, dates, état, responsables) met à jour le projet de la trésorerie quand c'est un membre du bureau qui modifie. « Terminé » devient « Clôturé ».
 - **Supprimer un projet TKD** ne supprime rien dans la trésorerie : l'argent reste, et le projet compta aussi.
 
+## Projets de type Gala (`src/Gala.php`, `src/Rest/GalaController.php`, `assets/gala.js`, 2.2.0)
+
+- **Relier à une édition** : à la création, un projet « Gala » est relié à l'édition en cours de TKD Gala (colonne `gala_edition`). Il le reste quand le gala passe à l'édition suivante. Si la date de l'évènement est vide, elle est reprise de la date du gala.
+- **Onglet « 🎭 Gala »**, pour toute l'équipe du projet. Il affiche **seulement des totaux**, jamais de nom ni de date de naissance :
+  - clubs, démonstrateurs, démonstrations et leur durée, candidatures retenues ;
+  - repas, avec le montant et la part marquée payée ;
+  - pistes audio et dates de naissance manquantes ;
+  - inscriptions ouvertes ou non, date limite.
+
+  Un bouton mène au menu Gala, pour les administrateurs.
+- **Budget** : l'onglet Budget propose la recette « Repas du gala (N × prix €) » en catégorie 70. On l'ajoute ou on la met à jour en un clic, puis on enregistre.
+- **TKD Gala n'est pas modifiée** : on n'appelle que ses méthodes publiques (`Tkd_Gala_DB::reglages()`, `::inscriptions()`, `::demos_edition()`, `::inscriptions_ouvertes()`, `Tkd_Gala_Mails::totaux()`, `Tkd_Gala_Candidatures::externes()`). Si l'une d'elles disparaît, l'onglet ne s'affiche plus, sans erreur.
+
 ## Données
 
 | Table | Contenu |
 |---|---|
-| `…tkdp_projects` | projets : type, état (en cours / terminé), date de l'évènement, `compta_projet_id` (lien SP Compta, à venir) |
+| `…tkdp_projects` | projets : type, état (en cours / terminé), date de l'évènement, `compta_projet_id` (lien SP Compta), `gala_edition` (projet de type Gala) |
 | `…tkdp_tasks` | tâches ; les pièces jointes sont des numéros de la médiathèque (« 12,15 ») |
 | `…tkdp_zones` | zones de la carte (coins en JSON) |
 | `…tkdp_members` | équipes : projet, personne, rôle |
@@ -104,4 +117,6 @@ Ces services reçoivent l'adresse IP des visiteurs de la carte : à mentionner d
 - **Pas d'onglet Budget** : la personne n'est pas dans « Accès bureau » de SP Compta, ou SP Compta est absente ou plus ancienne que la 0.3.0.
 - **Pas de formulaire « Dépense validée par le président »** : la personne n'est pas le président choisi dans *Projets → Réglages*, ou elle n'est pas dans « Accès bureau ».
 - **« Aucune saison dans la trésorerie »** : créer et activer une saison dans *Trésorerie → Paramètres*.
+- **Pas d'onglet Gala** : le projet n'est pas de type Gala, ou TKD Gala est inactive (`Gala::available()`).
+- **Chiffres du gala à zéro** : l'édition reliée (`gala_edition`) n'est plus l'édition en cours, et ses données ont été supprimées après le gala. C'est normal.
 - **La carte ne se charge pas** : `unpkg.com` ou OpenStreetMap n'est pas joignable depuis le navigateur.

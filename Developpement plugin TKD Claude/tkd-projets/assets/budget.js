@@ -115,7 +115,13 @@
 				+ '<td><input type="text" data-field="montant" inputmode="decimal" class="num" value="' + esc(montantSaisi(l.montant)) + '" placeholder="0,00"> €</td>'
 				+ '<td><button type="button" class="tkdp-file-remove" data-budget="remove" aria-label="Retirer la ligne">×</button></td></tr>').join('')
 				: '<tr><td colspan="5" class="tkdp-file-empty">Aucune ligne prévue pour l\'instant.</td></tr>';
-			return '<h3>Budget prévu</h3><table class="widefat tkdp-budget-lines"><thead><tr><th>Sens</th><th>Catégorie</th><th>Libellé</th><th>Montant prévu</th><th></th></tr></thead>'
+			const suggestions = (data.suggestions || []).map((s, i) => {
+				const deja = lignes.find((l) => l.sens === s.sens && String(l.libelle).indexOf(s.libelle.split(' (')[0]) === 0);
+				return '<div class="tkdp-budget-box"><p>💡 Depuis TKD Gala : <strong>' + esc(s.libelle) + '</strong> = ' + euros(s.montant)
+					+ (deja ? ' (déjà dans le budget pour ' + euros(Number(String(deja.montant).replace(',', '.')) || 0) + ')' : '') + '. '
+					+ '<button type="button" class="button" data-budget="suggest" data-index="' + i + '">' + (deja ? 'Mettre à jour la ligne' : 'Ajouter au budget prévu') + '</button></p></div>';
+			}).join('');
+			return suggestions + '<h3>Budget prévu</h3><table class="widefat tkdp-budget-lines"><thead><tr><th>Sens</th><th>Catégorie</th><th>Libellé</th><th>Montant prévu</th><th></th></tr></thead>'
 				+ '<tbody>' + rows + '</tbody></table>'
 				+ '<p><button type="button" class="button" data-budget="add" data-sens="depense">+ Ligne de dépense</button> '
 				+ '<button type="button" class="button" data-budget="add" data-sens="recette">+ Ligne de recette</button> '
@@ -188,6 +194,18 @@
 						readLines();
 						lignes.push({ sens: btn.dataset.sens, categorie: '', libelle: '', montant: '' });
 						draw();
+					} else if (action === 'suggest') {
+						// Ajoutée (ou mise à jour) dans le tableau ; « Enregistrer le budget prévu » la rend définitive.
+						readLines();
+						const s = data.suggestions[Number(btn.dataset.index)];
+						const deja = lignes.find((l) => l.sens === s.sens && String(l.libelle).indexOf(s.libelle.split(' (')[0]) === 0);
+						if (deja) {
+							Object.assign(deja, { categorie: s.categorie, libelle: s.libelle, montant: s.montant });
+						} else {
+							lignes.push({ sens: s.sens, categorie: s.categorie, libelle: s.libelle, montant: s.montant });
+						}
+						draw();
+						ctx.notify('Ligne ajoutée au tableau : cliquez sur « Enregistrer le budget prévu ».');
 					} else if (action === 'remove') {
 						readLines();
 						lignes.splice(Number(btn.closest('tr').dataset.index), 1);

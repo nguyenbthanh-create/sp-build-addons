@@ -14,7 +14,7 @@ Pistes connues, datées. Plan complet : `RefontePlugin\tkd-projets-ANALYSE.md` (
 4. ~~**Onglet Budget**~~ : fait le 18/11/2026 (TKD Projets 2.1.0, SP Compta 0.4.0). Ce qui était prévu : visible du **bureau seulement** (`sp_compta_manager`) : prévu, réalisé et écart par catégorie, calculés par `ProjetBilan` de SP Compta.
    - **Seul le président** propose et valide une dépense de projet. Une fois validée, elle entre **directement** dans SP Compta, rattachée au projet. Il doit donc figurer dans « Accès bureau ».
    - Nature SP Compta d'après le type : `Types::nature()`.
-5. **Branchement de TKD Gala** :
+5. ~~**Branchement de TKD Gala**~~ : fait le 18/11/2026 (TKD Projets 2.2.0, TKD Gala inchangée). Ce qui était prévu :
    - un projet « Gala » relié à l'édition, avec les chiffres de Gala (clubs, démonstrateurs, repas) ;
    - les recettes de repas prévues ;
    - Gala lui-même change à peine.

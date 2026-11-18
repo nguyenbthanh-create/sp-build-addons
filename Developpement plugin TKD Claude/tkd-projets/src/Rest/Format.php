@@ -45,6 +45,7 @@ final class Format {
 			'id'          => (int) $row->id,
 			'name'        => (string) $row->name,
 			'type'        => $type,
+			'gala_edition' => (string) ( $row->gala_edition ?? '' ),
 			'status'      => (string) $row->status,
 			'description' => (string) $row->description,
 			'color'       => (string) $row->color,

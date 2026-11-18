@@ -39,6 +39,7 @@ final class Installer {
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			name varchar(190) NOT NULL,
 			type varchar(20) NOT NULL DEFAULT 'autre',
+			gala_edition varchar(20) NOT NULL DEFAULT '',
 			status varchar(20) NOT NULL DEFAULT 'en_cours',
 			description text NULL,
 			color varchar(7) NOT NULL DEFAULT '#2271b1',

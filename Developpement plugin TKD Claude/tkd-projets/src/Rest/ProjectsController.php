@@ -5,6 +5,7 @@ namespace TkdProjets\Rest;
 use TkdProjets\Access;
 use TkdProjets\Compta;
 use TkdProjets\Db;
+use TkdProjets\Gala;
 use TkdProjets\Policy;
 use TkdProjets\Repository\Members;
 use TkdProjets\Repository\Projects;
@@ -35,6 +36,7 @@ final class ProjectsController {
 		if ( is_wp_error( $team ) ) {
 			return $team;
 		}
+		self::galaDefaults( $fields, null );
 		$fields['created_by'] = get_current_user_id();
 		$fields['created_at'] = current_time( 'mysql' );
 
@@ -63,6 +65,7 @@ final class ProjectsController {
 		if ( is_wp_error( $fields ) ) {
 			return $fields;
 		}
+		self::galaDefaults( $fields, $project );
 		$team = null;
 		if ( $r->has_param( 'team' ) && Access::can( 'manage_members', $id ) ) {
 			$team = self::team( $r, $id );
@@ -91,6 +94,24 @@ final class ProjectsController {
 		}
 		Projects::delete( $id );
 		return array( 'deleted' => true );
+	}
+
+	/**
+	 * Projet de type Gala : relié à l'édition en cours de TKD Gala (gardée ensuite, même quand le gala
+	 * passe à l'édition suivante), et date de l'évènement reprise des réglages du gala si elle est vide.
+	 */
+	private static function galaDefaults( array &$fields, ?object $existing ): void {
+		$type = $fields['type'] ?? ( $existing->type ?? '' );
+		if ( 'gala' !== $type || ! Gala::available() ) {
+			return;
+		}
+		if ( '' === (string) ( $existing->gala_edition ?? '' ) ) {
+			$fields['gala_edition'] = Gala::currentEdition();
+		}
+		$date = array_key_exists( 'event_date', $fields ) ? $fields['event_date'] : ( $existing->event_date ?? null );
+		if ( null === $date || '' === $date ) {
+			$fields['event_date'] = Gala::eventDate();
+		}
 	}
 
 	/**

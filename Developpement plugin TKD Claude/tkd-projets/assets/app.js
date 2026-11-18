@@ -307,6 +307,9 @@
 				api: api, esc: esc, notify: notify, fail: fail, fmtDate: fmtDate, today: fromDay(TODAY),
 			});
 		}
+		if (state.project && state.view === 'gala' && window.TKDPGala && root.querySelector('#tkdp-gala')) {
+			window.TKDPGala.mount(root.querySelector('#tkdp-gala'), state.project, { api: api, esc: esc, fail: fail, fmtDate: fmtDate });
+		}
 		if (state.project && state.view === 'gantt') {
 			bindGantt();
 		}
@@ -377,8 +380,14 @@
 	function renderProject() {
 		const p = state.project;
 		const tabs = { list: 'Liste', kanban: 'Kanban', gantt: 'Gantt' };
+		if (p.type === 'gala' && cfg.galaAvailable) {
+			tabs.gala = '🎭 Gala';
+		}
 		if (cfg.canViewBudget) {
 			tabs.budget = '💶 Budget';
+		}
+		if (!tabs[state.view]) {
+			state.view = 'gantt'; // onglet mémorisé absent pour ce projet (ex. « Gala » sur une fête)
 		}
 		let html = '<p><a href="#" data-action="home">← Tous les projets</a></p>'
 			+ '<div class="tkdp-head"><h1><span class="tkdp-dot" style="background:' + esc(p.color) + '"></span>' + esc(p.name)
@@ -412,6 +421,9 @@
 
 		if (state.view === 'budget') {
 			return html + '<div class="tkdp-budget" id="tkdp-budget"></div>';
+		}
+		if (state.view === 'gala' && tabs.gala) {
+			return html + '<div class="tkdp-budget tkdp-gala" id="tkdp-gala"></div>';
 		}
 
 		if (!state.tasks.length) {

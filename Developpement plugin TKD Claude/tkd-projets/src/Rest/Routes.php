@@ -248,6 +248,17 @@ final class Routes {
 		);
 		register_rest_route(
 			self::NS,
+			'/projects/(?P<id>\d+)/gala',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( GalaController::class, 'show' ),
+				'permission_callback' => self::onProject( 'view' ),
+				'args'                => $id,
+			)
+		);
+
+		register_rest_route(
+			self::NS,
 			'/users',
 			array(
 				'methods'             => WP_REST_Server::READABLE,

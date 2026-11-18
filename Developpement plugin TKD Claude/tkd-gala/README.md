@@ -44,6 +44,15 @@ Inscriptions des clubs invités au gala des arts martiaux, **sans compte WordPre
 - **Exports** : CSV des démonstrateurs (pour le traiteur), CSV des démonstrations (clubs et candidatures retenues, avec discipline et heure), ZIP de toutes les pistes nommées dans l'ordre de passage.
 - **Après le gala** : Réglages → « Supprimer les données de l'édition » (inscriptions et pistes audio, irréversible).
 
+## Lu par TKD Projets (18/11/2026)
+
+L'extension TKD Projets (Gestion de projets) affiche les **totaux** d'une édition dans l'onglet « Gala » des projets de type Gala. Elle appelle, en lecture seule :
+- `Tkd_Gala_DB::reglages()`, `inscriptions()`, `demos_edition()`, `inscriptions_ouvertes()` ;
+- `Tkd_Gala_Mails::totaux()` ;
+- `Tkd_Gala_Candidatures::externes()`.
+
+**Ne pas renommer ces méthodes ni changer leur retour sans adapter `tkd-projets/src/Gala.php`.** Sinon, l'onglet Gala de TKD Projets disparaît, sans erreur.
+
 ## Sécurité
 
 - Pas de nonce WordPress sur le formulaire public (page potentiellement en cache) : la modification exige le jeton secret de 64 caractères, envoyé dans le formulaire. Anti-robots : champ piège + 10 inscriptions / 5 demandes de lien par heure et par IP.
