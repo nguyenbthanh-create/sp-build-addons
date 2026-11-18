@@ -683,3 +683,21 @@ Détails :
 ## 18/11/2026 — QCM Dan 1.14.5 : « date de création de la FFTDA »
 
 - Retour d'un adhérent (question posée à l'examen). La page fftda.fr « Historique fédéral » était déjà dans les données (quiz officiel), ainsi que la question des statuts sur la fondation de la FFTDA. La recherche ne la trouvait pas : synonymes création / fondée / fondation, « date » ignoré, énoncé mieux pesé. Vérifié hors WordPress. Pas encore sur le test ni en prod.
+
+**Gestion de projets, étape 5 : projets de type Gala reliés à TKD Gala — TKD Projets 2.2.0, site de test le 18/11/2026 vers 13 h 28** (`865347c`). **TKD Gala n'est pas modifiée** : seul son README signale les méthodes que lit TKD Projets. Pas en prod.
+- **Contenu** :
+  - colonne `gala_edition` : un projet Gala est relié à l'édition en cours, et la date de l'évènement est reprise de la date du gala si elle est vide ;
+  - onglet « 🎭 Gala » (`src/Gala.php`, `GalaController`, `assets/gala.js`), avec des totaux seulement, sans donnée personnelle ;
+  - dans l'onglet Budget, la recette « Repas du gala (N × prix €) » est proposée en catégorie 70 ;
+  - un onglet mémorisé qui n'existe pas pour le projet ouvert revient au Gantt.
+- **Vérifié hors WordPress** : 30 tests TKD Projets réussis, dont 4 nouveaux (`TkdProjetsGalaTest`) ; PHPStan niveau 1 et PHP_CodeSniffer sans erreur.
+
+  Au niveau 5, avec le code de Gala visible, PHPStan signale seulement que les `method_exists()` de `Gala::available()` sont « toujours vrais ». Ce sont des sécurités voulues : Gala inactive, ou méthode renommée.
+- **Essai en direct (Chrome)**, avec les données d'essai du site de test (édition « 2026 », 2 clubs, 4 démonstrateurs, 2 repas à 5 €, 1 candidature retenue, 1 piste manquante, pas de date de gala réglée sur le test) :
+  - projet « ESSAI Gala 2027 » créé avec ses 12 tâches modèles, relié à l'édition 2026. Les tâches sont sans dates, faute de date de gala sur le test ;
+  - onglet Gala conforme (capture) ;
+  - route `/gala` refusée sur un projet qui n'est pas de type Gala ;
+  - dans l'onglet Budget, la suggestion « Repas du gala (2 × 5 €) = 10 € » remplit bien la ligne. Elle n'a pas été enregistrée, donc rien n'a été créé dans la trésorerie ;
+  - projet d'essai supprimé.
+- **Remarque** : sur le site de test, les réglages du gala sont restés à l'édition « 2026 » sans date. La prod est en 2027.
+- **Étape 6** (après le gala 2027 et la purge de ses données) : décider si le code de Gala devient un module de TKD Projets.
