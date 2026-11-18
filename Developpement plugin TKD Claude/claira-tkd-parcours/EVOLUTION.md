@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-17 — QCM Dan : accès depuis l'application et retour (v1.14.1)
+## 2026-11-17 — QCM Dan : accès depuis l'application et retour (v1.14.1, en prod le 18/11/2026)
 
 - **Application `/app/` (sp_build `e911bb6`)** : bouton « 🎓 Réviser le QCM Dan » sur l'Accueil, sous « Ma fiche complète », pour les adhérents Ado / Adulte dont l'adhésion n'est pas « expire » (même règle que `qcm-acces.js`). L'adresse vient de `claira_tkd_qcm_page_url()`.
 - **iPhone** : le lien s'ouvre dans la même fenêtre. Le périmètre de l'application installée (`scope` « / ») couvre tout le site : la page reste dans l'application et y lit `spcal_jwt`. Aucun jeton dans l'adresse.
