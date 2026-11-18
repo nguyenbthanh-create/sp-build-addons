@@ -13,6 +13,11 @@ Pistes d'évolution connues : ce qui est prévu ou envisagé mais pas encore fai
 
 Le rapport AG ([Reporting/RapportAgGenerator.php](src/Reporting/RapportAgGenerator.md)) compare aujourd'hui les totaux recettes/dépenses de l'exercice actuel à l'exercice précédent (un seul graphique). Piste non demandée pour l'instant, à envisager si le besoin se confirme : un second graphique de répartition par catégorie CERFA (dépenses ou recettes), ou une comparaison sur plusieurs exercices (pas seulement N-1) si le club accumule plusieurs années d'historique.
 
+## Identifié au 18/11/2026 — Gestion de projets (TKD Projets)
+
+- **Étape 4** : saisie d'une **dépense de projet par le président**. Il la propose et la valide, puis elle entre directement ici, rattachée au projet. Il faut ajouter une méthode à `Integration/ProjetsApi`, avec justificatif dans `uploads/sp-compta`, et cocher le président dans « Accès bureau ».
+- **Rapport AG** : un détail par catégorie des projets qui ont des lignes de budget, si le bureau le souhaite (aujourd'hui, seulement les totaux).
+
 ## Dépendance externe
 
 - La spécification fonctionnelle complète du module est censée être dans `../md/spec-fonctionnelle-module-compta.md`. **Ce fichier est absent sur cet ordinateur** (voir [../JOURNAL.md](../JOURNAL.md)) — à récupérer avant toute évolution majeure pour vérifier qu'elle reste cohérente avec la spec d'origine.

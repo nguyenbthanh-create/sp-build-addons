@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SpCompta\Accounting;
 
+use SpCompta\Entity\BudgetLigne;
 use SpCompta\Entity\Depense;
 use SpCompta\Entity\Projet;
 use SpCompta\Entity\Recette;
@@ -117,6 +118,91 @@ final class ProjetBilan
         $r['projets_net'] = round($r['projets_recettes'] - $r['projets_depenses'], 2);
 
         return $r;
+    }
+
+    /**
+     * Prevu / realise / ecart par categorie CERFA, a partir des lignes de
+     * budget du projet (18/11/2026). Une categorie ou le projet a des
+     * mouvements sans ligne prevue apparait avec "hors_budget" = vrai.
+     * Ordre : depenses puis recettes, chacune par code de categorie croissant.
+     *
+     * @param BudgetLigne[] $lignes
+     * @param Depense[] $depenses TOUTES les depenses de la saison (seules celles du projet comptent)
+     * @param Recette[] $recettes
+     * @return array<int, array{sens: string, categorie: string, libelle_categorie: string, libelles: string[],
+     *               prevu: float, realise: float, ecart: float, hors_budget: bool}>
+     */
+    public static function parCategorie(Projet $projet, array $lignes, array $depenses, array $recettes): array
+    {
+        $projetId = (int) $projet->id();
+        $groupes = [];
+        $cle = static fn (string $sens, string $categorie): string => $sens . '|' . $categorie;
+
+        foreach ($lignes as $ligne) {
+            if ($ligne->projetId() !== $projetId) {
+                continue;
+            }
+            $k = $cle($ligne->sens(), $ligne->categorie());
+            $groupes[$k] ??= ['sens' => $ligne->sens(), 'categorie' => $ligne->categorie(), 'libelles' => [], 'prevu' => 0.0, 'realise' => 0.0, 'hors_budget' => false];
+            $groupes[$k]['prevu'] += $ligne->montant();
+            if ($ligne->libelle() !== '') {
+                $groupes[$k]['libelles'][] = $ligne->libelle();
+            }
+        }
+
+        $mouvements = [];
+        foreach ($depenses as $d) {
+            if ($d->projetId() === $projetId) {
+                $mouvements[] = [BudgetLigne::SENS_DEPENSE, $d->categorie(), $d->montant()];
+            }
+        }
+        foreach ($recettes as $r) {
+            if ($r->projetId() === $projetId) {
+                $mouvements[] = [BudgetLigne::SENS_RECETTE, $r->categorie(), $r->montant()];
+            }
+        }
+        foreach ($mouvements as [$sens, $categorie, $montant]) {
+            $k = $cle($sens, $categorie);
+            $groupes[$k] ??= ['sens' => $sens, 'categorie' => $categorie, 'libelles' => [], 'prevu' => 0.0, 'realise' => 0.0, 'hors_budget' => true];
+            $groupes[$k]['realise'] += $montant;
+        }
+
+        $rangSens = [BudgetLigne::SENS_DEPENSE => 0, BudgetLigne::SENS_RECETTE => 1];
+        uasort($groupes, static fn (array $a, array $b): int => [$rangSens[$a['sens']] ?? 2, $a['categorie']] <=> [$rangSens[$b['sens']] ?? 2, $b['categorie']]);
+
+        $out = [];
+        foreach ($groupes as $g) {
+            $referentiel = $g['sens'] === BudgetLigne::SENS_RECETTE ? Categories::RECETTE : Categories::DEPENSE;
+            $out[] = [
+                'sens' => $g['sens'],
+                'categorie' => $g['categorie'],
+                'libelle_categorie' => $g['categorie'] === '' ? 'Non catégorisé' : Categories::libelleCategorie($referentiel, $g['categorie']),
+                'libelles' => $g['libelles'],
+                'prevu' => round($g['prevu'], 2),
+                'realise' => round($g['realise'], 2),
+                'ecart' => round($g['realise'] - $g['prevu'], 2),
+                'hors_budget' => $g['hors_budget'],
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Totaux prevus d'une liste de lignes : sert a tenir a jour
+     * budget_depenses / budget_recettes du projet.
+     *
+     * @param BudgetLigne[] $lignes
+     * @return array{depenses: float, recettes: float}
+     */
+    public static function totauxLignes(array $lignes): array
+    {
+        $t = ['depenses' => 0.0, 'recettes' => 0.0];
+        foreach ($lignes as $ligne) {
+            $t[$ligne->estDepense() ? 'depenses' : 'recettes'] += $ligne->montant();
+        }
+
+        return ['depenses' => round($t['depenses'], 2), 'recettes' => round($t['recettes'], 2)];
     }
 
     /**

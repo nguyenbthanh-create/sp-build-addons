@@ -1,3 +1,8 @@
+
+## 18/11/2026
+
+- **Lignes de budget des projets et porte d'entrée pour TKD Projets** (version 0.3.0, schéma 1.5.0). Le budget prévu d'un projet peut être détaillé en lignes (sens, catégorie, libellé, montant), saisies depuis la Gestion de projets de TKD Projets. Le réalisé se lit **par catégorie**, et les dépenses classées hors des catégories prévues sont signalées « hors budget ». La fiche d'un projet dans l'onglet Projets affiche ce tableau. Les totaux prévus du projet deviennent la somme des lignes : le rapport AG est inchangé. Tout passe par `Integration/ProjetsApi`, réservé au bureau.
+- **Tests** : PHPUnit écrits. Les calculs et la validation (13 tests, dont les 5 existants de `ProjetBilanTest`) ont été lancés sur le PC maison avec un petit lanceur, faute de WordPress de test. Les tests qui touchent la base n'ont **pas été exécutés** : les mêmes cas ont été vérifiés en direct sur le site de test (voir `../JOURNAL.md`).
 # Réalisations — SP Compta
 
 Journal daté de ce qui a été **réellement fait** sur ce plugin. Reconstitué à partir de la section « État d'avancement » de `CLAUDE.md` et des incidents de `correctif.md` (pas d'historique Git sur ce dossier — voir [../JOURNAL.md](../JOURNAL.md)).
@@ -63,4 +68,4 @@ Journal daté de ce qui a été **réellement fait** sur ce plugin. Reconstitué
 
 ---
 
-*Dernière mise à jour de ce fichier : 06/10/2026. Ce plugin n'a pas d'historique Git — pense-bête à mettre à jour manuellement après chaque session, ou mieux : initialiser Git dessus (voir [../JOURNAL.md](../JOURNAL.md)).*
+*Dernière mise à jour de ce fichier : 18/11/2026. Ce plugin n'a pas d'historique Git — pense-bête à mettre à jour manuellement après chaque session, ou mieux : initialiser Git dessus (voir [../JOURNAL.md](../JOURNAL.md)).*

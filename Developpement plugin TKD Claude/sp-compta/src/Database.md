@@ -38,3 +38,9 @@ Pas de test unitaire dédié (nécessite une vraie base WP, testé indirectement
 ## 1.4.0 — Projets de la saison (06/10/2026)
 
 Nouvelle table `sp_compta_projet` (`tableProjet()`, voir [Entity/Projet.md](Entity/Projet.md)) et colonne `projet_id BIGINT UNSIGNED NULL` (+ index) sur `sp_compta_depense` et `sp_compta_recette` (NULL = fonctionnement courant). Appliqué automatiquement par `maybeUpgrade()` au premier chargement d'une page wp-admin après le déploiement — **à faire avant d'utiliser la saisie rapide sur téléphone**, qui ne déclenche pas la mise à jour du schéma.
+
+## 1.5.0 — Lignes de budget des projets (18/11/2026)
+
+Nouvelle table `sp_compta_budget_ligne` : `projet_id`, `sens` (`depense` / `recette`), `categorie` (code CERFA), `libelle`, `montant` `DECIMAL(10,2)`, `ordre`. Aucun changement sur les tables existantes : ajout seul.
+
+Voir [Entity/BudgetLigne](Entity/BudgetLigne.md) et [Integration/ProjetsApi](Integration/ProjetsApi.md). `ProjetsApi::depuisPlugin()` lance aussi `maybeUpgrade()`, car TKD Projets peut appeler SP Compta avant toute ouverture de wp-admin.

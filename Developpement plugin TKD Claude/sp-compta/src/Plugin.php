@@ -29,6 +29,7 @@ use SpCompta\Media\JustificatifMigration;
 use SpCompta\Media\JustificatifStorage;
 use SpCompta\Numbering\DocumentNumeroGenerator;
 use SpCompta\Numbering\SequenceGenerator;
+use SpCompta\Repository\BudgetLigneRepository;
 use SpCompta\Repository\ClientRepository;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\DevisRepository;
@@ -185,7 +186,13 @@ final class Plugin
                 new IkPaiementSync($ikRepository, $depenseRepository, $exerciceRepository),
                 $exerciceRepository
             ),
-            new ProjetScreen($projetRepository, $exerciceRepository, $depenseRepository, $recetteRepository),
+            new ProjetScreen(
+                $projetRepository,
+                $exerciceRepository,
+                $depenseRepository,
+                $recetteRepository,
+                new BudgetLigneRepository($this->database->tableBudgetLigne())
+            ),
             new SoldeScreen($depenseRepository, $recetteRepository, $exerciceRepository),
             new RapportExerciceScreen(
                 $exerciceRepository,

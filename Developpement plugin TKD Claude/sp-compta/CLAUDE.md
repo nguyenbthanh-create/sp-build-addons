@@ -81,6 +81,14 @@ Pas de binaire PHP, pas de WordPress local dans ce sandbox (même limitation que
 
 **Incrément 14 (06/10/2026)** — **saisie rapide : fin des déconnexions** (application installée sur iPhone/Android qui redemandait la connexion) : (1) [src/Auth/SessionLongue.php](src/Auth/SessionLongue.md) — session de 1 an pour les comptes trésorerie (« Se souvenir de moi » forcé à la connexion), branchée dans `Plugin::boot()` ; (2) écran « Connexion nécessaire » avec retour au formulaire après connexion ; (3) brouillon de la saisie gardé sur le téléphone + jetons de formulaire renouvelés juste avant l'envoi (AJAX `sp_compta_saisie_jeton`) — voir [SaisieRapideCombineeShortcode.md](src/Front/SaisieRapideCombineeShortcode.md). Chaque membre du bureau doit se reconnecter une fois après le déploiement. Piste suivante (non faite) : onglet « 💶 Saisie » dans l'application entraîneur de sp_build pour les seuls membres du bureau.
 
+**Incrément 15 (18/11/2026)** — **lignes de budget et porte d'entrée pour TKD Projets** (« Gestion de projets », étape 3 du plan `RefontePlugin/tkd-projets-ANALYSE.md`) :
+- nouvelle table `sp_compta_budget_ligne` (`DB_VERSION` → `1.5.0`), avec [Entity/BudgetLigne](src/Entity/BudgetLigne.md) et [BudgetLigneRepository](src/Repository/BudgetLigneRepository.md) ;
+- [ProjetBilan](src/Accounting/ProjetBilan.md)`::parCategorie()` / `totauxLignes()` ;
+- [Integration/ProjetsApi](src/Integration/ProjetsApi.md) : seule porte par laquelle TKD Projets lit ou écrit la trésorerie. Elle est réservée au bureau (`sp_compta_manager`), décision du 18/11/2026 ;
+- [ProjetScreen](src/Admin/ProjetScreen.md) : tableau « Budget par catégorie » sur la fiche, budget prévu en lecture seule quand il y a des lignes, lignes supprimées avec le projet.
+
+Les totaux `budget_depenses` / `budget_recettes` restent la source du rapport AG ; ils valent la somme des lignes quand il y en a. Version de l'extension : 0.3.0.
+
 ## Repositories disponibles
 
-`Fournisseur`, `Client`, `Depense`, `Recette`, `Sponsor`, `Exercice`, `Parametres`, `Devis`, `Facture`, `Projet` — tous dans `src/Repository/`, tous avec leur `.md` jumeau et leurs tests dans `tests/Unit/`. `Devis`/`Facture` prennent en plus un `DocumentNumeroGenerator` en constructeur (voir leur `.md` pour le câblage).
+`Fournisseur`, `Client`, `Depense`, `Recette`, `Sponsor`, `Exercice`, `Parametres`, `Devis`, `Facture`, `Projet`, `BudgetLigne` — tous dans `src/Repository/`, tous avec leur `.md` jumeau et leurs tests dans `tests/Unit/`. `Devis`/`Facture` prennent en plus un `DocumentNumeroGenerator` en constructeur (voir leur `.md` pour le câblage).

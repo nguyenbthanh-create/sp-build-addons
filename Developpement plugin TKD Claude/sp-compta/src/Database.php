@@ -11,7 +11,7 @@ final class Database
      * colonne) pour que maybeUpgrade() rejoue createTables() sur les sites
      * deja actives, sans desactivation/reactivation du plugin.
      */
-    private const DB_VERSION = '1.4.0';
+    private const DB_VERSION = '1.5.0';
     private const DB_VERSION_OPTION = 'sp_compta_db_version';
 
     public function tableExercice(): string
@@ -84,6 +84,11 @@ final class Database
         return $this->prefix() . 'sp_compta_projet';
     }
 
+    public function tableBudgetLigne(): string
+    {
+        return $this->prefix() . 'sp_compta_budget_ligne';
+    }
+
     public function createTables(): void
     {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -104,6 +109,7 @@ final class Database
         dbDelta($this->factureLigneSchema($charsetCollate));
         dbDelta($this->ikPaiementSchema($charsetCollate));
         dbDelta($this->projetSchema($charsetCollate));
+        dbDelta($this->budgetLigneSchema($charsetCollate));
 
         update_option(self::DB_VERSION_OPTION, self::DB_VERSION);
     }
@@ -377,6 +383,27 @@ final class Database
             statut VARCHAR(20) NOT NULL DEFAULT 'en_cours',
             PRIMARY KEY (id),
             KEY exercice_id (exercice_id)
+        ) {$charsetCollate};";
+    }
+
+    /**
+     * Lignes du budget prevu d'un projet (18/11/2026, voir Entity/BudgetLigne.md) :
+     * sens, categorie CERFA, libelle, montant prevu.
+     */
+    private function budgetLigneSchema(string $charsetCollate): string
+    {
+        $table = $this->tableBudgetLigne();
+
+        return "CREATE TABLE {$table} (
+            id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+            projet_id BIGINT UNSIGNED NOT NULL,
+            sens VARCHAR(10) NOT NULL DEFAULT 'depense',
+            categorie VARCHAR(10) NOT NULL DEFAULT '',
+            libelle VARCHAR(191) NOT NULL DEFAULT '',
+            montant DECIMAL(10,2) NOT NULL DEFAULT 0,
+            ordre INT NOT NULL DEFAULT 0,
+            PRIMARY KEY (id),
+            KEY projet_id (projet_id)
         ) {$charsetCollate};";
     }
 

@@ -9,6 +9,7 @@ use SpCompta\Accounting\ProjetBilan;
 use SpCompta\Capabilities;
 use SpCompta\Entity\Exercice;
 use SpCompta\Entity\Projet;
+use SpCompta\Repository\BudgetLigneRepository;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\ProjetRepository;
@@ -33,7 +34,8 @@ final class ProjetScreen implements AdminScreen
         private ProjetRepository $repository,
         private ExerciceRepository $exerciceRepository,
         private DepenseRepository $depenseRepository,
-        private RecetteRepository $recetteRepository
+        private RecetteRepository $recetteRepository,
+        private ?BudgetLigneRepository $budgetLigneRepository = null
     ) {
     }
 
@@ -267,10 +269,16 @@ final class ProjetScreen implements AdminScreen
         }
         echo '</select></td></tr>';
 
-        echo '<tr><th>Budget prévu</th><td>'
-            . '<label>Dépenses prévues <input type="text" inputmode="decimal" name="budget_depenses" value="' . esc_attr($montant($projet?->budgetDepenses() ?? 0.0)) . '" style="width:110px"> €</label>'
-            . ' &nbsp; <label>Recettes prévues <input type="text" inputmode="decimal" name="budget_recettes" value="' . esc_attr($montant($projet?->budgetRecettes() ?? 0.0)) . '" style="width:110px"> €</label>'
-            . '<p class="description">Facultatif. Sert à comparer le prévu et le réalisé en fin de saison (rapport AG).</p></td></tr>';
+        if ($projet !== null && $this->lignesDe((int) $projet->id()) !== []) {
+            echo '<tr><th>Budget prévu</th><td>' . esc_html(self::euros($projet->budgetDepenses())) . ' de dépenses, '
+                . esc_html(self::euros($projet->budgetRecettes())) . ' de recettes'
+                . '<p class="description">Calculé à partir des lignes de budget saisies dans TKD Projets (voir la fiche du projet).</p></td></tr>';
+        } else {
+            echo '<tr><th>Budget prévu</th><td>'
+                . '<label>Dépenses prévues <input type="text" inputmode="decimal" name="budget_depenses" value="' . esc_attr($montant($projet?->budgetDepenses() ?? 0.0)) . '" style="width:110px"> €</label>'
+                . ' &nbsp; <label>Recettes prévues <input type="text" inputmode="decimal" name="budget_recettes" value="' . esc_attr($montant($projet?->budgetRecettes() ?? 0.0)) . '" style="width:110px"> €</label>'
+                . '<p class="description">Facultatif. Sert à comparer le prévu et le réalisé en fin de saison (rapport AG).</p></td></tr>';
+        }
 
         echo '<tr><th><label for="sp-projet-responsable">Responsable</label></th><td><input type="text" id="sp-projet-responsable" name="responsable" class="regular-text" value="'
             . $v($projet?->responsable()) . '" placeholder="Qui porte le projet (facultatif)"></td></tr>';
@@ -325,6 +333,11 @@ final class ProjetScreen implements AdminScreen
         echo '</tbody></table>';
         if (!$b['a_un_budget']) {
             echo '<p class="description">Aucun budget prévu saisi : seul le réalisé est affiché. Ajoutez un budget en modifiant le projet.</p>';
+        }
+
+        $lignesBudget = $this->lignesDe((int) $projet->id());
+        if ($lignesBudget !== []) {
+            $this->renderParCategorie(ProjetBilan::parCategorie($projet, $lignesBudget, $depensesSaison, $recettesSaison));
         }
 
         // Mouvements rattaches (avec possibilite de les detacher) + mouvements de la saison a rattacher
@@ -524,13 +537,16 @@ final class ProjetScreen implements AdminScreen
         };
         $description = sanitize_textarea_field(wp_unslash((string) ($request['description'] ?? '')));
 
+        // Avec des lignes de budget, les totaux en sont la somme : le formulaire ne les change pas.
+        $avecLignes = $id !== null && $this->lignesDe($id) !== [];
+
         return $this->repository->save(new Projet(
             $id,
             $exerciceId,
             $nom,
             isset(Projet::NATURES[$nature]) ? $nature : 'autre',
-            ProjetBilan::montantSaisi($request['budget_depenses'] ?? ''),
-            ProjetBilan::montantSaisi($request['budget_recettes'] ?? ''),
+            $avecLignes ? $existant->budgetDepenses() : ProjetBilan::montantSaisi($request['budget_depenses'] ?? ''),
+            $avecLignes ? $existant->budgetRecettes() : ProjetBilan::montantSaisi($request['budget_recettes'] ?? ''),
             sanitize_text_field(wp_unslash((string) ($request['responsable'] ?? ''))),
             $date($request['date_debut'] ?? ''),
             $date($request['date_fin'] ?? ''),
@@ -555,6 +571,7 @@ final class ProjetScreen implements AdminScreen
 
         $this->depenseRepository->detacherDuProjet($id);
         $this->recetteRepository->detacherDuProjet($id);
+        $this->budgetLigneRepository?->deleteForProjet($id);
 
         return $this->repository->delete($id);
     }
@@ -593,6 +610,33 @@ final class ProjetScreen implements AdminScreen
             + $this->recetteRepository->rattacherAuProjet($aDetacherRecettes, null, $exerciceId);
 
         return ['rattaches' => $rattaches, 'detaches' => $detaches];
+    }
+
+    /**
+     * @return \SpCompta\Entity\BudgetLigne[]
+     */
+    private function lignesDe(int $projetId): array
+    {
+        return $this->budgetLigneRepository !== null ? $this->budgetLigneRepository->forProjet($projetId) : [];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $categories voir ProjetBilan::parCategorie()
+     */
+    private function renderParCategorie(array $categories): void
+    {
+        echo '<h3>Budget par catégorie</h3>';
+        echo '<p class="description">Lignes saisies dans TKD Projets. Le réalisé d\'une catégorie est la somme des mouvements du projet classés dans cette catégorie.</p>';
+        echo '<table class="sp-projets-bilan sp-projets"><thead><tr><th>Sens</th><th>Catégorie</th><th>Lignes prévues</th><th class="num">Prévu</th><th class="num">Réalisé</th><th class="num">Écart</th></tr></thead><tbody>';
+        foreach ($categories as $c) {
+            echo '<tr><td>' . esc_html($c['sens'] === 'recette' ? 'Recette' : 'Dépense') . '</td>';
+            echo '<td>' . esc_html($c['libelle_categorie']) . ($c['hors_budget'] ? ' <em>(hors budget)</em>' : '') . '</td>';
+            echo '<td>' . esc_html(implode(', ', $c['libelles'])) . '</td>';
+            echo '<td class="num">' . esc_html(self::euros($c['prevu'])) . '</td>';
+            echo '<td class="num">' . esc_html(self::euros($c['realise'])) . '</td>';
+            echo '<td class="num">' . esc_html(self::euros($c['ecart'], true)) . '</td></tr>';
+        }
+        echo '</tbody></table>';
     }
 
     // ── Formatage ────────────────────────────────────────────────────────────

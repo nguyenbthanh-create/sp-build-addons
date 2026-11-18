@@ -6,9 +6,11 @@ namespace SpCompta\Tests\Unit\Admin;
 
 use SpCompta\Admin\ProjetScreen;
 use SpCompta\Database;
+use SpCompta\Entity\BudgetLigne;
 use SpCompta\Entity\Depense;
 use SpCompta\Entity\Projet;
 use SpCompta\Entity\Recette;
+use SpCompta\Repository\BudgetLigneRepository;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
 use SpCompta\Repository\ProjetRepository;
@@ -28,6 +30,8 @@ final class ProjetScreenTest extends WP_UnitTestCase
 
     private RecetteRepository $recettes;
 
+    private BudgetLigneRepository $lignes;
+
     public function setUp(): void
     {
         parent::setUp();
@@ -38,11 +42,13 @@ final class ProjetScreenTest extends WP_UnitTestCase
         $this->projets = new ProjetRepository($database->tableProjet());
         $this->depenses = new DepenseRepository($database->tableDepense());
         $this->recettes = new RecetteRepository($database->tableRecette());
+        $this->lignes = new BudgetLigneRepository($database->tableBudgetLigne());
         $this->screen = new ProjetScreen(
             $this->projets,
             new ExerciceRepository($database->tableExercice()),
             $this->depenses,
-            $this->recettes
+            $this->recettes,
+            $this->lignes
         );
     }
 
@@ -143,5 +149,37 @@ final class ProjetScreenTest extends WP_UnitTestCase
         $this->assertNotNull($restante);
         $this->assertNull($restante->projetId());
         $this->assertSame(40.0, $restante->montant());
+    }
+    /** @test */
+    public function it_keeps_the_totals_computed_from_budget_lines(): void
+    {
+        // Given a projet whose budget comes from lines (300 EUR of depenses)
+        $projet = $this->projets->save(new Projet(null, 1, 'Gala', 'evenement', 300.0, 0.0));
+        $this->lignes->remplacer((int) $projet->id(), [new BudgetLigne(null, (int) $projet->id(), 'depense', '61', 'Salle', 300.0)]);
+
+        // When the treasurer saves the form with other totals
+        $saved = $this->screen->saveFromRequest([
+            'id' => (string) $projet->id(), 'exercice_id' => '1', 'nom' => 'Gala 2027',
+            'budget_depenses' => '999', 'budget_recettes' => '50', 'statut' => 'en_cours',
+        ]);
+
+        // Then the name changes but the totals stay those of the lines
+        $this->assertSame('Gala 2027', $saved->nom());
+        $this->assertSame(300.0, $saved->budgetDepenses());
+        $this->assertSame(0.0, $saved->budgetRecettes());
+    }
+
+    /** @test */
+    public function it_deletes_the_budget_lines_with_the_projet(): void
+    {
+        // Given a projet with a budget line
+        $projet = $this->projets->save(new Projet(null, 1, 'Gala'));
+        $this->lignes->remplacer((int) $projet->id(), [new BudgetLigne(null, (int) $projet->id(), 'depense', '61', 'Salle', 300.0)]);
+
+        // When the projet is deleted
+        $this->screen->deleteFromRequest(['id' => (string) $projet->id()]);
+
+        // Then its lines are gone too
+        $this->assertSame([], $this->lignes->forProjet((int) $projet->id()));
     }
 }
