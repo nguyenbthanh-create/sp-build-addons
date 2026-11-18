@@ -1,12 +1,27 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : recherches sans résultat gardées (v1.14.3, site de test)
+
+Demande de l'utilisateur après l'essai sur iPhone : repérer ce que les adhérents cherchent sans le trouver.
+- **Page du site** : une recherche sans résultat est envoyée une fois par visite (texte, mode, thème) à `POST claira-tkd/v1/qcm/sans-resultat` (`noterSansResultat()` dans `assets/js/qcm-dan.js`). Le tableau de bord n'envoie rien.
+- **Serveur** (`includes/qcm-dan.php`) :
+  - écriture réservée aux comptes du club (en-tête `X-WP-Nonce`) et aux adhérents Ado / Adulte non expirés ;
+  - pour les adhérents, un tri rapide est fait sur le jeton (forme, `eid`, `exp`), puis la session est vérifiée auprès de sp_build (`spcal/v1/eleve/me`), avec mise en cache 6 h ;
+  - 40 envois par heure et par personne ; 300 textes au plus, regroupés sans tenir compte de la casse ni des espaces ;
+  - option `claira_tkd_qcm_recherches_vides`. Ni nom ni adresse IP ne sont gardés.
+- **Tableau de bord QCM Dan** : section « Recherches sans résultat » avec la recherche, le nombre de fois, la dernière fois, et la colonne « Aujourd'hui ». Celle-ci refait la recherche avec les questions actuelles : par exemple, « DAC durée » trouve maintenant 2 questions. Boutons Chercher, Retirer et Tout effacer.
+- **Vérifié** :
+  - hors WordPress : 11 contrôles du serveur, envoi depuis la page, tableau ;
+  - sur le test : anonyme et faux jeton refusés (401), adhérent fictif QCM TEST accepté (200), lignes visibles dans le tableau de bord.
+- Le site de test est lent par moments (1,5 à 21 s sur une requête simple), sans lien avec ce module.
+
 ## 2026-11-18 — QCM Dan : retours de l'essai sur iPhone (v1.14.2, en prod le 18/11/2026)
 
 - **Sigles à points** : les quiz écrivent « D.A.C. », « D.I.F. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ». La normalisation en faisait des lettres isolées, donc « DAC » ne trouvait pas « Quelle est la durée de la formation D.A.C. ? » (16 h, Filière de formation n° 6). `normaliser()` lit désormais un sigle à points comme un mot, sans « lookbehind » pour rester compatible avec les anciens Safari ; le surlignage suit.
 - **Croix d'effacement** dans le champ de recherche : elle vide le champ et les résultats, et garde le clavier ouvert. La croix native de Safari est masquée pour éviter d'en avoir deux.
 - **Examen blanc** : le survol reste collé sous le doigt sur téléphone et encadrait en rouge la proposition suivante. Le survol est réservé à la souris (`@media (hover: hover) and (pointer: fine)`), le focus est retiré, et la nouvelle question arrive avec une animation de 0,25 s (désactivée si l'utilisateur limite les animations).
 - **Rappels** (sans changement) : les réponses sont mélangées, mais seul l'ordre des lettres change. Le texte de la bonne réponse est toujours celui de la FFTDA (dans les PDF, c'est B dans 64 % des cas). « Tous les mots » (par défaut) exige chaque mot, ce qui affine ; « Au moins un mot » en accepte un seul.
-- **Idée en attente** : garder les recherches restées sans résultat (et pouvoir ajouter des questions du club). Non codé, en attente de la décision de l'utilisateur.
+- Recherches sans résultat : voir 1.14.3 ci-dessus. L'ajout de questions propres au club n'est pas décidé.
 
 ## 2026-11-17 — QCM Dan : accès depuis l'application et retour (v1.14.1, en prod le 18/11/2026)
 
