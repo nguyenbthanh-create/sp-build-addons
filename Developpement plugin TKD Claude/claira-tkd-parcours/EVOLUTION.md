@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : 10 questions d'arbitrage des annales (v1.14.7)
+## 2026-11-18 — QCM Dan : 10 questions d'arbitrage des annales (v1.14.7, test puis prod le 18/11/2026 à 14 h 25)
 
 Demande de l'utilisateur : ajouter les questions d'arbitrage des annales 1er et 2e Dan 2022/2023. Elles ont été écartées en 1.14.6 faute de source. Les réponses ont depuis été lues dans les textes de fftda.fr → Compétition → Règlement / Inscription / Dérogation :
 - Règles d'arbitrage des compétitions combats (CD octobre 2022) ;
