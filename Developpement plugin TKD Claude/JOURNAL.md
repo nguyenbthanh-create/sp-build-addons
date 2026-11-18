@@ -717,3 +717,11 @@ Détails :
   - cocher le président dans « Accès bureau » ;
   - contrôle en ligne d'un projet Gala, sans e-mail, car les mails partent vraiment en prod ;
   - refaire `-Verifier`.
+- **Activation de TKD Projets en prod, le 18/11/2026 vers 13 h 45** (accord de l'utilisateur) : « Extension activée », sans erreur, et le menu Projets apparaît.
+  - **Contrôle en ligne** avec un projet Gala d'essai, sans aucun e-mail : les 12 tâches modèles n'ont personne d'attribué.
+    - Le projet est relié à l'édition **2027** et la date du **30/01/2027** a été reprise du gala ; tâches datées du 02/09/2026 au 01/03/2027.
+    - Onglet Gala : inscriptions ouvertes, date limite le 15/01/2027, 0 club inscrit pour l'instant, 1 candidature retenue (capture).
+    - Onglet Budget disponible : saison 2026-2027, 6 projets compta proposés pour le relier. Rien n'a été enregistré.
+  - Projet d'essai supprimé ; rien n'a été créé dans la trésorerie.
+  - Sans erreur PHP : Projets, Réglages, Gala, Trésorerie → Projets et l'accueil du site.
+  - **Reste à l'utilisateur** : cocher les gestionnaires et choisir le président (*Projets → Réglages*), puis cocher le président dans « Accès bureau ».
