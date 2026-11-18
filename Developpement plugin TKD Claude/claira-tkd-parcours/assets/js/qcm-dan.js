@@ -80,8 +80,13 @@
 		arbitrage: 'arbitre', arbitres: 'arbitre', arbitrer: 'arbitre'
 	};
 
+	// Sigles à points (« D.A.C. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ») : écrits ainsi dans les quiz FFTDA,
+	// ils devenaient des lettres isolées et « DAC » ne trouvait rien (retour du 18/11/2026).
+	// Sans « lookbehind » (absent des anciens Safari) : le caractère qui précède est capturé et rendu tel quel.
+	var SIGLE = /(^|[^A-Za-z])([A-Za-z](?:\.[A-Za-z])+\.?)(?![A-Za-z])/g;
+
 	function normaliser( s ) {
-		return String( s ).toLowerCase()
+		return String( s ).replace( SIGLE, function ( _, avant, sigle ) { return avant + sigle.replace( /\./g, '' ); } ).toLowerCase()
 			.normalize( 'NFD' ).replace( /[̀-ͯ]/g, '' )
 			.replace( /œ/g, 'oe' ).replace( /æ/g, 'ae' )
 			.replace( /[’'`]/g, ' ' )
@@ -205,7 +210,7 @@
 	// Texte HTML avec les mots trouvés surlignés.
 	function surligne( texte, res ) {
 		if ( ! res || ( ! Object.keys( res.surligner ).length && ! res.expressions.length ) ) { return echap( texte ); }
-		var html = String( texte ).replace( /[\p{L}\p{N}]+|[^\p{L}\p{N}]+/gu, function ( morceau ) {
+		var html = String( texte ).replace( /\p{L}(?:\.\p{L})+\.?(?!\p{L})|[\p{L}\p{N}]+|[^\p{L}\p{N}]+/gu, function ( morceau ) {
 			if ( ! /[\p{L}\p{N}]/u.test( morceau ) ) { return echap( morceau ); }
 			var n = normaliser( morceau ), r = racine( n );
 			return ( res.surligner[ n ] || res.surligner[ r ] ) ? '<mark>' + echap( morceau ) + '</mark>' : echap( morceau );
@@ -255,6 +260,19 @@
 		var modeTous = el( 'input', { type: 'radio', name: 'claira-qcm-mode-' + Math.random().toString( 36 ).slice( 2 ), value: 'tous', checked: true } );
 		var modeUn = el( 'input', { type: 'radio', name: modeTous.name, value: 'un' } );
 		var bouton = el( 'button', { type: 'button', class: 'claira-qcm-btn claira-qcm-btn-principal', text: 'Afficher les résultats' } );
+		// Croix d'effacement (retour du 18/11/2026) : vide le champ et les résultats, garde le clavier ouvert.
+		var effacer = el( 'button', { type: 'button', class: 'claira-qcm-effacer', 'aria-label': 'Effacer la recherche', title: 'Effacer', text: '✕', hidden: true } );
+		function majEffacer() { effacer.hidden = ! champ.value; }
+		champ.addEventListener( 'input', majEffacer );
+		effacer.addEventListener( 'click', function () {
+			champ.value = '';
+			majEffacer();
+			info.textContent = '';
+			resultats.innerHTML = '';
+			dernier = null;
+			if ( options.onResultats ) { options.onResultats( [] ); }
+			champ.focus();
+		} );
 		var info = el( 'p', { class: 'claira-qcm-info', 'aria-live': 'polite' } );
 		var resultats = el( 'div', { class: 'claira-qcm-resultats' } );
 		var dernier = null;
@@ -296,7 +314,7 @@
 		modeUn.addEventListener( 'change', lancer );
 
 		conteneur.appendChild( el( 'div', { class: 'claira-qcm-barre' }, [
-			el( 'div', { class: 'claira-qcm-ligne' }, [ champ, bouton ] ),
+			el( 'div', { class: 'claira-qcm-ligne' }, [ el( 'span', { class: 'claira-qcm-champ-zone' }, [ champ, effacer ] ), bouton ] ),
 			el( 'div', { class: 'claira-qcm-ligne claira-qcm-options' }, [
 				selectTheme,
 				el( 'label', {}, [ modeTous, ' Tous les mots' ] ),
@@ -347,6 +365,12 @@
 		function montrer() {
 			var it = items[ courant ];
 			zone.innerHTML = '';
+			// Nouvelle question bien visible (retour du 18/11/2026) : sur téléphone, la réponse touchée
+			// laissait son encadré rouge sur la proposition suivante au même endroit. Voir aussi le CSS.
+			if ( document.activeElement && document.activeElement.blur ) { document.activeElement.blur(); }
+			zone.classList.remove( 'is-nouvelle' );
+			void zone.offsetWidth; // relance l'animation
+			zone.classList.add( 'is-nouvelle' );
 			compteur.textContent = 'Question ' + ( courant + 1 ) + ' / ' + items.length;
 			zone.appendChild( el( 'p', { class: 'claira-qcm-question', text: it.q.q } ) );
 			var liste = el( 'div', { class: 'claira-qcm-propositions', role: 'radiogroup' } );
@@ -601,6 +625,7 @@
 		function voirSelection() {
 			var res = { liste: Array.from( selection ).map( function ( id ) { return moteur.parId[ id ]; } ).filter( Boolean ) };
 			recherche.champ.value = '';
+			recherche.champ.dispatchEvent( new Event( 'input' ) ); // cache la croix d'effacement
 			var r = colRecherche.querySelector( '.claira-qcm-resultats' );
 			var info = colRecherche.querySelector( '.claira-qcm-info' );
 			r.innerHTML = '';
