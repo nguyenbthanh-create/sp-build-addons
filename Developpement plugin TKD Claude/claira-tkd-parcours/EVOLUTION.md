@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : retours de l'essai sur iPhone (v1.14.2, site de test)
+## 2026-11-18 — QCM Dan : retours de l'essai sur iPhone (v1.14.2, en prod le 18/11/2026)
 
 - **Sigles à points** : les quiz écrivent « D.A.C. », « D.I.F. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ». La normalisation en faisait des lettres isolées, donc « DAC » ne trouvait pas « Quelle est la durée de la formation D.A.C. ? » (16 h, Filière de formation n° 6). `normaliser()` lit désormais un sigle à points comme un mot, sans « lookbehind » pour rester compatible avec les anciens Safari ; le surlignage suit.
 - **Croix d'effacement** dans le champ de recherche : elle vide le champ et les résultats, et garde le clavier ouvert. La croix native de Safari est masquée pour éviter d'en avoir deux.
