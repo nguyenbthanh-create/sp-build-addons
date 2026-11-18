@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace SpCompta\Integration;
 
 use SpCompta\Accounting\Categories;
+use SpCompta\Admin\DepenseScreen;
 use SpCompta\Accounting\ProjetBilan;
 use SpCompta\Capabilities;
 use SpCompta\Entity\BudgetLigne;
 use SpCompta\Entity\Exercice;
 use SpCompta\Entity\Projet;
+use SpCompta\Media\AttachmentUploader;
 use SpCompta\Plugin;
 use SpCompta\Repository\BudgetLigneRepository;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
+use SpCompta\Repository\FournisseurRepository;
 use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 
@@ -34,7 +37,8 @@ final class ProjetsApi
         private BudgetLigneRepository $lignes,
         private ExerciceRepository $exercices,
         private DepenseRepository $depenses,
-        private RecetteRepository $recettes
+        private RecetteRepository $recettes,
+        private ?DepenseScreen $depenseScreen = null
     ) {
     }
 
@@ -44,12 +48,18 @@ final class ProjetsApi
         $db = Plugin::getInstance()->database();
         $db->maybeUpgrade(); // la table des lignes doit exister meme si aucune page wp-admin n'a encore ete ouverte
 
+        $projets = new ProjetRepository($db->tableProjet());
+        $exercices = new ExerciceRepository($db->tableExercice());
+        $depenses = new DepenseRepository($db->tableDepense());
+
         return new self(
-            new ProjetRepository($db->tableProjet()),
+            $projets,
             new BudgetLigneRepository($db->tableBudgetLigne()),
-            new ExerciceRepository($db->tableExercice()),
-            new DepenseRepository($db->tableDepense()),
-            new RecetteRepository($db->tableRecette())
+            $exercices,
+            $depenses,
+            new RecetteRepository($db->tableRecette()),
+            // Meme chemin que l'ecran Depenses et la saisie rapide (justificatif protege compris).
+            new DepenseScreen($depenses, $exercices, new FournisseurRepository($db->tableFournisseur()), new AttachmentUploader(), $projets)
         );
     }
 
@@ -112,6 +122,109 @@ final class ProjetsApi
         };
 
         return ['depense' => $liste(Categories::DEPENSE), 'recette' => $liste(Categories::RECETTE)];
+    }
+
+    /**
+     * Sous-categories de depense, par categorie : pour la saisie d'une depense
+     * (la categorie se deduit de la sous-categorie, comme dans l'ecran Depenses).
+     *
+     * @return array<string, array{libelle: string, sous: array<string, string>}>
+     */
+    public function sousCategoriesDepense(): array
+    {
+        $out = [];
+        foreach (Categories::DEPENSE as $code => $def) {
+            $out[(string) $code] = ['libelle' => Categories::libelleCategorie(Categories::DEPENSE, $code), 'sous' => $def['sous_categories']];
+        }
+
+        return $out;
+    }
+
+    /** @return list<string> */
+    public function modesPaiement(): array
+    {
+        return DepenseScreen::modesPaiement();
+    }
+
+    /**
+     * Projets compta d'une saison (pour relier un projet TKD a un projet deja
+     * cree par la tresoriere).
+     *
+     * @return array<int, array{id: int, nom: string, statut: string}>
+     */
+    public function projetsDeSaison(int $exerciceId): array
+    {
+        $this->exigerBureau();
+
+        return array_map(
+            static fn (Projet $p): array => ['id' => (int) $p->id(), 'nom' => $p->nom(), 'statut' => $p->statut()],
+            $this->projets->forExercice($exerciceId)
+        );
+    }
+
+    /**
+     * Enregistre une depense rattachee au projet (etape 4 de la Gestion de
+     * projets, 18/11/2026 : la depense validee par le president entre
+     * directement en tresorerie). Passe par DepenseScreen::saveFromRequest(),
+     * comme la saisie rapide : justificatif range dans uploads/sp-compta.
+     * Champs : date (dans la saison du projet), montant (> 0, format francais
+     * accepte), sous_categorie (cle du referentiel), detail, mode_paiement.
+     * Le justificatif eventuel est lu dans $files['justificatif'] (= $_FILES).
+     * Qui a le droit de valider (le president) est verifie par l'appelant.
+     *
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $files
+     * @return array{id: int, date: string, montant: float, categorie: string, justificatif: bool}
+     */
+    public function enregistrerDepense(int $projetId, array $data, array $files = [], string $validePar = ''): array
+    {
+        $this->exigerBureau();
+
+        $projet = $this->projets->find($projetId);
+        if ($projet === null || $this->depenseScreen === null) {
+            throw new \InvalidArgumentException('Projet compta introuvable.');
+        }
+        if (!$projet->estEnCours()) {
+            throw new \InvalidArgumentException('Ce projet est clôturé dans la trésorerie : il ne reçoit plus de dépense.');
+        }
+        $exercice = $this->exercices->find($projet->exerciceId());
+        $date = (string) ($data['date'] ?? '');
+        if ($exercice === null || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1 || $date < $exercice->dateDebut() || $date > $exercice->dateFin()) {
+            throw new \InvalidArgumentException('La date doit être dans la saison du projet.');
+        }
+        $montant = ProjetBilan::montantSaisi($data['montant'] ?? '');
+        if ($montant <= 0.0) {
+            throw new \InvalidArgumentException('Indiquez un montant.');
+        }
+        $sous = (string) ($data['sous_categorie'] ?? '');
+        if (Categories::categorieDeSousCategorie(Categories::DEPENSE, $sous) === null) {
+            throw new \InvalidArgumentException('Choisissez une catégorie.');
+        }
+        $detail = trim(sanitize_textarea_field((string) ($data['detail'] ?? '')));
+        if ($validePar !== '') {
+            $detail = trim($detail . ' — validée par ' . sanitize_text_field($validePar) . ' (TKD Projets)');
+        }
+
+        $depense = $this->depenseScreen->saveFromRequest(
+            [
+                'exercice_id' => (string) $projet->exerciceId(),
+                'date' => $date,
+                'montant' => number_format($montant, 2, '.', ''),
+                'sous_categorie' => $sous,
+                'detail' => $detail,
+                'mode_paiement' => (string) ($data['mode_paiement'] ?? ''),
+                'projet_id' => (string) $projetId,
+            ],
+            $files
+        );
+
+        return [
+            'id' => (int) $depense->id(),
+            'date' => $depense->date(),
+            'montant' => $depense->montant(),
+            'categorie' => $depense->categorie(),
+            'justificatif' => $depense->justificatif() !== '',
+        ];
     }
 
     /** @return array<string, mixed>|null */

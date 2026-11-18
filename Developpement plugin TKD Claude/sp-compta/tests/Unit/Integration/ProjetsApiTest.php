@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 namespace SpCompta\Tests\Unit\Integration;
 
+use SpCompta\Admin\DepenseScreen;
 use SpCompta\Capabilities;
 use SpCompta\Database;
 use SpCompta\Entity\Depense;
 use SpCompta\Entity\Exercice;
 use SpCompta\Integration\ProjetsApi;
+use SpCompta\Media\AttachmentUploader;
 use SpCompta\Repository\BudgetLigneRepository;
 use SpCompta\Repository\DepenseRepository;
 use SpCompta\Repository\ExerciceRepository;
+use SpCompta\Repository\FournisseurRepository;
 use SpCompta\Repository\ProjetRepository;
 use SpCompta\Repository\RecetteRepository;
 use WP_UnitTestCase;
@@ -45,7 +48,8 @@ final class ProjetsApiTest extends WP_UnitTestCase
             new BudgetLigneRepository($database->tableBudgetLigne()),
             $exercices,
             $this->depenses,
-            new RecetteRepository($database->tableRecette())
+            new RecetteRepository($database->tableRecette()),
+            new DepenseScreen($this->depenses, $exercices, new FournisseurRepository($database->tableFournisseur()), new AttachmentUploader(), $this->projets)
         );
 
         $bureau = self::factory()->user->create(['role' => 'editor']);
@@ -133,5 +137,53 @@ final class ProjetsApiTest extends WP_UnitTestCase
         $this->assertSame(300.0, $bilan['categories'][0]['prevu']);
         $this->assertSame(280.0, $bilan['categories'][0]['realise']);
         $this->assertSame(-280.0, $this->api->mouvements($id)[0]['montant']);
+    }
+    /** @test */
+    public function it_records_a_depense_validated_by_the_president(): void
+    {
+        // Given a projet of the season
+        $id = $this->api->enregistrerProjet(null, ['nom' => 'Gala', 'exercice_id' => $this->saison]);
+
+        // When the president validates a 45,90 EUR purchase of trophies
+        $depense = $this->api->enregistrerDepense(
+            $id,
+            ['date' => '2027-01-15', 'montant' => '45,90', 'sous_categorie' => 'petit_equipement', 'detail' => 'Trophees', 'mode_paiement' => 'CB'],
+            [],
+            'Noe'
+        );
+
+        // Then it is in the treasury, attached to the projet, in category 60, with who validated it
+        $enregistree = $this->depenses->find($depense['id']);
+        $this->assertSame($id, $enregistree->projetId());
+        $this->assertSame(45.9, $enregistree->montant());
+        $this->assertSame('60', $enregistree->categorie());
+        $this->assertSame($this->saison, $enregistree->exerciceId());
+        $this->assertStringContainsString('validée par Noe', (string) $enregistree->detail());
+    }
+
+    /** @test */
+    public function it_refuses_a_depense_outside_the_season_of_the_projet(): void
+    {
+        // Given a projet of the 2026-2027 season
+        $id = $this->api->enregistrerProjet(null, ['nom' => 'Gala', 'exercice_id' => $this->saison]);
+
+        // Then a depense dated in the next season is refused
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When it is recorded
+        $this->api->enregistrerDepense($id, ['date' => '2027-09-15', 'montant' => '10', 'sous_categorie' => 'petit_equipement']);
+    }
+
+    /** @test */
+    public function it_refuses_a_depense_on_a_closed_projet(): void
+    {
+        // Given a closed projet
+        $id = $this->api->enregistrerProjet(null, ['nom' => 'Gala', 'exercice_id' => $this->saison, 'statut' => 'cloture']);
+
+        // Then a new depense is refused
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When it is recorded
+        $this->api->enregistrerDepense($id, ['date' => '2027-01-15', 'montant' => '10', 'sous_categorie' => 'petit_equipement']);
     }
 }

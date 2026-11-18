@@ -3,6 +3,7 @@
 namespace TkdProjets\Rest;
 
 use TkdProjets\Access;
+use TkdProjets\Compta;
 use TkdProjets\Db;
 use TkdProjets\Policy;
 use TkdProjets\Repository\Members;
@@ -79,6 +80,7 @@ final class ProjectsController {
 				}
 			}
 		);
+		Compta::syncAfterUpdate( $id );
 		return Format::project( Projects::find( $id ) );
 	}
 

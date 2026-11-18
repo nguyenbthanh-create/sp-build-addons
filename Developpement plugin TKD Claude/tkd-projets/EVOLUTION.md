@@ -11,7 +11,7 @@ Pistes connues, datées. Plan complet : `RefontePlugin\tkd-projets-ANALYSE.md` (
    - des **lignes de budget** par catégorie (nouvelle version de la base 1.5.0, ajout seul).
 
    La colonne `compta_projet_id` existe déjà dans `…tkdp_projects`.
-4. **Onglet Budget**, visible du **bureau seulement** (`sp_compta_manager`) : prévu, réalisé et écart par catégorie, calculés par `ProjetBilan` de SP Compta.
+4. ~~**Onglet Budget**~~ : fait le 18/11/2026 (TKD Projets 2.1.0, SP Compta 0.4.0). Ce qui était prévu : visible du **bureau seulement** (`sp_compta_manager`) : prévu, réalisé et écart par catégorie, calculés par `ProjetBilan` de SP Compta.
    - **Seul le président** propose et valide une dépense de projet. Une fois validée, elle entre **directement** dans SP Compta, rattachée au projet. Il doit donc figurer dans « Accès bureau ».
    - Nature SP Compta d'après le type : `Types::nature()`.
 5. **Branchement de TKD Gala** :

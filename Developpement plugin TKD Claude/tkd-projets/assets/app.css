@@ -223,3 +223,17 @@ body.tkdp-map-open { overflow: hidden; }
 .tkdp-map-links { font-size: 12px; }
 .tkdp-modal [disabled] { background: #f6f7f7; color: #50575e; }
 .tkdp-modal .tkdp-team-list select { width: auto; flex: none; }
+
+/* 2.1 : onglet Budget */
+.tkdp-budget h3 { margin: 22px 0 8px; }
+.tkdp-budget .num { text-align: right; white-space: nowrap; }
+.tkdp-budget .is-pos { color: #15803d; font-weight: 600; }
+.tkdp-budget .is-neg { color: #b91c1c; font-weight: 600; }
+.tkdp-budget-table { max-width: 900px; }
+.tkdp-budget-box { background: #fff; border: 1px solid #dcdcde; border-left: 4px solid #2271b1; padding: 8px 16px; max-width: 900px; }
+.tkdp-budget-lines { max-width: 900px; }
+.tkdp-budget-lines input[data-field="libelle"] { width: 100%; }
+.tkdp-budget-lines input[data-field="montant"] { width: 100px; }
+.tkdp-budget-lines select[data-field="categorie"] { max-width: 260px; }
+.tkdp-budget-depense { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 12px 16px; max-width: 900px; }
+.tkdp-budget-depense textarea { width: 100%; }

@@ -3,6 +3,7 @@
 namespace TkdProjets\Rest;
 
 use TkdProjets\Access;
+use TkdProjets\Compta;
 use TkdProjets\Repository\Tasks;
 use TkdProjets\Types;
 use TkdProjets\Validation;
@@ -175,6 +176,78 @@ final class Routes {
 
 		register_rest_route(
 			self::NS,
+			'/projects/(?P<id>\d+)/budget',
+			array(
+				array(
+					'methods'             => WP_REST_Server::READABLE,
+					'callback'            => array( BudgetController::class, 'show' ),
+					'permission_callback' => self::onBudget( false ),
+					'args'                => $id,
+				),
+				array(
+					'methods'             => WP_REST_Server::EDITABLE,
+					'callback'            => array( BudgetController::class, 'saveLines' ),
+					'permission_callback' => self::onBudget( false ),
+					'args'                => $id + array(
+						'lignes' => array(
+							'type'     => 'array',
+							'required' => true,
+							'maxItems' => 100,
+							'items'    => array( 'type' => 'object' ),
+						),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/projects/(?P<id>\d+)/budget/link',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( BudgetController::class, 'link' ),
+				'permission_callback' => self::onBudget( false ),
+				'args'                => $id + array(
+					'action'    => array(
+						'type'     => 'string',
+						'enum'     => array( 'create', 'existing' ),
+						'required' => true,
+					),
+					'compta_id' => array(
+						'type'    => 'integer',
+						'minimum' => 0,
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NS,
+			'/projects/(?P<id>\d+)/depenses',
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => array( BudgetController::class, 'addDepense' ),
+				'permission_callback' => self::onBudget( true ),
+				'args'                => $id + array(
+					'date'           => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'montant'        => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'sous_categorie' => array(
+						'type'     => 'string',
+						'required' => true,
+					),
+					'detail'         => array( 'type' => 'string' ),
+					'mode_paiement'  => array( 'type' => 'string' ),
+				),
+			)
+		);
+		register_rest_route(
+			self::NS,
 			'/users',
 			array(
 				'methods'             => WP_REST_Server::READABLE,
@@ -187,6 +260,19 @@ final class Routes {
 	/** Contrôle d'accès sur une route /projects/{id}. */
 	private static function onProject( string $action ): callable {
 		return static fn( WP_REST_Request $r ): bool => Access::can( $action, (int) $r['id'] );
+	}
+
+	/**
+	 * Budget : bureau seulement (vérifié par SP Compta), et accès au projet.
+	 * $depense : en plus, seul le président valide une dépense.
+	 */
+	private static function onBudget( bool $depense ): callable {
+		return static function ( WP_REST_Request $r ) use ( $depense ): bool {
+			if ( ! Access::can( 'view', (int) $r['id'] ) ) {
+				return false;
+			}
+			return $depense ? Compta::canValidateDepense() : Compta::canViewBudget();
+		};
 	}
 
 	/** Contrôle d'accès sur une route /tasks/{id} : rôle dans le projet de la tâche. */

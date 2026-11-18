@@ -40,7 +40,8 @@
 		usersLoaded: !cfg.canListUsers, // sans ce droit, la liste des personnes n'est pas demandée
 		project: null,
 		tasks: [],
-		view: readPref('view', 'gantt'),
+		// L'onglet Budget n'existe que pour le bureau.
+		view: readPref('view', 'gantt') === 'budget' && !cfg.canViewBudget ? 'gantt' : readPref('view', 'gantt'),
 		zoom: readPref('zoom', 'week'),
 	};
 
@@ -301,6 +302,11 @@
 		if (state.project && state.view === 'kanban') {
 			bindKanban();
 		}
+		if (state.project && state.view === 'budget' && window.TKDPBudget) {
+			window.TKDPBudget.mount(root.querySelector('#tkdp-budget'), state.project, {
+				api: api, esc: esc, notify: notify, fail: fail, fmtDate: fmtDate, today: fromDay(TODAY),
+			});
+		}
 		if (state.project && state.view === 'gantt') {
 			bindGantt();
 		}
@@ -371,6 +377,9 @@
 	function renderProject() {
 		const p = state.project;
 		const tabs = { list: 'Liste', kanban: 'Kanban', gantt: 'Gantt' };
+		if (cfg.canViewBudget) {
+			tabs.budget = '💶 Budget';
+		}
 		let html = '<p><a href="#" data-action="home">← Tous les projets</a></p>'
 			+ '<div class="tkdp-head"><h1><span class="tkdp-dot" style="background:' + esc(p.color) + '"></span>' + esc(p.name)
 			+ (p.event_date ? countdownBadge(p.event_date) + '<span class="tkdp-event-date">' + esc(fmtDate(p.event_date)) + '</span>' : '')
@@ -400,6 +409,10 @@
 			html += '<button class="tkdp-tab" data-action="scroll-today">Aujourd\'hui</button></div>';
 		}
 		html += '</div>';
+
+		if (state.view === 'budget') {
+			return html + '<div class="tkdp-budget" id="tkdp-budget"></div>';
+		}
 
 		if (!state.tasks.length) {
 			return html + '<div class="tkdp-empty"><p><strong>Ce projet n\'a pas encore de tâches.</strong></p>'

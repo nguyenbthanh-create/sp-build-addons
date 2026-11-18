@@ -89,6 +89,8 @@ Pas de binaire PHP, pas de WordPress local dans ce sandbox (même limitation que
 
 Les totaux `budget_depenses` / `budget_recettes` restent la source du rapport AG ; ils valent la somme des lignes quand il y en a. Version de l'extension : 0.3.0.
 
+**Incrément 16 (18/11/2026)** — **dépense validée par le président** (étape 4) : [ProjetsApi](src/Integration/ProjetsApi.md)`::enregistrerDepense()` réutilise `DepenseScreen::saveFromRequest()`, sans dupliquer de logique, comme la saisie rapide. S'y ajoutent `sousCategoriesDepense()`, `modesPaiement()` et `projetsDeSaison()`. Version 0.4.0, sans changement de schéma.
+
 ## Repositories disponibles
 
 `Fournisseur`, `Client`, `Depense`, `Recette`, `Sponsor`, `Exercice`, `Parametres`, `Devis`, `Facture`, `Projet`, `BudgetLigne` — tous dans `src/Repository/`, tous avec leur `.md` jumeau et leurs tests dans `tests/Unit/`. `Devis`/`Facture` prennent en plus un `DocumentNumeroGenerator` en constructeur (voir leur `.md` pour le câblage).

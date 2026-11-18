@@ -3,6 +3,7 @@
 namespace TkdProjets\Admin;
 
 use TkdProjets\Access;
+use TkdProjets\Compta;
 use TkdProjets\Policy;
 use TkdProjets\Types;
 use TkdProjets\Validation;
@@ -56,7 +57,8 @@ final class Page {
 		wp_enqueue_style( 'tkdp-app', TKDP_URL . 'assets/app.css', array(), TKDP_VERSION );
 		wp_enqueue_script( 'tkdp-zones-export', TKDP_URL . 'assets/zones-export.js', array(), TKDP_VERSION, true );
 		wp_enqueue_script( 'tkdp-zones', TKDP_URL . 'assets/zones.js', array( 'tkdp-zones-export' ), TKDP_VERSION, true );
-		wp_enqueue_script( 'tkdp-app', TKDP_URL . 'assets/app.js', array( 'wp-api-fetch', 'tkdp-zones' ), TKDP_VERSION, true );
+		wp_enqueue_script( 'tkdp-budget', TKDP_URL . 'assets/budget.js', array(), TKDP_VERSION, true );
+		wp_enqueue_script( 'tkdp-app', TKDP_URL . 'assets/app.js', array( 'wp-api-fetch', 'tkdp-zones', 'tkdp-budget' ), TKDP_VERSION, true );
 		wp_localize_script(
 			'tkdp-app',
 			'TKDP',
@@ -65,6 +67,7 @@ final class Page {
 				'userId'         => get_current_user_id(),
 				'isGestionnaire' => Access::isGestionnaire(),
 				'canListUsers'   => Access::canListUsers(),
+				'canViewBudget'  => Compta::canViewBudget(),
 				'canUpload'      => current_user_can( 'upload_files' ),
 				'types'          => Types::all(),
 				'teamRoles'      => array(
@@ -97,7 +100,7 @@ final class Page {
 		echo '<h2>Gestionnaires de projets</h2>';
 		echo '<p>Les gestionnaires créent les projets, voient tous les projets et peuvent écrire à tout un rôle. '
 			. 'Les administrateurs le sont toujours. Les autres personnes ne voient que les projets dont elles font partie de l\'équipe.</p>';
-		echo '<p class="description">Le budget des projets (étape suivante) sera visible du seul bureau : les comptes cochés dans <em>Trésorerie → Paramètres → Accès bureau</em>.</p>';
+		echo '<p class="description">L\'onglet <strong>Budget</strong> des projets est visible du seul bureau : les comptes cochés dans <em>Trésorerie → Paramètres → Accès bureau</em>.</p>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
 		echo '<input type="hidden" name="action" value="tkdp_save_settings">';
 		wp_nonce_field( 'tkdp_save_settings' );
@@ -115,6 +118,21 @@ final class Page {
 				. '<td>' . esc_html( implode( ', ', $roles ) ) . ( $isAdmin ? ' <span class="description">(toujours gestionnaire)</span>' : '' ) . '</td></tr>';
 		}
 		echo '</tbody></table>';
+
+		echo '<h2>Président</h2>';
+		echo '<p>Seul le président propose et valide une dépense de projet (onglet Budget) ; elle entre alors directement dans la trésorerie, rattachée au projet.</p>';
+		$current = Compta::presidentId();
+		echo '<p><label for="tkdp-president">Président : </label><select id="tkdp-president" name="president"><option value="0">— Personne —</option>';
+		foreach ( Access::proposedUsers() as $user ) {
+			echo '<option value="' . (int) $user->ID . '"' . selected( (int) $user->ID, $current, false ) . '>' . esc_html( $user->display_name ) . '</option>';
+		}
+		echo '</select></p>';
+		if ( $current && Compta::available() && ! user_can( $current, Access::SP_COMPTA_CAP ) ) {
+			echo '<div class="notice notice-warning inline"><p>Le président n\'a pas encore accès à la trésorerie : cochez-le dans <em>Trésorerie → Paramètres → Accès bureau</em>, sinon il ne verra pas l\'onglet Budget.</p></div>';
+		}
+		if ( ! Compta::available() ) {
+			echo '<div class="notice notice-warning inline"><p>SP Compta (version 0.3.0 ou plus) n\'est pas active : l\'onglet Budget n\'apparaît pas.</p></div>';
+		}
 		submit_button( 'Enregistrer' );
 		echo '</form></div>';
 	}
@@ -126,6 +144,8 @@ final class Page {
 		check_admin_referer( 'tkdp_save_settings' );
 		$ids = Validation::ids( wp_unslash( $_POST['gestionnaires'] ?? array() ), 500 ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- entiers via Validation::ids()
 		Access::syncGestionnaires( $ids );
+		$president = absint( $_POST['president'] ?? 0 );
+		update_option( Compta::OPTION_PRESIDENT, ( $president && Access::isProposedUser( $president ) ) ? $president : 0, false );
 		wp_safe_redirect( add_query_arg( array( 'page' => self::SETTINGS_SLUG, 'tkdp-ok' => 1 ), admin_url( 'admin.php' ) ) );
 		exit;
 	}

@@ -27,3 +27,4 @@ foreach ( wp_roles()->role_objects as $role ) {
 
 delete_option( 'tkdp_db_version' );
 delete_option( 'tkdp_gestionnaires' );
+delete_option( 'tkdp_president' );

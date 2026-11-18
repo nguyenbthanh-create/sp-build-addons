@@ -9,7 +9,7 @@ Seconde exception documentée à l'indépendance de SP Compta, après [SpBuildRe
 Décisions de l'utilisateur (18/11/2026) :
 - l'argent reste dans SP Compta ;
 - le budget est **visible du bureau seulement** ;
-- seul le président propose et valide une dépense de projet, qui entre alors directement ici. Ce dernier point sera ajouté à cette classe à l'étape 4.
+- seul le président propose et valide une dépense de projet, qui entre alors directement ici : `enregistrerDepense()`, ajoutée le 18/11/2026 (version 0.4.0).
 
 ## Utilisation depuis une autre extension
 
@@ -41,6 +41,10 @@ Toutes les méthodes, sauf `peutConsulter()` et `categories()`, lèvent une `\Ru
 | `lignesValidees(int, array)` (statique) | validation seule, sans base de données |
 | `bilan(int)` | `projet`, `totaux` (de `ProjetBilan::pour()`), `categories` (de `ProjetBilan::parCategorie()`) |
 | `mouvements(int)` | dépenses et recettes du projet (montant négatif pour une dépense), sans justificatif |
+| `sousCategoriesDepense()` | `code => ['libelle' => '60 - Achat', 'sous' => [clé => libellé]]`, pour la saisie d'une dépense |
+| `modesPaiement()` | ceux de l'écran Dépenses (`DepenseScreen::modesPaiement()`) |
+| `projetsDeSaison(int)` | projets compta d'une saison, pour relier un projet TKD à un projet déjà créé par la trésorière |
+| `enregistrerDepense(int $projetId, array $data, array $files = [], string $validePar = '')` | dépense rattachée au projet. Passe par `DepenseScreen::saveFromRequest()`, comme la saisie rapide : le justificatif (`$files['justificatif']`) est rangé dans `uploads/sp-compta`. Refusée si le projet est clôturé, si la date est hors de sa saison, si le montant est nul ou si la sous-catégorie est inconnue. « — validée par X (TKD Projets) » est ajouté au détail. **Le contrôle « seul le président » est fait par l'appelant** (TKD Projets). |
 
 ### Validation des lignes
 
@@ -59,10 +63,14 @@ Scénario: un projet existant ne change pas de saison
 Scénario: enregistrer des lignes met les totaux du projet à jour
 Scénario: une ligne vide est ignorée, une catégorie inconnue refusée
 Scénario: le bilan par catégorie compte les mouvements du projet
+Scénario: une dépense validée par le président entre dans la trésorerie, rattachée au projet, en catégorie 60
+Scénario: une dépense datée hors de la saison du projet est refusée
+Scénario: un projet clôturé ne reçoit plus de dépense
 ```
 
 ## En cas de bug
 
+- **Justificatif absent après une dépense validée** : l'envoi a échoué ou le dossier fermé n'a pas pu être créé. `AttachmentUploader` garde alors la dépense sans fichier, au lieu de déposer le justificatif dans un dossier public. Le joindre ensuite depuis l'écran Dépenses.
 - **« Réservé au bureau »** : cocher la personne dans *Trésorerie → Paramètres → Accès bureau*.
 - **« Saison inconnue »** à la création : aucune saison ne contient la date, et aucune n'est active.
 - **Le rapport AG ne montre pas le budget détaillé** : c'est voulu. Il lit les totaux, tenus à jour par `enregistrerLignesBudget()`.
