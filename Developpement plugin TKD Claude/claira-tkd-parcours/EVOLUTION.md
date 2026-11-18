@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : « date de création de la FFTDA » trouvée (v1.14.5, pas encore en prod)
+## 2026-11-18 — QCM Dan : « date de création de la FFTDA » trouvée (v1.14.5, test puis prod le 18/11/2026 vers 13 h 30)
 
 Retour d'un adhérent : à l'examen, il a eu la question de la date de création de la FFTDA. La page https://www.fftda.fr/fr/99-historique-federal.html était déjà couverte par le quiz officiel « Historique fédéral » ; la question des statuts (« Quand et où la FFTDA a-t-elle été fondée… ») était aussi dans les données. Le problème venait de la recherche : « date de création de la FFTDA » ne trouvait rien.
 - `assets/js/qcm-dan.js` :

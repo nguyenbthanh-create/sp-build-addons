@@ -682,7 +682,7 @@ Détails :
 
 ## 18/11/2026 — QCM Dan 1.14.5 : « date de création de la FFTDA »
 
-- Retour d'un adhérent (question posée à l'examen). La page fftda.fr « Historique fédéral » était déjà dans les données (quiz officiel), ainsi que la question des statuts sur la fondation de la FFTDA. La recherche ne la trouvait pas : synonymes création / fondée / fondation, « date » ignoré, énoncé mieux pesé. Vérifié hors WordPress. Pas encore sur le test ni en prod.
+- Retour d'un adhérent (question posée à l'examen). La page fftda.fr « Historique fédéral » était déjà dans les données (quiz officiel), ainsi que la question des statuts sur la fondation de la FFTDA. La recherche ne la trouvait pas : synonymes création / fondée / fondation, « date » ignoré, énoncé mieux pesé. Vérifié hors WordPress. Test puis prod le 18/11/2026 vers 13 h 30 (feu vert de l'utilisateur), fichiers conformes, la prod sert `qcm-dan.js?ver=1.14.5`. Sauvegarde : `DEPLOIEMENT_2026-11-18_claira-tkd-parcours_4691f3c/sauvegarde-prod-2026-11-18_133037`. « fftda » seul : 471 questions, celle des statuts vers la 90e place (normal : mot présent partout).
 
 **Gestion de projets, étape 5 : projets de type Gala reliés à TKD Gala — TKD Projets 2.2.0, site de test le 18/11/2026 vers 13 h 28** (`865347c`). **TKD Gala n'est pas modifiée** : seul son README signale les méthodes que lit TKD Projets. Pas en prod.
 - **Contenu** :
