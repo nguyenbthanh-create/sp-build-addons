@@ -594,3 +594,38 @@ Détails :
   - hors WordPress : 6 contrôles serveur de plus, l'espace entraîneur affiche le bouton, la page reconnaît l'entraîneur et affiche le retour, un faux jeton est refusé, pas de bouton en mode PIN, le parcours adhérent est inchangé ;
   - sur le test : la route répond « non » sans jeton, avec un faux jeton ou avec un texte qui n'est pas un jeton ; la page est en 1.14.4.
 - **Pas essayé avec un vrai entraîneur** : l'administration n'affiche pas les jetons. À faire sur l'Android de l'utilisateur. **Prod le 18/11/2026 vers 8 h 37** (feu vert de l'utilisateur), Claira d'abord puis sp_build. Sauvegardes `…_0b6ae4a/sauvegarde-prod-2026-11-18_083703` (exactement la 1.14.3) et `…_sp_build_c1a810c/sauvegarde-prod-2026-11-18_083708` (identique au paquet `e911bb6`). Contrôle des fichiers conforme juste après et quelques minutes plus tard. En ligne : la page charge la 1.14.4, la route `acces-entraineur` refuse un faux jeton, l'application sert `renderQcmDan(true)`. **Essai réussi le 18/11/2026 par l'utilisateur, sur Android (espace entraîneur) et sur iPhone.**
+
+**TKD Projets 2.0.0 : réécriture de l'extension du président — site de test le 18/11/2026 vers 11 h 10** (`0831ce8`, puis `22537f0` pour une retouche de style). Pas en prod : la prod n'a pas cette extension.
+- **Contexte** : analyse et plan dans `RefontePlugin\tkd-projets-ANALYSE.md`. La 1.6.0 telle que reçue est le commit `3b5906b`.
+- **Décisions de l'utilisateur** :
+  - budget visible du bureau seulement ;
+  - seul le président propose et valide les dépenses de projet, qui entrent directement dans SP Compta ;
+  - trois types tout de suite : Gala, Fêtes, Compétition ;
+  - Gala reste une extension à part, branchée plus tard.
+- **Contenu** :
+  - droits par projet (gestionnaire, responsable, membre), équipes et tâches modèles datées ;
+  - pièces jointes limitées à la médiathèque publique ;
+  - liens « Ma carte » hachés, expirants et révocables ;
+  - outils RGPD et `uninstall.php`.
+
+  Détail dans `tkd-projets/README.md`, suite dans `tkd-projets/EVOLUTION.md` (étapes 3 à 6 : SP Compta, onglet Budget, Gala).
+- **Vérifié hors WordPress** :
+  - 26 tests `outils/tests/TkdProjets*Test.php` ;
+  - PHPStan au niveau 5 sur tkd-projets et PHP_CodeSniffer, sans erreur ;
+  - **mais** PHPUnit 12 demande PHP 8.3 et le PC maison a PHP 8.2 : les tests ont été lancés avec un petit lanceur de remplacement (assertions équivalentes) ;
+  - Node absent du PC maison : la syntaxe JavaScript a été vérifiée dans le navigateur.
+- **Envoi sur le test** : contrôle des tailles conforme. L'ancien dossier `includes/` (1.6.0) a été supprimé du serveur, avec une copie dans `DEPLOIEMENT_2026-11-18_tkd-projets_0831ce8/sauvegarde-test-2026-11-18_110823/`.
+- **Essais sur le test (Chrome)** :
+  - mise à jour automatique : le projet existant est passé en type « Autre » et son créateur, le président, en est devenu responsable ;
+  - aucune erreur dans la console ;
+  - création d'un projet « Fêtes » avec ses 7 tâches datées (J-60 → J+7) ;
+  - un justificatif SP Compta (n° 5484) joint à une tâche est **refusé**, une image publique est gardée ;
+  - l'attribution à « abonné » et la création d'un projet de type « Autre » sont refusées ;
+  - carte : zone enregistrée, lien créé puis coupé, zone à 2 coins refusée ; un lien mal formé ou inconnu donne « Lien invalide » ou « Lien expiré » (404) ;
+  - le formulaire du projet montre le type, l'état et l'équipe ; la page Réglages liste 10 comptes.
+
+  Le projet d'essai a été supprimé.
+- **Pas essayé** :
+  - l'ouverture d'une carte avec un vrai lien : les mails sont bloqués sur le test (`WPMS_DO_NOT_SEND`), donc aucune clé n'est lisible ;
+  - la vue d'un simple membre : il faudrait se connecter avec un autre compte. Les règles sont couvertes par les tests.
+- **Piège** : le navigateur intégré de l'application Claude reçoit un 401 sur dev.tkdclaira.fr (protection par mot de passe) ; passer par Chrome.
