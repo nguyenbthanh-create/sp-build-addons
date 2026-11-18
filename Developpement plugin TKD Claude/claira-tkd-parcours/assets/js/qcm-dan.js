@@ -286,9 +286,14 @@
 				if ( options.onResultats ) { options.onResultats( [] ); }
 				return;
 			}
-			var res = moteur.chercher( texte, { mode: modeUn.checked ? 'un' : 'tous', theme: theme } );
+			var mode = modeUn.checked ? 'un' : 'tous';
+			var res = moteur.chercher( texte, { mode: mode, theme: theme } );
 			dernier = res;
 			afficher();
+			// Recherche restée sans résultat : signalée (page du site seulement, voir noterSansResultat).
+			if ( ! res.liste.length && texte && options.surVide ) {
+				options.surVide( texte, mode, theme >= 0 ? moteur.themes[ theme ].id : '' );
+			}
 		}
 
 		function afficher() {
@@ -324,7 +329,11 @@
 		] ) );
 		conteneur.appendChild( info );
 		conteneur.appendChild( resultats );
-		return { rafraichir: afficher, champ: champ };
+		return {
+			rafraichir: afficher,
+			champ: champ,
+			chercher: function ( texte ) { champ.value = texte; majEffacer(); lancer(); }
+		};
 	}
 
 	/* ------------------------------------------------------------------
@@ -732,6 +741,27 @@
 			};
 		} );
 
+		// Recherches sans résultat (tableau sous l'outil) : la recherche refaite avec les questions
+		// actuelles, et un bouton pour la relancer dans l'outil.
+		document.querySelectorAll( '.claira-qcm-vide' ).forEach( function ( tr ) {
+			var texte = tr.getAttribute( 'data-texte' ) || '', thId = tr.getAttribute( 'data-theme' ) || '', t = -1;
+			moteur.themes.forEach( function ( th, k ) { if ( th.id === thId ) { t = k; } } );
+			var n = moteur.chercher( texte, { mode: tr.getAttribute( 'data-mode' ) === 'un' ? 'un' : 'tous', theme: t } ).liste.length;
+			var etat = tr.querySelector( '.claira-qcm-vide-etat' );
+			if ( etat ) {
+				etat.textContent = ( t >= 0 ? 'Thème ' + moteur.themes[ t ].nom + ' : ' : '' )
+					+ ( n ? 'trouve maintenant ' + n + ' question' + ( n > 1 ? 's' : '' ) : 'toujours aucun résultat' );
+				etat.style.color = n ? '#1f7a3a' : '';
+			}
+			var b = tr.querySelector( '.claira-qcm-vide-chercher' );
+			if ( b ) {
+				b.onclick = function () {
+					recherche.chercher( texte );
+					racineEl.scrollIntoView( { behavior: 'smooth' } );
+				};
+			}
+		} );
+
 		majPanneau();
 		recherche.champ.focus();
 	}
@@ -800,6 +830,24 @@
 	 * Site : onglets Rechercher / Examen blanc / Réviser par thème
 	 * ---------------------------------------------------------------- */
 
+	/* Recherche sans résultat : envoyée au site pour l'encadrement (18/11/2026), une seule fois par
+	 * texte et par visite. Session de l'application (adhérent) ou compte du club ; aucune autre donnée. */
+	function noterSansResultat( cfg ) {
+		var envoyes = {};
+		return function ( texte, mode, theme ) {
+			if ( ! cfg.journal || ! window.fetch ) { return; }
+			var cle = texte.toLowerCase() + '|' + mode + '|' + theme;
+			if ( envoyes[ cle ] ) { return; }
+			envoyes[ cle ] = true;
+			var entetes = { 'Content-Type': 'application/json' }, jwt = null;
+			try { jwt = window.localStorage.getItem( 'spcal_jwt' ); } catch ( e ) { /* stockage indisponible */ }
+			if ( jwt ) { entetes[ 'X-Spcal-Jwt' ] = jwt; }
+			if ( cfg.restNonce ) { entetes[ 'X-WP-Nonce' ] = cfg.restNonce; }
+			fetch( cfg.journal, { method: 'POST', headers: entetes, credentials: 'same-origin', body: JSON.stringify( { texte: texte, mode: mode, theme: theme } ) } )
+				[ 'catch' ]( function () { /* sans conséquence pour l'adhérent */ } );
+		};
+	}
+
 	function site( moteur, racineEl, cfg ) {
 		var app = racineEl.querySelector( '.claira-qcm-app' );
 		app.innerHTML = '';
@@ -838,7 +886,7 @@
 		app.appendChild( barre );
 		onglets.forEach( function ( o ) { app.appendChild( panneaux[ o.id ] ); } );
 
-		zoneRecherche( moteur, panneaux.chercher );
+		zoneRecherche( moteur, panneaux.chercher, { surVide: noterSansResultat( cfg ) } );
 
 		function accueilExamen() {
 			var p = panneaux.examen;

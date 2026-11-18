@@ -128,6 +128,92 @@ function claira_tkd_qcm_acces_head() {
 }
 
 /* --------------------------------------------------------------------------
+ * Recherches sans résultat (18/11/2026) : quand une recherche de la page du
+ * site ne trouve rien, le texte tapé est gardé pour que l'encadrement repère
+ * les questions qui manquent ou les mots que le moteur ne comprend pas
+ * (exemple : « DAC » avant la 1.14.2). Rien d'autre n'est gardé : ni nom, ni
+ * adresse IP. Seuls les adhérents qui ont accès à la page (ou un compte du
+ * club) peuvent écrire, 40 fois par heure au plus ; 300 textes au plus.
+ * ----------------------------------------------------------------------- */
+
+const CLAIRA_TKD_QCM_OPTION_VIDES = 'claira_tkd_qcm_recherches_vides';
+const CLAIRA_TKD_QCM_VIDES_MAX    = 300;
+
+/** Recherches sans résultat : clé => array( texte, mode, theme, nb, premier, dernier ). */
+function claira_tkd_qcm_recherches_vides() {
+	$vides = get_option( CLAIRA_TKD_QCM_OPTION_VIDES, array() );
+	return is_array( $vides ) ? $vides : array();
+}
+
+function claira_tkd_qcm_rest_routes() {
+	register_rest_route( 'claira-tkd/v1', '/qcm/sans-resultat', array(
+		'methods'             => 'POST',
+		'callback'            => 'claira_tkd_qcm_rest_sans_resultat',
+		'permission_callback' => 'claira_tkd_qcm_rest_peut_noter',
+	) );
+}
+
+/**
+ * Même règle que la page : compte du club, ou session de l'application d'un
+ * adhérent Ado / Adulte non expiré (vérifiée auprès de sp_build, mise en cache 6 h).
+ */
+function claira_tkd_qcm_rest_peut_noter( WP_REST_Request $req ) {
+	if ( claira_tkd_qcm_acces_compte() ) {
+		return true;
+	}
+	$jwt = (string) $req->get_header( 'X-Spcal-Jwt' );
+	if ( strlen( $jwt ) < 20 || strlen( $jwt ) > 2000 ) {
+		return false;
+	}
+	$cle = 'claira_qcm_jwt_' . md5( $jwt );
+	$ok  = get_transient( $cle );
+	if ( false === $ok ) {
+		$me = new WP_REST_Request( 'GET', '/spcal/v1/eleve/me' );
+		$me->set_header( 'X-Spcal-Jwt', $jwt );
+		$rep = rest_do_request( $me );
+		$d   = $rep->is_error() ? null : $rep->get_data();
+		$ok  = ( is_array( $d ) && isset( $d['adhesion']['statut'] ) && 'expire' !== $d['adhesion']['statut']
+			&& preg_match( '/ado|adulte/i', (string) ( $d['categorie_age'] ?? '' ) ) ) ? 'oui' : 'non';
+		set_transient( $cle, $ok, 6 * HOUR_IN_SECONDS );
+	}
+	return 'oui' === $ok;
+}
+
+function claira_tkd_qcm_rest_sans_resultat( WP_REST_Request $req ) {
+	$texte = trim( preg_replace( '/\s+/u', ' ', sanitize_text_field( (string) $req->get_param( 'texte' ) ) ) );
+	if ( '' === $texte || mb_strlen( $texte ) > 300 ) {
+		return new WP_Error( 'claira_qcm_texte', 'Texte invalide.', array( 'status' => 400 ) );
+	}
+	$texte = mb_substr( $texte, 0, 200 );
+	$mode  = 'un' === $req->get_param( 'mode' ) ? 'un' : 'tous';
+	$theme = substr( preg_replace( '/[^a-z0-9_]/', '', (string) $req->get_param( 'theme' ) ), 0, 80 );
+
+	// 40 envois par heure et par personne (compte ou session de l'application).
+	$qui    = is_user_logged_in() ? 'u' . get_current_user_id() : (string) $req->get_header( 'X-Spcal-Jwt' );
+	$cle_nb = 'claira_qcm_nb_' . md5( $qui );
+	$nb     = (int) get_transient( $cle_nb );
+	if ( $nb >= 40 ) {
+		return new WP_Error( 'claira_qcm_trop', 'Trop de recherches.', array( 'status' => 429 ) );
+	}
+	set_transient( $cle_nb, $nb + 1, HOUR_IN_SECONDS );
+
+	$cle   = md5( mb_strtolower( $texte ) . '|' . $mode . '|' . $theme );
+	$vides = claira_tkd_qcm_recherches_vides();
+	if ( isset( $vides[ $cle ] ) ) {
+		$vides[ $cle ]['nb']      = (int) $vides[ $cle ]['nb'] + 1;
+		$vides[ $cle ]['dernier'] = time();
+	} else {
+		$vides[ $cle ] = array( 'texte' => $texte, 'mode' => $mode, 'theme' => $theme, 'nb' => 1, 'premier' => time(), 'dernier' => time() );
+	}
+	if ( count( $vides ) > CLAIRA_TKD_QCM_VIDES_MAX ) {
+		uasort( $vides, static function ( $a, $b ) { return (int) $b['dernier'] - (int) $a['dernier']; } );
+		$vides = array_slice( $vides, 0, CLAIRA_TKD_QCM_VIDES_MAX, true );
+	}
+	update_option( CLAIRA_TKD_QCM_OPTION_VIDES, $vides, false );
+	return rest_ensure_response( array( 'ok' => true ) );
+}
+
+/* --------------------------------------------------------------------------
  * Shortcode du site
  * ----------------------------------------------------------------------- */
 
@@ -146,6 +232,9 @@ function claira_tkd_qcm_shortcode( $atts ) {
 		'examen'    => null,
 		// Accès réservé : lien vers l'application du club pour se connecter.
 		'appUrl'    => claira_tkd_qcm_page_avec( 'sp_cal_app' ),
+		// Recherches sans résultat, gardées pour l'encadrement (claira_tkd_qcm_rest_sans_resultat).
+		'journal'   => esc_url_raw( rest_url( 'claira-tkd/v1/qcm/sans-resultat' ) ),
+		'restNonce' => is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '',
 	);
 
 	$code = isset( $_GET['examen'] ) ? sanitize_key( wp_unslash( $_GET['examen'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- lecture seule d'un lien partagé.
@@ -211,6 +300,19 @@ function claira_tkd_qcm_process_admin_form() {
 
 	$action  = sanitize_key( wp_unslash( $_POST['claira_tkd_qcm_action'] ) );
 	$examens = claira_tkd_qcm_examens();
+
+	// Recherches sans résultat : retirer une ligne, ou tout effacer.
+	if ( 'vide_supprimer' === $action || 'vides_tout' === $action ) {
+		$vides = claira_tkd_qcm_recherches_vides();
+		if ( 'vides_tout' === $action ) {
+			$vides = array();
+		} else {
+			unset( $vides[ isset( $_POST['cle'] ) ? sanitize_key( wp_unslash( $_POST['cle'] ) ) : '' ] );
+		}
+		update_option( CLAIRA_TKD_QCM_OPTION_VIDES, $vides, false );
+		wp_safe_redirect( claira_tkd_qcm_admin_url() . '#claira-qcm-vides' );
+		exit;
+	}
 
 	if ( 'enregistrer' === $action ) {
 		$ids   = claira_tkd_qcm_nettoyer_ids( isset( $_POST['ids'] ) ? sanitize_text_field( wp_unslash( $_POST['ids'] ) ) : '' );
@@ -280,6 +382,52 @@ function claira_tkd_qcm_render_admin_page() {
 			<input type="hidden" name="titre" value="">
 			<input type="hidden" name="duree" value="15">
 		</form>
+
+		<?php
+		$vides = claira_tkd_qcm_recherches_vides();
+		uasort( $vides, static function ( $a, $b ) { return (int) $b['dernier'] - (int) $a['dernier']; } );
+		?>
+		<h2 id="claira-qcm-vides"><?php esc_html_e( 'Recherches sans résultat', 'claira-tkd-parcours' ); ?></h2>
+		<p class="description">
+			<?php esc_html_e( "Ce que les adhérents ont cherché sur la page du site sans rien trouver : question absente des quiz FFTDA, ou mot que le moteur ne comprend pas. Seul le texte tapé est gardé (ni nom, ni adresse). La colonne « Aujourd'hui » refait la recherche avec les questions actuelles.", 'claira-tkd-parcours' ); ?>
+		</p>
+		<?php if ( ! $vides ) : ?>
+			<p><?php esc_html_e( 'Aucune recherche sans résultat pour le moment.', 'claira-tkd-parcours' ); ?></p>
+		<?php else : ?>
+			<table class="widefat striped claira-qcm-vides">
+				<thead><tr>
+					<th><?php esc_html_e( 'Recherche', 'claira-tkd-parcours' ); ?></th>
+					<th><?php esc_html_e( 'Fois', 'claira-tkd-parcours' ); ?></th>
+					<th><?php esc_html_e( 'Dernière fois', 'claira-tkd-parcours' ); ?></th>
+					<th><?php esc_html_e( "Aujourd'hui", 'claira-tkd-parcours' ); ?></th>
+					<th></th>
+				</tr></thead>
+				<tbody>
+				<?php foreach ( $vides as $cle => $v ) : ?>
+					<tr class="claira-qcm-vide" data-texte="<?php echo esc_attr( $v['texte'] ); ?>" data-mode="<?php echo esc_attr( $v['mode'] ); ?>" data-theme="<?php echo esc_attr( $v['theme'] ); ?>">
+						<td><strong><?php echo esc_html( $v['texte'] ); ?></strong><?php echo 'un' === $v['mode'] ? ' <span class="description">' . esc_html__( '(au moins un mot)', 'claira-tkd-parcours' ) . '</span>' : ''; ?></td>
+						<td><?php echo esc_html( (string) (int) $v['nb'] ); ?></td>
+						<td><?php echo esc_html( wp_date( 'd/m/Y H:i', (int) $v['dernier'] ) ); ?></td>
+						<td class="claira-qcm-vide-etat">…</td>
+						<td>
+							<button type="button" class="button claira-qcm-vide-chercher"><?php esc_html_e( 'Chercher', 'claira-tkd-parcours' ); ?></button>
+							<form method="post" action="<?php echo esc_url( claira_tkd_qcm_admin_url() ); ?>" style="display:inline">
+								<?php wp_nonce_field( 'claira_tkd_qcm_action', 'claira_tkd_qcm_nonce' ); ?>
+								<input type="hidden" name="claira_tkd_qcm_action" value="vide_supprimer">
+								<input type="hidden" name="cle" value="<?php echo esc_attr( $cle ); ?>">
+								<button type="submit" class="button-link-delete"><?php esc_html_e( 'Retirer', 'claira-tkd-parcours' ); ?></button>
+							</form>
+						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+			<form method="post" action="<?php echo esc_url( claira_tkd_qcm_admin_url() ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Effacer toute la liste des recherches sans résultat ?', 'claira-tkd-parcours' ) ); ?>');">
+				<?php wp_nonce_field( 'claira_tkd_qcm_action', 'claira_tkd_qcm_nonce' ); ?>
+				<input type="hidden" name="claira_tkd_qcm_action" value="vides_tout">
+				<p><button type="submit" class="button"><?php esc_html_e( 'Tout effacer', 'claira-tkd-parcours' ); ?></button></p>
+			</form>
+		<?php endif; ?>
 
 		<h2 id="claira-qcm-examens"><?php esc_html_e( 'Examens blancs en ligne', 'claira-tkd-parcours' ); ?></h2>
 		<?php if ( ! $page_url ) : ?>
