@@ -1,5 +1,15 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : « date de création de la FFTDA » trouvée (v1.14.5, pas encore en prod)
+
+Retour d'un adhérent : à l'examen, il a eu la question de la date de création de la FFTDA. La page https://www.fftda.fr/fr/99-historique-federal.html était déjà couverte par le quiz officiel « Historique fédéral » ; la question des statuts (« Quand et où la FFTDA a-t-elle été fondée… ») était aussi dans les données. Le problème venait de la recherche : « date de création de la FFTDA » ne trouvait rien.
+- `assets/js/qcm-dan.js` :
+  - création, créée, créé, fondée, fondé, fondation… sont ramenés à un même mot (« fond » seul n'est pas touché) ;
+  - « date » et « dates » sont ignorés : aucune question ne les emploie, elles disent « quand » ou « en quelle année » ;
+  - poids de l'énoncé passé de 3 à 4 : à égalité, la question qui parle du sujet passe devant celle qui ne le cite que dans une réponse.
+- **Vérifié hors WordPress** : « date de création de la FFTDA » et « FFTDA fondée » donnent en tête la question des statuts (réponse : 14 octobre 1994, Préfecture de Police de Paris) ; « DAC » et « âge DAC » inchangés.
+- Le PDF « QCM 1er Dan MAJ sept 2023 » (annales 2022/2023 du Module B, 30 énoncés sans réponses) ne contient pas cette question ; ses thèmes sont déjà couverts par les quiz officiels.
+
 ## 2026-11-18 — QCM Dan : recherches sans résultat gardées (v1.14.3, en prod le 18/11/2026)
 
 Demande de l'utilisateur après l'essai sur iPhone : repérer ce que les adhérents cherchent sans le trouver.

@@ -63,7 +63,7 @@
 	var MOTS_VIDES = ( 'a au aux avec ce ces cet cette d de des du elle en est et etre il ils je l la le les leur leurs ' +
 		'lui ma mais me mes moi mon n ne nos notre nous on ou par pas pour qu que quel quelle quelles quels qui quoi ' +
 		'sa se ses si son sont sur ta te tes toi ton tu un une vos votre vous y combien comment quand doit doivent ' +
-		'dans peut peuvent faut t selon parmi lequel laquelle lesquels lesquelles quoi dont cela ceci ca c s' ).split( ' ' );
+		'dans peut peuvent faut t selon parmi lequel laquelle lesquels lesquelles quoi dont cela ceci ca c s date dates' ).split( ' ' );
 	var VIDES = {};
 	MOTS_VIDES.forEach( function ( m ) { VIDES[ m ] = true; } );
 
@@ -77,7 +77,11 @@
 		kukiwon: 'kukkiwon', kukkiwom: 'kukkiwon',
 		federal: 'federation', federale: 'federation', federaux: 'federation', federations: 'federation',
 		medecin: 'medical', medicale: 'medical', medicaux: 'medical',
-		arbitrage: 'arbitre', arbitres: 'arbitre', arbitrer: 'arbitre'
+		arbitrage: 'arbitre', arbitres: 'arbitre', arbitrer: 'arbitre',
+		// « date de création de la FFTDA » (retour d'examen, 18/11/2026) : création, créée, fondée, fondation ont le même sens.
+		// Lu avant la racine : « fond » seul (« sur le fond ») n'est pas touché.
+		creation: 'creer', creations: 'creer', cree: 'creer', creee: 'creer', crees: 'creer', creees: 'creer', creez: 'creer', creant: 'creer',
+		fonde: 'creer', fondee: 'creer', fondes: 'creer', fondees: 'creer', fondation: 'creer', fonder: 'creer'
 	};
 
 	// Sigles à points (« D.A.C. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ») : écrits ainsi dans les quiz FFTDA,
@@ -131,10 +135,11 @@
 		this.questions.forEach( function ( q ) { self.parId[ q.id ] = q; } );
 
 		// Index inversé : mot -> { question: poids max }.
-		// Poids : question 3, bonne réponse 3, autres réponses 1, source et thème 1.
+		// Poids : question 4, bonne réponse 3, autres réponses 1, source et thème 1 (énoncé passé à 4 le 18/11/2026 :
+		// à égalité, la question qui parle du sujet passe devant celle qui ne le cite que dans une réponse).
 		this.index = {};
 		this.questions.forEach( function ( q ) {
-			var champs = [ [ q.q, 3 ], [ q.r[ q.ok ], 3 ], [ q.src + ' ' + self.themes[ q.t ].nom, 1 ] ];
+			var champs = [ [ q.q, 4 ], [ q.r[ q.ok ], 3 ], [ q.src + ' ' + self.themes[ q.t ].nom, 1 ] ];
 			q.r.forEach( function ( r, k ) { if ( k !== q.ok ) { champs.push( [ r, 1 ] ); } } );
 			q.texte = normaliser( [ q.q ].concat( q.r, [ q.src ] ).join( ' ' ) );
 			champs.forEach( function ( c ) {

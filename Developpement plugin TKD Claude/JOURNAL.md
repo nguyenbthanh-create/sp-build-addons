@@ -679,3 +679,7 @@ Détails :
   - choisir le président dans *Projets → Réglages* ;
   - le cocher dans *Trésorerie → Paramètres → Accès bureau*.
 - **Prod** : la prod n'a ni TKD Projets ni SP Compta 0.3/0.4. Le passage en prod attend le feu vert de l'utilisateur.
+
+## 18/11/2026 — QCM Dan 1.14.5 : « date de création de la FFTDA »
+
+- Retour d'un adhérent (question posée à l'examen). La page fftda.fr « Historique fédéral » était déjà dans les données (quiz officiel), ainsi que la question des statuts sur la fondation de la FFTDA. La recherche ne la trouvait pas : synonymes création / fondée / fondation, « date » ignoré, énoncé mieux pesé. Vérifié hors WordPress. Pas encore sur le test ni en prod.
