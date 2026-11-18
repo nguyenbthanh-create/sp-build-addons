@@ -652,3 +652,30 @@ Détails :
   - Données d'essai supprimées.
   - Pages Dépenses, Recettes, Projets, Solde, Rapport, Paramètres et TKD Projets sans erreur PHP.
 - **Suite (étape 4)** : onglet Budget dans TKD Projets (bureau seulement) et dépense validée par le président. Celui-ci doit être coché dans « Accès bureau ».
+
+**Gestion de projets, étape 4 : onglet Budget et dépense validée par le président — site de test le 18/11/2026 vers 12 h 26** (`c605a09`, puis `632b094` pour l'affichage des montants). Envois : SP Compta 0.4.0 puis TKD Projets 2.1.1. Pas en prod.
+- **SP Compta 0.4.0** (sans changement de schéma) :
+  - `ProjetsApi::enregistrerDepense()` passe par `DepenseScreen::saveFromRequest()`, comme la saisie rapide. Le justificatif va dans le dossier protégé.
+  - Elle refuse un projet clôturé, une date hors de la saison, un montant nul ou une catégorie inconnue.
+  - S'y ajoutent `sousCategoriesDepense()`, `modesPaiement()` et `projetsDeSaison()`.
+- **TKD Projets 2.1.x** :
+  - onglet « 💶 Budget », visible du seul bureau : relier le projet à la trésorerie (le créer, ou choisir un projet existant), budget prévu en lignes, bilan au total et par catégorie, mouvements ;
+  - formulaire « Dépense validée par le président », pour le seul président choisi dans *Projets → Réglages* (nouveau réglage `tkdp_president`) ;
+  - modifier le projet met à jour son nom, ses dates et son état dans la trésorerie ;
+  - nouveaux fichiers : `src/Compta.php`, `src/Rest/BudgetController.php`, `assets/budget.js`.
+- **Vérifié hors WordPress** : 26 tests TKD Projets et 13 tests SP Compta réussis (lanceur de remplacement) ; PHPStan au niveau 5, avec SP Compta visible, et PHP_CodeSniffer sans erreur. Les tests SP Compta qui touchent la base sont écrits mais non exécutés.
+- **Essai en direct (Chrome)** :
+  - projet « Compétition » au 07/02/2027, non relié au départ (2 projets compta de la saison proposés) ;
+  - enregistrer 3 lignes l'a relié tout seul (projet compta créé, nature Compétition, saison 2026-2027, totaux 210,50 € / 60 €) ;
+  - dépense refusée (403) tant que personne n'était président ;
+  - avec le président réglé sur le compte de l'utilisateur, le temps de l'essai : dépense de 118,40 € avec photo, enregistrée en catégorie 62, avec « validée par … (TKD Projets) » dans le détail. Le justificatif s'ouvre par le lien protégé de SP Compta et n'est pas dans la médiathèque. Le bilan est passé à 120 € prévus pour 118,40 € réalisés ;
+  - refusées : date hors saison, montant nul, catégorie inconnue ;
+  - l'onglet s'affiche correctement (capture). Correction : « 90,5 » devenait « 90,50 ».
+- **Nettoyage** :
+  - 3 dépenses d'essai, 1 justificatif, 2 projets compta d'essai et le projet TKD supprimés ;
+  - réglage Président remis à vide, liste des gestionnaires inchangée.
+  - **Restes de l'étape 3 rattrapés** : le contrôle « la route d'essai a disparu » avait envoyé un POST pendant que l'extension d'essai était encore chargée. Il avait recréé un projet « ESSAI API Fête de Noël » (n° 4) avec 2 dépenses : tout a été supprimé ici.
+- **À faire par l'utilisateur** :
+  - choisir le président dans *Projets → Réglages* ;
+  - le cocher dans *Trésorerie → Paramètres → Accès bureau*.
+- **Prod** : la prod n'a ni TKD Projets ni SP Compta 0.3/0.4. Le passage en prod attend le feu vert de l'utilisateur.
