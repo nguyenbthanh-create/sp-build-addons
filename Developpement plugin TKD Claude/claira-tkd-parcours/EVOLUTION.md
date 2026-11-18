@@ -1,5 +1,13 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : retours de l'essai sur iPhone (v1.14.2, site de test)
+
+- **Sigles à points** : les quiz écrivent « D.A.C. », « D.I.F. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ». La normalisation en faisait des lettres isolées, donc « DAC » ne trouvait pas « Quelle est la durée de la formation D.A.C. ? » (16 h, Filière de formation n° 6). `normaliser()` lit désormais un sigle à points comme un mot, sans « lookbehind » pour rester compatible avec les anciens Safari ; le surlignage suit.
+- **Croix d'effacement** dans le champ de recherche : elle vide le champ et les résultats, et garde le clavier ouvert. La croix native de Safari est masquée pour éviter d'en avoir deux.
+- **Examen blanc** : le survol reste collé sous le doigt sur téléphone et encadrait en rouge la proposition suivante. Le survol est réservé à la souris (`@media (hover: hover) and (pointer: fine)`), le focus est retiré, et la nouvelle question arrive avec une animation de 0,25 s (désactivée si l'utilisateur limite les animations).
+- **Rappels** (sans changement) : les réponses sont mélangées, mais seul l'ordre des lettres change. Le texte de la bonne réponse est toujours celui de la FFTDA (dans les PDF, c'est B dans 64 % des cas). « Tous les mots » (par défaut) exige chaque mot, ce qui affine ; « Au moins un mot » en accepte un seul.
+- **Idée en attente** : garder les recherches restées sans résultat (et pouvoir ajouter des questions du club). Non codé, en attente de la décision de l'utilisateur.
+
 ## 2026-11-17 — QCM Dan : accès depuis l'application et retour (v1.14.1, en prod le 18/11/2026)
 
 - **Application `/app/` (sp_build `e911bb6`)** : bouton « 🎓 Réviser le QCM Dan » sur l'Accueil, sous « Ma fiche complète », pour les adhérents Ado / Adulte dont l'adhésion n'est pas « expire » (même règle que `qcm-acces.js`). L'adresse vient de `claira_tkd_qcm_page_url()`.
