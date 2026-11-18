@@ -559,6 +559,15 @@ Détails :
   - le cas « adhérent connecté à l'application » a été testé hors WordPress, avec l'API simulée. **Il reste à essayer en vrai avec le lien d'un adhérent Ado/Adulte.**
 - **Suite prévue (« dans un second temps »)** : accès depuis l'application `/app/` de sp_build, pour les Ado / Adulte (onglet ou lien). Sur iPhone, l'application installée ne partage pas sa session avec Safari.
 
+**TKD Projets 2.2.1 — carte « Ma carte » : tuiles OpenStreetMap refusées (403) — test puis prod le 18/11/2026** :
+- **Cause** : la page privée `?tkdp-zone=CLÉ` (`src/Front/ZonePage.php`) imposait `Referrer-Policy: no-referrer`, dans l'en-tête et dans une balise `<meta>`, pour ne pas faire sortir la clé du lien. Or OpenStreetMap refuse les tuiles demandées sans Referer et affiche à la place « Access blocked — App is not following the tile usage policy ».
+- **Correction** : `strict-origin` dans les deux cas. Seul `https://tkdclaira.fr/` est transmis, jamais le chemin ni la clé.
+- **À savoir** : l'en-tête réellement envoyé est celui du `.htaccess` racine (`strict-origin-when-cross-origin`, ajouté le 17/11), qui remplace celui de PHP ; c'est la balise `<meta>` de la page qui s'applique.
+- **Vérifications** :
+  - version 2.2.1 en ligne, `<meta>` correcte ;
+  - le blocage d'OSM n'a pas pu être reproduit en local, car il n'est pas systématique : c'est le lien réel qui confirmera ;
+  - sauvegarde de la 2.2.0 dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-projets-2.2.0/`.
+- **Non touchée** : l'ancienne copie `RefontePlugin\tkd-projets\` (`includes/zones.php`) a le même réglage, mais ce n'est pas elle qui tourne en prod.
 **En attente** :
 - **Avant le prochain chantier (décidé le 12/10/2026)** : rafraîchir la base du site de test (copie de la prod + `outils/rafraichir-site-test.sql`, procédure plus haut). Sa base date du 08/10 : il n'a ni les créneaux mensuels du samedi, ni les créneaux renommés et rattachés à un cours spécial, ni les couleurs, et la page « Horaires d'entraînement » y est encore en ligne.
 - Page « Horaires d'entraînement » (TablePress absent) ; anciennes tables du jury ; origine du volume du journal d'erreurs.

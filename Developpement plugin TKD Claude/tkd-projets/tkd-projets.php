@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       TKD Projets
  * Description:       Gestion des projets du club (gala, fêtes, compétitions) : tâches, équipe, liste, Kanban, Gantt et carte des zones.
- * Version:           2.2.0
+ * Version:           2.2.1
  * Author:            Noé PETIT DE MIRBECK (version d'origine), TKD Claira
  * Requires at least: 6.0
  * Requires PHP:      8.0
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'TKDP_VERSION', '2.2.0' );
+define( 'TKDP_VERSION', '2.2.1' );
 define( 'TKDP_FILE', __FILE__ );
 define( 'TKDP_DIR', plugin_dir_path( __FILE__ ) );
 define( 'TKDP_URL', plugin_dir_url( __FILE__ ) );

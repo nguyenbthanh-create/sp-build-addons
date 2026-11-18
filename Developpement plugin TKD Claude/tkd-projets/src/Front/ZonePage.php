@@ -28,7 +28,9 @@ final class ZonePage {
 		}
 		nocache_headers();
 		header( 'X-Robots-Tag: noindex, nofollow' );
-		header( 'Referrer-Policy: no-referrer' );
+		// strict-origin (18/11/2026) : seul « https://site/ » est transmis, jamais la clé du lien ;
+		// no-referrer faisait refuser les tuiles par OpenStreetMap (403 « Access blocked »).
+		header( 'Referrer-Policy: strict-origin' );
 
 		$key = sanitize_text_field( wp_unslash( (string) $_GET[ ZoneLinks::PARAM ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		if ( ! ZoneLinks::isKeyFormat( $key ) ) {
@@ -96,7 +98,7 @@ final class ZonePage {
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<meta name="robots" content="noindex, nofollow">
-	<meta name="referrer" content="no-referrer">
+	<meta name="referrer" content="strict-origin">
 	<title><?php echo esc_html( $task->title . ' — ' . get_bloginfo( 'name' ) ); ?></title>
 	<link rel="stylesheet" href="<?php echo esc_url( $leaflet['css'] ); ?>" integrity="<?php echo esc_attr( $leaflet['cssSri'] ); ?>" crossorigin="">
 	<style>
