@@ -701,3 +701,19 @@ Détails :
   - projet d'essai supprimé.
 - **Remarque** : sur le site de test, les réglages du gala sont restés à l'édition « 2026 » sans date. La prod est en 2027.
 - **Étape 6** (après le gala 2027 et la purge de ses données) : décider si le code de Gala devient un module de TKD Projets.
+
+**Gestion de projets en prod — SP Compta 0.4.0 et TKD Projets 2.2.0, le 18/11/2026 vers 13 h 33** (commit `805fa30`, feu vert de l'utilisateur). Marche à suivre : `DEPLOIEMENT_2026-11-18_PROD_gestion-projets_LISEZMOI.md`.
+- **Avant l'envoi** :
+  - les 5 fichiers de SP Compta en prod ont été récupérés et sont identiques à la 0.2.0 de git ;
+  - les dossiers de prod sont identiques, en taille, à ce qui tourne sur le test.
+- **SP Compta 0.4.0** : 8 fichiers, contrôle conforme. Sauvegarde dans `…PROD_sp-compta-0.4.0_805fa30/sauvegarde-prod-2026-11-18_133354`, exactement la 0.2.0.
+  - En ligne, sans erreur PHP : Projets (13 projets compta, fiche d'un projet), Dépenses, Recettes, Solde, Rapport, Paramètres, Sponsors, Indemnités Km, et l'accueil du site.
+  - La table `…sp_compta_budget_ligne` est créée à l'ouverture de la Trésorerie.
+- **TKD Projets 2.2.0** : 37 fichiers, contrôle conforme. L'extension apparaît dans *Extensions* en 2.2.0, **pas encore activée** : l'activation attend l'accord de l'utilisateur.
+- **TKD Gala** : inchangée.
+- **Reste** :
+  - activer TKD Projets ;
+  - régler les gestionnaires et le président ;
+  - cocher le président dans « Accès bureau » ;
+  - contrôle en ligne d'un projet Gala, sans e-mail, car les mails partent vraiment en prod ;
+  - refaire `-Verifier`.
