@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : recherches sans résultat gardées (v1.14.3, site de test)
+## 2026-11-18 — QCM Dan : recherches sans résultat gardées (v1.14.3, en prod le 18/11/2026)
 
 Demande de l'utilisateur après l'essai sur iPhone : repérer ce que les adhérents cherchent sans le trouver.
 - **Page du site** : une recherche sans résultat est envoyée une fois par visite (texte, mode, thème) à `POST claira-tkd/v1/qcm/sans-resultat` (`noterSansResultat()` dans `assets/js/qcm-dan.js`). Le tableau de bord n'envoie rien.
