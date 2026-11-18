@@ -565,7 +565,7 @@ Détails :
 - **À savoir** : l'en-tête réellement envoyé est celui du `.htaccess` racine (`strict-origin-when-cross-origin`, ajouté le 17/11), qui remplace celui de PHP ; c'est la balise `<meta>` de la page qui s'applique.
 - **Vérifications** :
   - version 2.2.1 en ligne, `<meta>` correcte ;
-  - le blocage d'OSM n'a pas pu être reproduit en local, car il n'est pas systématique : c'est le lien réel qui confirmera ;
+  - le blocage d'OSM n'a pas pu être reproduit en local, car il n'est pas systématique. **Confirmé par l'utilisateur le 18/11/2026 : la carte s'affiche avec un lien réel** ;
   - sauvegarde de la 2.2.0 dans `DEPLOIEMENT_tkd-gala_2026-11-10/sauvegarde-prod-projets-2.2.0/`.
 - **Non touchée** : l'ancienne copie `RefontePlugin\tkd-projets\` (`includes/zones.php`) a le même réglage, mais ce n'est pas elle qui tourne en prod.
 **En attente** :
