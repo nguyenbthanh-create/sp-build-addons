@@ -729,3 +729,9 @@ Détails :
 ## 18/11/2026 — QCM Dan 1.14.6 : les deux dates de création de la FFTDA
 
 - Les quiz officiels posent deux questions : 1er septembre 1995 (le CNT devient la FFTDA, historique) et 14 octobre 1994 (fondation selon les statuts). « création FFTDA » sort maintenant les deux, avec un encadré « À retenir ». Nouvel objet `COMPLEMENTS` dans qcm-dan.js. Vérifié hors WordPress ; pas encore sur le test ni en prod.
+
+## 18/11/2026 — QCM Dan 1.14.6 en prod (14 h 09)
+
+- Feu vert de l'utilisateur (« Tout, puis prod »). Synonymes sur trois niveaux (mêmes sens, mots voisins comptés moins fort, repli « les plus proches »), 5 questions du club tirées des annales 2e Dan 2022/2023 (réponses : fftda.fr Historique fédéral, et World Taekwondo pour le 28 mai 1973), note « deux dates » sur la création de la FFTDA.
+- Test puis prod, fichiers conformes ; vérifié en ligne sur le tableau de bord du test et de la prod (729 questions, `qcm-dan.js?ver=1.14.6`). Validé par l'utilisateur sur iPhone. Sauvegarde : `DEPLOIEMENT_2026-11-18_claira-tkd-parcours_16acc13/sauvegarde-prod-2026-11-18_140854`.
+- Questions d'arbitrage des annales (catégories de poids, âge de référence, plastron) non ajoutées : pas de source officielle à jour trouvée.

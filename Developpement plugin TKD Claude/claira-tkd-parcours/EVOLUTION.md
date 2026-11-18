@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : synonymes, repli, questions du club, deux dates FFTDA (v1.14.6, test puis prod le 18/11/2026)
+## 2026-11-18 — QCM Dan : synonymes, repli, questions du club, deux dates FFTDA (v1.14.6, test puis prod le 18/11/2026 à 14 h 09)
 
 Demandé par l'utilisateur : « Tout, puis prod ».
 
