@@ -16,6 +16,9 @@
 
 	const STATUS = { todo: 'À faire', doing: 'En cours', done: 'Terminé' };
 	const PRIORITY = { low: 'Basse', normal: 'Normale', high: 'Haute' };
+	const PROJECT_STATUS = { en_cours: 'En cours', termine: 'Terminé' };
+	const TYPES = cfg.types || {};
+	const TEAM_ROLES = cfg.teamRoles || { responsable: 'Responsable', membre: 'Membre' };
 	const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 	const MONTHS_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
 	const DAYS_SHORT = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
@@ -33,7 +36,8 @@
 		projects: [],
 		users: [],
 		roles: [],
-		usersLoaded: false,
+		canMailRole: false,
+		usersLoaded: !cfg.canListUsers, // sans ce droit, la liste des personnes n'est pas demandée
 		project: null,
 		tasks: [],
 		view: readPref('view', 'gantt'),
@@ -248,7 +252,8 @@
 			state.projects = res[0];
 			if (res[1]) {
 				state.users = res[1].users;
-				state.roles = res[1].roles;
+				state.roles = res[1].roles.filter((r) => r.assignable);
+				state.canMailRole = !!res[1].canMailRole;
 				state.usersLoaded = true;
 			}
 			state.project = null;
@@ -307,22 +312,50 @@
 
 	/* ----------------------------- Accueil ----------------------------- */
 
+	function typeBadge(p) {
+		const t = TYPES[p.type] || TYPES.autre || { icon: '📁', label: 'Projet' };
+		return '<span class="tkdp-type">' + esc(t.icon + ' ' + t.label) + '</span>';
+	}
+
+	function teamLine(p) {
+		if (!p.team || !p.team.length) {
+			return '';
+		}
+		const names = p.team.slice().sort((a, b) => (a.role === b.role ? 0 : a.role === 'responsable' ? -1 : 1))
+			.map((m) => esc(m.name) + (m.role === 'responsable' ? ' <em>(responsable)</em>' : ''));
+		return '<p class="tkdp-team-line">👥 ' + names.join(', ') + '</p>';
+	}
+
 	function renderHome() {
 		let html = '<div class="tkdp-head"><h1>Projets</h1><div class="tkdp-head-actions">'
-			+ '<button class="button button-primary" data-action="new-project">+ Nouveau projet</button></div></div>';
+			+ (cfg.isGestionnaire ? '<button class="button button-primary" data-action="new-project">+ Nouveau projet</button>' : '') + '</div></div>';
 
 		if (!state.projects.length) {
 			return html + '<div class="tkdp-empty"><p><strong>Aucun projet pour l\'instant.</strong></p>'
-				+ '<p>Créez votre premier projet (par exemple « Gala des Arts Martiaux ») puis ajoutez-y des tâches.</p>'
-				+ '<button class="button button-primary" data-action="new-project">Créer un projet</button></div>';
+				+ (cfg.isGestionnaire
+					? '<p>Créez votre premier projet (gala, fête, compétition) : les tâches habituelles peuvent être ajoutées automatiquement.</p>'
+					+ '<button class="button button-primary" data-action="new-project">Créer un projet</button>'
+					: '<p>Vous verrez ici les projets dont vous faites partie de l\'équipe.</p>')
+				+ '</div>';
 		}
 
-		html += '<div class="tkdp-cards">';
-		state.projects.forEach((p) => {
+		const current = state.projects.filter((p) => p.status !== 'termine');
+		const finished = state.projects.filter((p) => p.status === 'termine');
+		html += renderCards(current);
+		if (finished.length) {
+			html += '<h2 class="tkdp-subtitle">Projets terminés</h2>' + renderCards(finished);
+		}
+		return html;
+	}
+
+	function renderCards(projects) {
+		let html = '<div class="tkdp-cards">';
+		projects.forEach((p) => {
 			const pct = p.task_count ? Math.round((p.done_count / p.task_count) * 100) : 0;
 			const dates = p.first_date ? fmtDate(p.first_date) + ' → ' + fmtDate(p.last_date) : 'Pas encore de dates';
-			html += '<div class="tkdp-card" style="--tkdp-color:' + esc(p.color) + '" data-action="open-project" data-id="' + p.id + '">'
-				+ '<div class="tkdp-card-title">' + esc(p.name) + countdownBadge(p.event_date) + '</div>'
+			html += '<div class="tkdp-card' + (p.status === 'termine' ? ' is-finished' : '') + '" style="--tkdp-color:' + esc(p.color) + '" data-action="open-project" data-id="' + p.id + '">'
+				+ '<div class="tkdp-card-title">' + esc(p.name) + (p.status === 'termine' ? '' : countdownBadge(p.event_date)) + '</div>'
+				+ '<div class="tkdp-card-meta">' + typeBadge(p) + '</div>'
 				+ (p.event_date ? '<div class="tkdp-card-meta">Évènement le ' + esc(fmtDate(p.event_date)) + '</div>' : '')
 				+ (p.description ? '<div class="tkdp-card-desc">' + esc(p.description) + '</div>' : '')
 				+ '<div class="tkdp-card-meta">' + esc(dates) + '</div>'
@@ -340,13 +373,18 @@
 		const tabs = { list: 'Liste', kanban: 'Kanban', gantt: 'Gantt' };
 		let html = '<p><a href="#" data-action="home">← Tous les projets</a></p>'
 			+ '<div class="tkdp-head"><h1><span class="tkdp-dot" style="background:' + esc(p.color) + '"></span>' + esc(p.name)
-			+ (p.event_date ? countdownBadge(p.event_date) + '<span class="tkdp-event-date">' + esc(fmtDate(p.event_date)) + '</span>' : '') + '</h1>'
+			+ (p.event_date ? countdownBadge(p.event_date) + '<span class="tkdp-event-date">' + esc(fmtDate(p.event_date)) + '</span>' : '')
+			+ ' ' + typeBadge(p) + (p.status === 'termine' ? ' <span class="tkdp-badge is-done">Projet terminé</span>' : '') + '</h1>'
 			+ '<div class="tkdp-head-actions">'
-			+ '<button class="button" data-action="edit-project">Modifier le projet</button>'
-			+ '<button class="button button-primary" data-action="new-task">+ Nouvelle tâche</button></div></div>';
+			+ (p.can.edit_project ? '<button class="button" data-action="edit-project">Modifier le projet</button>' : '')
+			+ (p.can.create_task ? '<button class="button button-primary" data-action="new-task">+ Nouvelle tâche</button>' : '') + '</div></div>';
 
 		if (p.description) {
 			html += '<p class="tkdp-desc">' + esc(p.description) + '</p>';
+		}
+		html += teamLine(p);
+		if (p.my_role === 'membre') {
+			html += '<p class="description">Vous êtes membre de l\'équipe : vous pouvez mettre à jour les tâches qui vous sont attribuées.</p>';
 		}
 
 		html += '<div class="tkdp-toolbar"><div class="tkdp-tabs">';
@@ -365,7 +403,7 @@
 
 		if (!state.tasks.length) {
 			return html + '<div class="tkdp-empty"><p><strong>Ce projet n\'a pas encore de tâches.</strong></p>'
-				+ '<button class="button button-primary" data-action="new-task">Ajouter une tâche</button></div>';
+				+ (p.can.create_task ? '<button class="button button-primary" data-action="new-task">Ajouter une tâche</button>' : '') + '</div>';
 		}
 
 		if (state.view === 'list') {
@@ -402,9 +440,11 @@
 				+ '<td>' + fmtDate(t.start_date) + '</td>'
 				+ '<td>' + fmtDate(t.end_date) + '</td>'
 				+ '<td class="tkdp-cell-progress">' + progressBar(t.progress, state.project.color) + ' ' + t.progress + ' %</td>'
-				+ '<td class="tkdp-row-actions"><button class="button-link" data-action="edit-task" data-id="' + t.id + '">Modifier</button>'
-				+ ' | <button class="button-link" data-action="zones" data-id="' + t.id + '">Carte</button>'
-				+ ' | <button class="button-link tkdp-danger" data-action="delete-task" data-id="' + t.id + '">Supprimer</button></td>'
+				+ '<td class="tkdp-row-actions">' + [
+					'<button class="button-link" data-action="edit-task" data-id="' + t.id + '">' + (t.access === 'none' ? 'Voir' : 'Modifier') + '</button>',
+					state.project.can.zones ? '<button class="button-link" data-action="zones" data-id="' + t.id + '">Carte</button>' : '',
+					state.project.can.delete_task ? '<button class="button-link tkdp-danger" data-action="delete-task" data-id="' + t.id + '">Supprimer</button>' : '',
+				].filter(Boolean).join(' | ') + '</td>'
 				+ '</tr>';
 		});
 		return html + '</tbody></table>';
@@ -420,7 +460,7 @@
 				+ '<div class="tkdp-col-head">' + statusBadge(status) + ' <span class="tkdp-count">' + tasks.length + '</span></div>'
 				+ '<div class="tkdp-col-body">';
 			tasks.forEach((t) => {
-				html += '<div class="tkdp-kcard" draggable="true" data-id="' + t.id + '">'
+				html += '<div class="tkdp-kcard' + (t.access === 'none' ? ' is-locked' : '') + '" draggable="' + (t.access === 'none' ? 'false' : 'true') + '" data-id="' + t.id + '">'
 					+ '<div class="tkdp-kcard-title">' + esc(t.title) + '</div>'
 					+ '<div class="tkdp-kcard-meta">' + priorityBadge(t.priority) + clip(t)
 					+ (isLate(t) ? '<span class="tkdp-late">En retard</span>' : '')
@@ -429,7 +469,7 @@
 					+ avatar(t)
 					+ '</div>';
 			});
-			html += '<button class="tkdp-add" data-action="new-task" data-status="' + status + '">+ Ajouter</button></div></div>';
+			html += (state.project.can.create_task ? '<button class="tkdp-add" data-action="new-task" data-status="' + status + '">+ Ajouter</button>' : '<span class="tkdp-add-placeholder"></span>') + '</div></div>';
 		});
 		return html + '</div>';
 	}
@@ -469,7 +509,7 @@
 					const box = c.getBoundingClientRect();
 					return e.clientY < box.top + box.height / 2;
 				});
-				body.insertBefore(dragged, after || body.querySelector('.tkdp-add'));
+				body.insertBefore(dragged, after || body.querySelector('.tkdp-add, .tkdp-add-placeholder'));
 				moved = true;
 			});
 			col.addEventListener('dragleave', (e) => {
@@ -497,13 +537,15 @@
 				Object.assign(task, await api('/tasks/' + id, { method: 'PUT', data: data }));
 				refreshProjectStats();
 			}
-			await api('/projects/' + state.project.id + '/reorder', { method: 'POST', data: { order: order } });
-			order.forEach((tid, i) => {
-				const t = state.tasks.find((x) => x.id === tid);
-				if (t) {
-					t.position = i;
-				}
-			});
+			if (state.project.can.reorder) {
+				await api('/projects/' + state.project.id + '/reorder', { method: 'POST', data: { order: order } });
+				order.forEach((tid, i) => {
+					const t = state.tasks.find((x) => x.id === tid);
+					if (t) {
+						t.position = i;
+					}
+				});
+			}
 		} catch (e) {
 			fail(e);
 		}
@@ -666,14 +708,16 @@
 		tasks.forEach((t) => {
 			left += '<div class="tkdp-gantt-row" style="height:' + ROW + 'px" data-action="edit-task" data-id="' + t.id + '" title="' + esc(t.title) + '">'
 				+ '<span class="tkdp-sdot is-' + t.status + '"></span><span class="tkdp-gantt-title">' + esc(t.title) + '</span>'
-				+ mapButton(t)
+				+ (state.project.can.zones ? mapButton(t) : '')
 				+ avatar(t)
 				+ '</div>';
 		});
 		left += '</div>';
 
 		return '<div class="tkdp-gantt">' + left + '<div class="tkdp-gantt-scroll">' + svg + '</div></div>'
-			+ '<p class="description">Astuce : faites glisser une barre pour décaler la tâche, ou tirez son bord droit pour changer sa durée. Un simple clic ouvre la tâche.</p>';
+			+ '<p class="description">' + (state.project.can.edit_task
+				? 'Astuce : faites glisser une barre pour décaler la tâche, ou tirez son bord droit pour changer sa durée. Un simple clic ouvre la tâche.'
+				: 'Un clic sur une barre ouvre la tâche.') + '</p>';
 	}
 
 	function scrollGanttToToday(smooth) {
@@ -710,6 +754,10 @@
 		e.preventDefault();
 		const id = Number(g.dataset.id);
 		const task = state.tasks.find((t) => t.id === id);
+		if (task.access !== 'full') {
+			openTaskModal(task); // seules les personnes qui peuvent tout modifier déplacent les dates
+			return;
+		}
 		const r = taskRange(task);
 		const mode = e.target.classList.contains('tkdp-handle') ? 'resize' : 'move';
 		const bg = g.querySelector('.tkdp-bar-bg');
@@ -778,6 +826,7 @@
 	/* Fenêtres (formulaires)                                              */
 	/* ------------------------------------------------------------------ */
 
+	/** submitLabel === false : fenêtre en lecture seule (un seul bouton « Fermer »). */
 	function openModal(title, body, onSubmit, extraButtons, submitLabel) {
 		closeModal();
 		const wrap = document.createElement('div');
@@ -786,8 +835,11 @@
 			+ '<div class="tkdp-modal-head"><h2>' + esc(title) + '</h2><button type="button" class="tkdp-close" aria-label="Fermer">×</button></div>'
 			+ '<div class="tkdp-modal-body">' + body + '</div>'
 			+ '<div class="tkdp-modal-foot">' + (extraButtons || '<span></span>')
-			+ '<span><button type="button" class="button tkdp-cancel">Annuler</button> '
-			+ '<button type="submit" class="button button-primary">' + esc(submitLabel || 'Enregistrer') + '</button></span></div></form>';
+			+ (submitLabel === false
+				? '<span><button type="button" class="button tkdp-cancel">Fermer</button></span>'
+				: '<span><button type="button" class="button tkdp-cancel">Annuler</button> '
+				+ '<button type="submit" class="button button-primary">' + esc(submitLabel || 'Enregistrer') + '</button></span>')
+			+ '</div></form>';
 		document.body.appendChild(wrap);
 
 		const form = wrap.querySelector('form');
@@ -805,6 +857,9 @@
 		form.addEventListener('submit', async (e) => {
 			e.preventDefault();
 			const btn = form.querySelector('[type=submit]');
+			if (!btn) {
+				return;
+			}
 			btn.disabled = true;
 			try {
 				const keepOpen = await onSubmit(Object.fromEntries(new FormData(form).entries()), form);
@@ -840,20 +895,51 @@
 
 	/* ----------------------------- Projet ------------------------------ */
 
+	/** Types proposés à la création, plus le type actuel du projet s'il n'est plus proposé. */
+	function typeOptions(current) {
+		return Object.keys(TYPES).filter((k) => TYPES[k].proposed || k === current)
+			.map((k) => '<option value="' + esc(k) + '"' + (k === current ? ' selected' : '') + '>' + esc(TYPES[k].icon + ' ' + TYPES[k].label) + '</option>').join('');
+	}
+
+	function templateLabel(type) {
+		const n = (TYPES[type] || {}).count || 0;
+		return n ? 'Ajouter les ' + n + ' tâches habituelles d\'un projet « ' + TYPES[type].label + ' » (datées à partir de la date de l\'évènement)' : '';
+	}
+
 	function openProjectModal(project) {
-		const p = project || { name: '', description: '', color: '#2271b1', event_date: '' };
+		const firstType = Object.keys(TYPES).find((k) => TYPES[k].proposed) || 'autre';
+		const p = project || { name: '', description: '', color: (TYPES[firstType] || {}).color || '#2271b1', event_date: '', type: firstType, status: 'en_cours', team: [], can: { manage_members: true } };
+		const canTeam = !project || p.can.manage_members;
 		const body = '<p><label>Nom du projet *<input type="text" name="name" required maxlength="190" value="' + esc(p.name) + '"></label></p>'
+			+ '<div class="tkdp-grid">'
+			+ '<label>Type<select name="type">' + typeOptions(p.type) + '</select></label>'
+			+ (project ? '<label>État<select name="status">' + options(PROJECT_STATUS, p.status) + '</select></label>' : '<span></span>')
+			+ '</div>'
+			+ '<p class="description tkdp-type-hint">' + esc((TYPES[p.type] || {}).hint || '') + '</p>'
 			+ '<p><label>Date de l\'évènement<input type="date" name="event_date" value="' + esc(p.event_date || '') + '"></label>'
 			+ '<span class="description">Affiche un compte à rebours (J-X) et un repère sur le diagramme de Gantt.</span></p>'
 			+ '<p><label>Description<textarea name="description" rows="3">' + esc(p.description) + '</textarea></label></p>'
-			+ '<p><label>Couleur <input type="color" name="color" value="' + esc(p.color) + '"></label></p>';
-		const del = project && cfg.canManage
+			+ '<p><label>Couleur <input type="color" name="color" value="' + esc(p.color) + '"></label></p>'
+			+ (canTeam && cfg.canListUsers ? '<div class="tkdp-files"><span class="tkdp-files-label">Équipe</span><ul class="tkdp-team-list"></ul>'
+				+ '<select class="tkdp-team-add" aria-label="Ajouter une personne à l\'équipe"></select>'
+				+ '<p class="description">Les responsables gèrent tout le projet ; les membres voient le projet et mettent à jour leurs tâches. '
+				+ 'Une personne à qui l\'on attribue une tâche rejoint l\'équipe comme membre.</p></div>' : '')
+			+ (project ? '' : '<p class="tkdp-check tkdp-template"><label><input type="checkbox" name="apply_template" value="1" checked> <span></span></label></p>');
+		const del = project && p.can.delete_project
 			? '<button type="button" class="button-link tkdp-danger" data-modal="delete-project">Supprimer le projet</button>'
 			: '';
+
+		const team = (p.team || []).map((m) => ({ user_id: m.user_id, name: m.name, role: m.role }));
 
 		const wrap = openModal(project ? 'Modifier le projet' : 'Nouveau projet', body, async (data) => {
 			if (!data.name.trim()) {
 				throw new Error('Le nom du projet est obligatoire.');
+			}
+			if (canTeam && cfg.canListUsers) {
+				data.team = team.map((m) => ({ user_id: m.user_id, role: m.role }));
+			}
+			if (!project) {
+				data.apply_template = !!data.apply_template;
 			}
 			if (project) {
 				const saved = await api('/projects/' + project.id, { method: 'PUT', data: data });
@@ -867,6 +953,66 @@
 				openProject(saved.id);
 			}
 		}, del);
+
+		const form = wrap.querySelector('form');
+		const typeSel = form.querySelector('[name=type]');
+		const tpl = form.querySelector('.tkdp-template');
+		const refreshType = () => {
+			const t = TYPES[typeSel.value] || {};
+			form.querySelector('.tkdp-type-hint').textContent = t.hint || '';
+			if (tpl) {
+				const label = templateLabel(typeSel.value);
+				tpl.hidden = !label;
+				tpl.querySelector('span').textContent = label;
+				tpl.querySelector('input').checked = !!label;
+				if (t.color) {
+					form.querySelector('[name=color]').value = t.color;
+				}
+			}
+		};
+		typeSel.addEventListener('change', refreshType);
+		if (tpl) {
+			refreshType();
+		}
+
+		// Équipe : liste des personnes avec leur rôle, et menu pour en ajouter.
+		const teamList = form.querySelector('.tkdp-team-list');
+		const teamAdd = form.querySelector('.tkdp-team-add');
+		const renderTeam = () => {
+			if (!teamList) {
+				return;
+			}
+			teamList.innerHTML = team.length ? team.map((m, i) => '<li><span class="tkdp-team-name">' + esc(m.name) + '</span>'
+				+ '<select data-index="' + i + '" aria-label="Rôle de ' + esc(m.name) + '">' + options(TEAM_ROLES, m.role) + '</select>'
+				+ '<button type="button" class="tkdp-file-remove" data-index="' + i + '" aria-label="Retirer ' + esc(m.name) + '">×</button></li>').join('')
+				: '<li class="tkdp-file-empty">Personne pour l\'instant' + (cfg.isGestionnaire ? ' (les gestionnaires voient tous les projets).' : '.') + '</li>';
+			const free = state.users.filter((u) => !team.some((m) => m.user_id === u.id));
+			teamAdd.innerHTML = '<option value="">+ Ajouter une personne…</option>'
+				+ free.map((u) => '<option value="' + u.id + '">' + esc(u.name) + '</option>').join('');
+		};
+		if (teamList) {
+			renderTeam();
+			teamList.addEventListener('change', (e) => {
+				const sel = e.target.closest('select[data-index]');
+				if (sel) {
+					team[Number(sel.dataset.index)].role = sel.value;
+				}
+			});
+			teamList.addEventListener('click', (e) => {
+				const btn = e.target.closest('.tkdp-file-remove');
+				if (btn) {
+					team.splice(Number(btn.dataset.index), 1);
+					renderTeam();
+				}
+			});
+			teamAdd.addEventListener('change', () => {
+				const u = state.users.find((x) => x.id === Number(teamAdd.value));
+				if (u) {
+					team.push({ user_id: u.id, name: u.name, role: team.length ? 'membre' : 'responsable' });
+					renderTeam();
+				}
+			});
+		}
 
 		const delBtn = wrap.querySelector('[data-modal="delete-project"]');
 		if (delBtn) {
@@ -894,50 +1040,63 @@
 			start_date: fromDay(TODAY), end_date: fromDay(TODAY + 6), progress: 0, depends_on: null,
 		}, defaults || {});
 
+		// Droits : « full » (tout), « own » (sa tâche : statut, avancement, description, pièces jointes), « none » (lecture).
+		const access = task ? task.access : 'full';
+		const full = access === 'full';
+		const own = access === 'own';
+		const lock = (editable) => (editable ? '' : ' disabled');
+		const canZones = state.project.can.zones;
+
 		const deps = { 0: '— Aucune —' };
 		state.tasks.filter((x) => !task || x.id !== task.id).forEach((x) => {
 			deps[x.id] = x.title;
 		});
 
-		const body = '<p><label>Titre *<input type="text" name="title" required maxlength="255" value="' + esc(t.title) + '"></label></p>'
-			+ '<p><label>Description<textarea name="description" rows="3">' + esc(t.description) + '</textarea></label></p>'
+		const body = (own ? '<p class="description">Cette tâche vous est attribuée : vous pouvez changer son statut, son avancement, sa description et ses pièces jointes.</p>' : '')
+			+ (access === 'none' ? '<p class="description">Lecture seule : seuls les responsables du projet et la personne attribuée modifient cette tâche.</p>' : '')
+			+ '<p><label>Titre *<input type="text" name="title" required maxlength="255" value="' + esc(t.title) + '"' + lock(full) + '></label></p>'
+			+ '<p><label>Description<textarea name="description" rows="3"' + lock(full || own) + '>' + esc(t.description) + '</textarea></label></p>'
 			+ '<div class="tkdp-grid">'
-			+ '<label>Statut<select name="status">' + options(STATUS, t.status) + '</select></label>'
-			+ '<label>Priorité<select name="priority">' + options(PRIORITY, t.priority) + '</select></label>'
-			+ '<label>Début<input type="date" name="start_date" value="' + esc(t.start_date || '') + '"></label>'
-			+ '<label>Date limite<input type="date" name="end_date" value="' + esc(t.end_date || '') + '"></label>'
-			+ '<label>Attribuer à' + assignSelect(t) + '</label>'
-			+ '<label>Dépend de<select name="depends_on">' + options(deps, t.depends_on || 0) + '</select></label>'
+			+ '<label>Statut<select name="status"' + lock(full || own) + '>' + options(STATUS, t.status) + '</select></label>'
+			+ '<label>Priorité<select name="priority"' + lock(full) + '>' + options(PRIORITY, t.priority) + '</select></label>'
+			+ '<label>Début<input type="date" name="start_date" value="' + esc(t.start_date || '') + '"' + lock(full) + '></label>'
+			+ '<label>Date limite<input type="date" name="end_date" value="' + esc(t.end_date || '') + '"' + lock(full) + '></label>'
+			+ '<label>Attribuer à' + assignSelect(t, !full) + '</label>'
+			+ '<label>Dépend de<select name="depends_on"' + lock(full) + '>' + options(deps, t.depends_on || 0) + '</select></label>'
 			+ '</div>'
 			+ '<p><label>Avancement : <output>' + t.progress + '</output> %'
-			+ '<input type="range" name="progress" min="0" max="100" step="5" value="' + t.progress + '"></label></p>'
+			+ '<input type="range" name="progress" min="0" max="100" step="5" value="' + t.progress + '"' + lock(full || own) + '></label></p>'
 			+ '<div class="tkdp-files"><span class="tkdp-files-label">Pièces jointes</span><ul class="tkdp-file-list"></ul>'
-			+ (window.wp && wp.media && cfg.canUpload
-				? '<button type="button" class="button" data-modal="add-file">📎 Ajouter une pièce jointe</button>'
-				: '<p class="description">Votre compte ne peut pas envoyer de fichiers.</p>')
+			+ (!full && !own ? ''
+				: window.wp && wp.media && cfg.canUpload
+					? '<button type="button" class="button" data-modal="add-file">📎 Ajouter une pièce jointe</button>'
+					: '<p class="description">Votre compte ne peut pas envoyer de fichiers.</p>')
 			+ '</div>'
-			+ '<div class="tkdp-files"><span class="tkdp-files-label">Carte</span>'
-			+ (task
-				? '<button type="button" class="button" data-modal="zones">' + esc(zonesLabel(task)) + '</button>'
-				+ ' <span class="description">Délimitez des secteurs (ex. distribution de flyers) et affectez-les à des personnes.</span>'
-				: '<p class="description">Enregistrez d\'abord la tâche pour pouvoir dessiner des zones sur une carte.</p>')
-			+ '</div>'
-			+ '<p class="tkdp-check"><label><input type="checkbox" name="notify" value="1" checked> '
-			+ 'Prévenir par e-mail <span>(si la tâche est attribuée à quelqu\'un de nouveau ou si sa date limite change)</span></label></p>';
-		const del = task ? '<button type="button" class="button-link tkdp-danger" data-modal="delete-task">Supprimer la tâche</button>' : '';
+			+ (canZones ? '<div class="tkdp-files"><span class="tkdp-files-label">Carte</span>'
+				+ (task
+					? '<button type="button" class="button" data-modal="zones">' + esc(zonesLabel(task)) + '</button>'
+					+ ' <span class="description">Délimitez des secteurs (ex. distribution de flyers) et affectez-les à des personnes.</span>'
+					: '<p class="description">Enregistrez d\'abord la tâche pour pouvoir dessiner des zones sur une carte.</p>')
+				+ '</div>' : '')
+			+ (full ? '<p class="tkdp-check"><label><input type="checkbox" name="notify" value="1" checked> '
+				+ 'Prévenir par e-mail <span>(si la tâche est attribuée à quelqu\'un de nouveau ou si sa date limite change)</span></label></p>' : '');
+		const del = task && state.project.can.delete_task ? '<button type="button" class="button-link tkdp-danger" data-modal="delete-task">Supprimer la tâche</button>' : '';
+		const title = !task ? 'Nouvelle tâche' : access === 'none' ? 'Tâche' : 'Modifier la tâche';
 
-		const wrap = openModal(task ? 'Modifier la tâche' : 'Nouvelle tâche', body, async (data) => {
-			if (!data.title.trim()) {
-				throw new Error('Le titre de la tâche est obligatoire.');
+		const wrap = openModal(title, body, async (data) => {
+			if (full) {
+				if (!data.title.trim()) {
+					throw new Error('Le titre de la tâche est obligatoire.');
+				}
+				if (data.start_date && data.end_date && data.end_date < data.start_date) {
+					throw new Error('La date de fin doit être postérieure ou égale à la date de début.');
+				}
+				const assign = data.assign || '';
+				delete data.assign;
+				data.assignee = assign.indexOf('u:') === 0 ? Number(assign.slice(2)) : 0;
+				data.assignee_role = assign.indexOf('r:') === 0 ? assign.slice(2) : '';
+				data.notify = data.notify ? 1 : 0;
 			}
-			if (data.start_date && data.end_date && data.end_date < data.start_date) {
-				throw new Error('La date de fin doit être postérieure ou égale à la date de début.');
-			}
-			const assign = data.assign || '';
-			delete data.assign;
-			data.assignee = assign.indexOf('u:') === 0 ? Number(assign.slice(2)) : 0;
-			data.assignee_role = assign.indexOf('r:') === 0 ? assign.slice(2) : '';
-			data.notify = data.notify ? 1 : 0;
 			data.attachments = files.map((f) => f.id);
 
 			const saved = task
@@ -959,7 +1118,7 @@
 			}
 			await refreshProjectStats();
 			render();
-		}, del);
+		}, del, access === 'none' ? false : undefined);
 
 		const form = wrap.querySelector('form');
 
@@ -971,7 +1130,7 @@
 				+ (f.thumb ? '<img src="' + esc(f.thumb) + '" alt="">' : '<span class="tkdp-file-icon">📄</span>')
 				+ '<a href="' + esc(f.url) + '" target="_blank" rel="noopener">' + esc(f.filename || f.title) + '</a>'
 				+ '<span class="tkdp-file-size">' + fmtSize(f.size) + '</span>'
-				+ '<button type="button" class="tkdp-file-remove" data-index="' + i + '" aria-label="Retirer">×</button></li>').join('')
+				+ (full || own ? '<button type="button" class="tkdp-file-remove" data-index="' + i + '" aria-label="Retirer">×</button>' : '') + '</li>').join('')
 				: '<li class="tkdp-file-empty">Aucune pièce jointe.</li>';
 		};
 		renderFiles();
@@ -1035,13 +1194,20 @@
 	}
 
 	/** Liste « Attribuer à » : un rôle entier, ou une personne classée par rôle. */
-	function assignSelect(t) {
+	function assignSelect(t, disabled) {
 		const current = t.assignee_role ? 'r:' + t.assignee_role : (t.assignee ? 'u:' + t.assignee : '');
 		const opt = (value, label) => '<option value="' + esc(value) + '"' + (value === current ? ' selected' : '') + '>' + esc(label) + '</option>';
 		const known = state.roles.map((r) => r.slug);
-		let html = '<select name="assign">' + opt('', '— Personne —');
+		let html = '<select name="assign"' + (disabled ? ' disabled' : '') + '>' + opt('', '— Personne —');
 
-		if (state.roles.length) {
+		// Attribution actuelle absente des listes (liste non chargée, ou rôle non proposé) : affichée quand même.
+		const listed = (t.assignee && state.users.some((u) => u.id === t.assignee))
+			|| (t.assignee_role && state.canMailRole && state.roles.some((r) => r.slug === t.assignee_role));
+		if (current && !listed) {
+			html += opt(current, assigneeLabel(t) || '(attribution actuelle)');
+		}
+
+		if (state.canMailRole && state.roles.length) {
 			html += '<optgroup label="Tout un rôle (chacun reçoit l\'e-mail)">';
 			state.roles.forEach((r) => {
 				html += opt('r:' + r.slug, 'Tous les « ' + r.name + ' » (' + r.count + ')');

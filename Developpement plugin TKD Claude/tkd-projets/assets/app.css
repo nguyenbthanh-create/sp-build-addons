@@ -205,3 +205,20 @@ body.tkdp-map-open { overflow: hidden; }
 .tkdp-card-title .tkdp-countdown { font-size: 11px; margin-left: 8px; }
 .tkdp-event-date { margin-left: 8px; font-size: 13px; font-weight: 400; color: #646970; vertical-align: middle; }
 .tkdp-gantt-svg .tkdp-event-label { font-size: 11px; font-weight: 600; fill: #fff; }
+
+/* 2.0 : types, équipe, projets terminés, droits */
+.tkdp-type { display: inline-block; padding: 1px 8px; border-radius: 10px; background: #f0f0f1; color: #3c434a; font-size: 12px; font-weight: 500; vertical-align: middle; }
+.tkdp-head h1 .tkdp-type, .tkdp-head h1 .tkdp-badge { margin-left: 8px; }
+.tkdp-subtitle { margin: 28px 0 12px; font-size: 15px; color: #50575e; }
+.tkdp-card.is-finished { opacity: .7; border-top-color: #8c8f94; }
+.tkdp-team-line { margin: 0 0 12px; color: #50575e; }
+.tkdp-team-line em { color: #646970; }
+.tkdp-team-list { margin: 0 0 8px; padding: 0; list-style: none; }
+.tkdp-team-list li { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border: 1px solid #dcdcde; border-radius: 6px; margin-bottom: 6px; background: #fff; }
+.tkdp-team-list li.tkdp-file-empty { border-style: dashed; color: #8c8f94; justify-content: center; }
+.tkdp-team-name { flex: 1; }
+.tkdp-team-add { max-width: 100%; }
+.tkdp-kcard.is-locked { cursor: pointer; opacity: .85; }
+.tkdp-add-placeholder { display: block; min-height: 4px; }
+.tkdp-map-links { font-size: 12px; }
+.tkdp-modal [disabled] { background: #f6f7f7; color: #50575e; }

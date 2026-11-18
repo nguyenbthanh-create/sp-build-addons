@@ -15,3 +15,7 @@ define( 'TKD_COT_CAP', 'tkd_cotisations_manager' );
 define( 'TKD_GALA_VERSION', '0' );
 define( 'TKD_GALA_DIR', __DIR__ . '/../tkd-gala/' );
 define( 'TKD_GALA_URL', 'https://example.test/wp-content/plugins/tkd-gala/' );
+define( 'TKDP_VERSION', '0' );
+define( 'TKDP_FILE', __DIR__ . '/../tkd-projets/tkd-projets.php' );
+define( 'TKDP_DIR', __DIR__ . '/../tkd-projets/' );
+define( 'TKDP_URL', 'https://example.test/wp-content/plugins/tkd-projets/' );

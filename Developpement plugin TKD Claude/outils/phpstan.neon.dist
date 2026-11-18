@@ -10,6 +10,7 @@ parameters:
         - ../tkd-cotisations
         - ../claira-tkd-parcours
         - ../tkd-gala
+        - ../tkd-projets
     excludePaths:
         analyse:
             - ../*/vendor/*

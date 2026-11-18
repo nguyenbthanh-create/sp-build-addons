@@ -75,6 +75,9 @@
 			+ '<div class="tkdp-zone-form"></div>'
 			+ '<div class="tkdp-map-foot">'
 			+ '<label class="tkdp-check"><input type="checkbox" class="tkdp-zone-notify" checked> Envoyer un e-mail aux personnes nouvellement affectées</label>'
+			+ '<div class="tkdp-map-links"><span class="description">Liens « Ma carte » :</span> '
+			+ '<button type="button" class="button-link" data-map="links-send" title="Envoie un nouveau lien à chaque personne affectée (l\'ancien cesse de marcher)">Renvoyer à tous</button> | '
+			+ '<button type="button" class="button-link tkdp-danger" data-map="links-revoke" title="Les liens déjà envoyés cessent de marcher">Couper les liens</button></div>'
 			+ '<div class="tkdp-map-buttons"><button type="button" class="button" data-map="close">Fermer</button>'
 			+ '<button type="button" class="button button-primary" data-map="save">Enregistrer la carte</button></div></div>'
 			+ '</div>'
@@ -397,6 +400,29 @@
 			btn.disabled = false;
 		}
 
+		/** Renvoie un nouveau lien privé à chaque personne affectée, ou coupe tous les liens de la tâche. */
+		async function links(action) {
+			if (dirty) {
+				ctx.notify('Enregistrez d\'abord la carte.', 'error');
+				return;
+			}
+			if (action === 'revoke' && !window.confirm('Couper tous les liens déjà envoyés pour cette tâche ? Les personnes ne pourront plus ouvrir leur carte.')) {
+				return;
+			}
+			try {
+				const res = await ctx.api('/tasks/' + task.id + '/links', { method: 'POST', data: { action: action } });
+				if (action === 'revoke') {
+					ctx.notify(res.revoked ? res.revoked + ' lien' + (res.revoked > 1 ? 's coupés' : ' coupé') + '.' : 'Aucun lien actif.');
+				} else if (res.notified < res.expected) {
+					ctx.notify((res.expected - res.notified) + ' e-mail(s) n\'ont pas pu être envoyés.', 'error');
+				} else {
+					ctx.notify('Nouveau lien envoyé à ' + res.notified + ' personne' + (res.notified > 1 ? 's' : '') + '.');
+				}
+			} catch (e) {
+				ctx.fail(e);
+			}
+		}
+
 		wrap.addEventListener('click', (e) => {
 			const btn = e.target.closest('[data-map]');
 			if (!btn) {
@@ -444,6 +470,10 @@
 					break;
 				case 'abort':
 					stopDrawing();
+					break;
+				case 'links-send':
+				case 'links-revoke':
+					links(btn.dataset.map === 'links-send' ? 'send' : 'revoke');
 					break;
 				case 'focus':
 					map.fitBounds(zones[selected]._layer.getBounds(), { padding: [40, 40], maxZoom: 18 });

@@ -24,7 +24,7 @@ param(
     [switch] $Prod,
     [switch] $Verifier,
     [string] $Restaurer,
-    [ValidateSet( 'sp_build', 'sp-compta', 'tkd-cotisations', 'claira-tkd-parcours', 'tkd-gala' )] [string] $Extension = 'sp_build',
+    [ValidateSet( 'sp_build', 'sp-compta', 'tkd-cotisations', 'claira-tkd-parcours', 'tkd-gala', 'tkd-projets' )] [string] $Extension = 'sp_build',
     # Nom de la session WinSCP enregistrée. Au PC maison (17/11/2026) elle s'appelle
     # « tkdclad@ftp.cluster121.hosting.ovh.net » : même serveur OVH que cluster021.
     [string] $Session = 'tkdclad@ftp.cluster021.hosting.ovh.net'
