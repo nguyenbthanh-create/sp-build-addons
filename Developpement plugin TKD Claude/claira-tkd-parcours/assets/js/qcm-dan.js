@@ -839,9 +839,13 @@
 			var cle = texte.toLowerCase() + '|' + mode + '|' + theme;
 			if ( envoyes[ cle ] ) { return; }
 			envoyes[ cle ] = true;
-			var entetes = { 'Content-Type': 'application/json' }, jwt = null;
-			try { jwt = window.localStorage.getItem( 'spcal_jwt' ); } catch ( e ) { /* stockage indisponible */ }
+			var entetes = { 'Content-Type': 'application/json' }, jwt = null, entr = null;
+			try {
+				jwt = window.localStorage.getItem( 'spcal_jwt' );
+				entr = window.localStorage.getItem( 'spcal_trainer_token' );
+			} catch ( e ) { /* stockage indisponible */ }
 			if ( jwt ) { entetes[ 'X-Spcal-Jwt' ] = jwt; }
+			if ( entr ) { entetes[ 'X-Spcal-Entraineur' ] = entr; }
 			if ( cfg.restNonce ) { entetes[ 'X-WP-Nonce' ] = cfg.restNonce; }
 			fetch( cfg.journal, { method: 'POST', headers: entetes, credentials: 'same-origin', body: JSON.stringify( { texte: texte, mode: mode, theme: theme } ) } )
 				[ 'catch' ]( function () { /* sans conséquence pour l'adhérent */ } );

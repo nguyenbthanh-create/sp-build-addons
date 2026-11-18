@@ -73,7 +73,8 @@ function claira_tkd_qcm_page_url() {
 /* --------------------------------------------------------------------------
  * Accès réservé (17/11/2026) : la page et son entrée de menu ne s'affichent
  * qu'aux adhérents actifs, à jour et de catégorie Ado / Adulte, connectés à
- * l'application du club /app/ (sp_build) sur cet appareil. Les adhérents n'ont
+ * l'application du club /app/ (sp_build) sur cet appareil (et, depuis le 18/11/2026, aux entraîneurs
+ * ouverts par leur lien personnel dans l'application : claira_tkd_qcm_entraineur_ok()). Les adhérents n'ont
  * pas de compte WordPress : on lit la session de l'application (localStorage
  * « spcal_jwt ») et on interroge sp_build (GET spcal/v1/eleve/me), voir
  * assets/js/qcm-acces.js. Les comptes WordPress du club (bureau, encadrement)
@@ -123,6 +124,7 @@ function claira_tkd_qcm_acces_head() {
 	}
 	wp_print_inline_script_tag(
 		'window.ClairaQcmAccesApi=' . wp_json_encode( esc_url_raw( rest_url( 'spcal/v1/eleve/me' ) ) ) . ";\n"
+		. 'window.ClairaQcmAccesEntr=' . wp_json_encode( esc_url_raw( rest_url( 'claira-tkd/v1/qcm/acces-entraineur' ) ) ) . ";\n"
 		. file_get_contents( $script ) // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- fichier local du plugin.
 	);
 }
@@ -151,6 +153,36 @@ function claira_tkd_qcm_rest_routes() {
 		'callback'            => 'claira_tkd_qcm_rest_sans_resultat',
 		'permission_callback' => 'claira_tkd_qcm_rest_peut_noter',
 	) );
+	// Entraîneur ouvert par son lien personnel dans l'application (18/11/2026) : oui / non seulement.
+	register_rest_route( 'claira-tkd/v1', '/qcm/acces-entraineur', array(
+		'methods'             => 'GET',
+		'callback'            => static function ( WP_REST_Request $req ) {
+			return rest_ensure_response( array( 'ok' => claira_tkd_qcm_entraineur_ok( (string) $req->get_header( 'X-Spcal-Entraineur' ) ) ) );
+		},
+		'permission_callback' => '__return_true', // contrôle par le jeton personnel
+	) );
+}
+
+/**
+ * Jeton personnel d'entraîneur (sp_build, 64 caractères hexadécimaux) valable ? Vérifié par
+ * sp_build (POST spcal/v1/entraineur/session) ; seule la réponse oui / non est gardée (6 h),
+ * le PIN de pointage que renvoie sp_build ne sort jamais d'ici.
+ */
+function claira_tkd_qcm_entraineur_ok( $token ) {
+	if ( ! preg_match( '/^[0-9a-f]{64}$/', $token ) ) {
+		return false;
+	}
+	$cle = 'claira_qcm_entr_' . md5( $token );
+	$ok  = get_transient( $cle );
+	if ( false === $ok ) {
+		$r = new WP_REST_Request( 'POST', '/spcal/v1/entraineur/session' );
+		$r->set_param( 'token', $token );
+		$rep = rest_do_request( $r );
+		$d   = $rep->is_error() ? null : $rep->get_data();
+		$ok  = ( is_array( $d ) && ! empty( $d['success'] ) ) ? 'oui' : 'non';
+		set_transient( $cle, $ok, 6 * HOUR_IN_SECONDS );
+	}
+	return 'oui' === $ok;
 }
 
 /**
@@ -159,6 +191,10 @@ function claira_tkd_qcm_rest_routes() {
  */
 function claira_tkd_qcm_rest_peut_noter( WP_REST_Request $req ) {
 	if ( claira_tkd_qcm_acces_compte() ) {
+		return true;
+	}
+	$entr = (string) $req->get_header( 'X-Spcal-Entraineur' );
+	if ( '' !== $entr && claira_tkd_qcm_entraineur_ok( $entr ) ) {
 		return true;
 	}
 	$jwt = (string) $req->get_header( 'X-Spcal-Jwt' );
@@ -195,7 +231,7 @@ function claira_tkd_qcm_rest_sans_resultat( WP_REST_Request $req ) {
 	$theme = substr( preg_replace( '/[^a-z0-9_]/', '', (string) $req->get_param( 'theme' ) ), 0, 80 );
 
 	// 40 envois par heure et par personne (compte ou session de l'application).
-	$qui    = is_user_logged_in() ? 'u' . get_current_user_id() : (string) $req->get_header( 'X-Spcal-Jwt' );
+	$qui    = is_user_logged_in() ? 'u' . get_current_user_id() : (string) $req->get_header( 'X-Spcal-Jwt' ) . '|' . (string) $req->get_header( 'X-Spcal-Entraineur' );
 	$cle_nb = 'claira_qcm_nb_' . md5( $qui );
 	$nb     = (int) get_transient( $cle_nb );
 	if ( $nb >= 40 ) {
