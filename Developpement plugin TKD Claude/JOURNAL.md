@@ -585,3 +585,12 @@ Détails :
 - Envoi en deux temps (fichiers du module, puis fichier principal qui accroche la route REST).
 - Vérifié sur le test : anonyme et faux jeton refusés (401), adhérent fictif QCM TEST accepté, 3 lignes d'essai visibles dans le tableau de bord (laissées pour démonstration). **Prod le 18/11/2026 vers 8 h 27** (feu vert de l'utilisateur), en deux temps : sauvegardes `…_3dc4c3e_etape1/sauvegarde-prod-2026-11-18_082726` (exactement la 1.14.2) et `…_3dc4c3e/sauvegarde-prod-2026-11-18_082731`. Contrôle des fichiers conforme juste après et quelques minutes plus tard. En ligne : la page charge la 1.14.3, la route refuse un anonyme et un faux jeton (401), le tableau de bord montre 724 questions et la section « Recherches sans résultat », sans erreur PHP.
 - Piège : un onglet Chrome piloté par Claude peut rester bloqué sur le site de test après des requêtes trop longues ; rouvrir un onglet suffit.
+
+**QCM Dan pour les entraîneurs — TKD Parcours 1.14.4 + sp_build `c1a810c`, site de test le 18/11/2026 vers 8 h 35** (Claira `0b6ae4a`).
+- Demande de l'utilisateur : le lien du QCM dans l'application sur son Android. Il n'y a pas d'application Android à part : `/app/` est la même partout. Le bouton manquait parce que l'utilisateur l'ouvre en **espace entraîneur**, où il n'était pas prévu.
+- **sp_build** : bouton « Réviser le QCM Dan » sur l'Accueil de l'espace entraîneur, pour un entraîneur ouvert par son lien personnel. Il n'apparaît pas en mode PIN seul.
+- **TKD Parcours** : `qcm-acces.js` accepte aussi le jeton d'entraîneur (`spcal_trainer_token`), contrôlé par la nouvelle route `GET claira-tkd/v1/qcm/acces-entraineur`. Celle-ci interroge sp_build (`entraineur/session`) et ne renvoie que oui ou non : le PIN reste sur le serveur. Les recherches sans résultat des entraîneurs sont acceptées.
+- **Vérifié** :
+  - hors WordPress : 6 contrôles serveur de plus, l'espace entraîneur affiche le bouton, la page reconnaît l'entraîneur et affiche le retour, un faux jeton est refusé, pas de bouton en mode PIN, le parcours adhérent est inchangé ;
+  - sur le test : la route répond « non » sans jeton, avec un faux jeton ou avec un texte qui n'est pas un jeton ; la page est en 1.14.4.
+- **Pas essayé avec un vrai entraîneur** : l'administration n'affiche pas les jetons. À faire sur l'Android de l'utilisateur. **Prod : en attente du feu vert** (Claira d'abord, puis sp_build).
