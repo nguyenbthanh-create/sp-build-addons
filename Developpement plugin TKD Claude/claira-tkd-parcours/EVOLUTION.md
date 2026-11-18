@@ -1,5 +1,15 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : une question collée mot pour mot passe en tête (v1.14.8)
+
+Question de l'utilisateur : « si je colle une question du QCM officiel, la réponse officielle sort-elle en premier ? »
+
+Mesure sur les 724 questions officielles collées une à une : 714 sortaient en 1re position. Les 10 autres sortaient en 2e position, derrière une variante proche (6e pour « Qu'est-ce que e-Licence ? »). Aucune question du club ne passait devant.
+
+Correction dans `Moteur.prototype.chercher` : une question dont l'énoncé normalisé est identique au texte collé passe en tête.
+
+Vérifié hors WordPress : les 739 questions (officielles et du club), collées une à une, sortent toutes en 1re position. « DAC », « date de création de la FFTDA » et le repli sont inchangés.
+
 ## 2026-11-18 — QCM Dan : 10 questions d'arbitrage des annales (v1.14.7, test puis prod le 18/11/2026 à 14 h 25)
 
 Demande de l'utilisateur : ajouter les questions d'arbitrage des annales 1er et 2e Dan 2022/2023. Elles ont été écartées en 1.14.6 faute de source. Les réponses ont depuis été lues dans les textes de fftda.fr → Compétition → Règlement / Inscription / Dérogation :

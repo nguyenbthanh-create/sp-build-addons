@@ -385,8 +385,15 @@
 			liste = candidats.filter( function ( q ) { return trouves[ q.i ] >= 1; } );
 			repli = liste.length > 0;
 		}
+		// Question collée mot pour mot (18/11/2026) : elle passe en tête, devant les questions proches
+		// (10 questions officielles sur 724 sortaient en 2e position, derrière une variante plus longue).
+		var collee = normaliser( reste );
+		function exacte( q ) {
+			if ( ! q.qn ) { q.qn = normaliser( q.q ); }
+			return collee.length > 8 && q.qn === collee ? 1 : 0;
+		}
 		liste.sort( function ( a, b ) {
-			return ( trouves[ b.i ] - trouves[ a.i ] ) || ( scores[ b.i ] - scores[ a.i ] ) || ( a.i - b.i );
+			return ( exacte( b ) - exacte( a ) ) || ( trouves[ b.i ] - trouves[ a.i ] ) || ( scores[ b.i ] - scores[ a.i ] ) || ( a.i - b.i );
 		} );
 		if ( ( phrase || repli ) && liste.length > 15 ) { liste = liste.slice( 0, 15 ); }
 		return { liste: liste, termes: termes, expressions: expressions, surligner: surligner, phrase: phrase, repli: repli };
