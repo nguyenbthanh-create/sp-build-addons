@@ -739,5 +739,5 @@ Détails :
 ## 18/11/2026 — QCM Dan 1.14.7 en prod (14 h 25)
 
 - Feu vert de l'utilisateur. 10 questions d'arbitrage des annales 1er/2e Dan 2022/2023 ajoutées au thème « Annales (ajouts du club) » (15 questions, 739 au total), réponses lues dans les règlements FFTDA (arbitrage combat 2022, réglementation compétitions 30/09/2025, poomsae sept. 2025, catégories 2026/2027).
-- Test puis prod, fichiers conformes, la prod sert `qcm-dan.js?ver=1.14.7`, validée par l'utilisateur sur iPhone. Sauvegarde : `DEPLOIEMENT_2026-11-18_claira-tkd-parcours_2915f57/sauvegarde-prod-2026-11-18_142509`.
+- Test puis prod, fichiers conformes, la prod sert `qcm-dan.js?ver=1.14.7`, validée par l'utilisateur sur iPhone et Android. Sauvegarde : `DEPLOIEMENT_2026-11-18_claira-tkd-parcours_2915f57/sauvegarde-prod-2026-11-18_142509`.
 - À revoir à chaque saison : catégories de poids et barème des quotas (notes des questions 6, 11 et 12).
