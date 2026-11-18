@@ -1,6 +1,6 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : questions non officielles hors des examens blancs (v1.14.9)
+## 2026-11-18 — QCM Dan : questions non officielles hors des examens blancs (v1.14.9, test puis prod le 18/11/2026 à 14 h 38)
 
 Demande de l'utilisateur : retirer de l'examen blanc tout ce qui n'est pas officiel, et le garder à part comme « connaissances non officielles ».
 
