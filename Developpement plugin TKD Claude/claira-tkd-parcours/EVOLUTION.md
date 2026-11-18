@@ -1,5 +1,23 @@
 # Evolution log
 
+## 2026-11-18 — QCM Dan : les deux dates de création de la FFTDA (v1.14.6, pas encore en ligne)
+
+Des fiches trouvées sur Internet donnent le 1er septembre 1995 comme date de création. Les quiz officiels ont en fait deux questions, avec deux dates :
+- « Qu'est-il arrivé le 1er septembre 1995 ? » (historique fédéral, n° 10) : le CNT se transforme en FFTDA ;
+- « Quand et où la FFTDA a-t-elle été fondée selon l'article 1er des statuts ? » (statuts, n° 1) : le 14 octobre 1994, à la Préfecture de Police de Paris.
+
+La première n'était pas trouvée par « création FFTDA », car elle ne contient aucun mot de création.
+
+Changements dans `assets/js/qcm-dan.js` :
+- nouvel objet `COMPLEMENTS` pour ajouter des éléments à une question sans toucher `data/qcm-dan.js`, qui est régénéré depuis les PDF :
+  - mots-clés cachés (poids 4) ;
+  - encadré « 💡 À retenir » (`.claira-qcm-note` dans `assets/css/qcm-dan.css`) ;
+- les deux questions ont des mots-clés (création, fondation, naissance, date) et la même note : deux dates, et comment les distinguer d'après l'énoncé.
+
+Vérifié hors WordPress :
+- « création FFTDA », « date de création de la FFTDA » et « naissance FFTDA » donnent les deux questions en tête, avec la note ;
+- « DAC » est inchangé.
+
 ## 2026-11-18 — QCM Dan : « date de création de la FFTDA » trouvée (v1.14.5, test puis prod le 18/11/2026 vers 13 h 30)
 
 Retour d'un adhérent : à l'examen, il a eu la question de la date de création de la FFTDA. La page https://www.fftda.fr/fr/99-historique-federal.html était déjà couverte par le quiz officiel « Historique fédéral » ; la question des statuts (« Quand et où la FFTDA a-t-elle été fondée… ») était aussi dans les données. Le problème venait de la recherche : « date de création de la FFTDA » ne trouvait rien.
