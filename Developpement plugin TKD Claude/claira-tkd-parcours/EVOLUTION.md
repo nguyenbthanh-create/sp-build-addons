@@ -1,6 +1,47 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : les deux dates de création de la FFTDA (v1.14.6, pas encore en ligne)
+## 2026-11-18 — QCM Dan : synonymes, repli, questions du club, deux dates FFTDA (v1.14.6, test puis prod le 18/11/2026)
+
+Demandé par l'utilisateur : « Tout, puis prod ».
+
+**Recherche** (`assets/js/qcm-dan.js`), d'après la relecture des 3 483 mots des quiz :
+- **Niveau 1, mêmes sens** (`SYNONYMES`) :
+  - antidopage → dopage, babies → baby ;
+  - premier / première / 1re / 1ère → 1er, deuxième / 2ème → 2e, et ainsi de suite jusqu'au 6e ;
+  - femmes / filles / féminines → féminin, hommes / garçons / masculins → masculin ;
+  - taeguk / taegueug / « tae geug » → taegeuk, koryeo → koryo, kumgang → keumgang, chagi → chagui ;
+  - tarif / coût → prix, payer / payant → paiement, ministre → ministère, valable → validité.
+- **Niveau 2, mots voisins** (`VOISINS_BRUTS`) : cherchés en plus du mot tapé, avec un poids de 0,6. Les questions qui contiennent le mot exact restent devant.
+  - adhérent → licencié, membre, pratiquant ;
+  - prof / professeur / moniteur → enseignant, entraîneur, éducateur, coach, encadrant ;
+  - vétéran → masters ; noire → dan ; kup / gup → keup ;
+  - tournoi → compétition, championnat, open, coupe ; juge ↔ arbitre ;
+  - punition → sanction, amende, suspension, radiation ; harcèlement / abus / agression → violences ; âge → ans ;
+  - sigles : AG, CD, CIO, CNOSF et CDT cherchent leur forme longue ;
+  - para / handi → paralympique, handicap.
+- **Niveau 3, repli** : si aucune question ne contient tous les mots, la page montre les 15 plus proches, avec le message « Aucune question ne contient tous vos mots ; voici les plus proches ».
+  - La recherche est quand même notée comme sans résultat.
+  - Le tableau de bord, qui recompte « Aujourd'hui », n'utilise pas le repli.
+
+**Questions du club** (`QUESTIONS_CLUB`, thème « Annales (ajouts du club) », ajouté à la fin des thèmes) : 5 questions des annales 2e Dan 2022/2023 absentes des quiz officiels.
+- Date de création de la FFTDA (1er septembre 1995).
+- Nombre de présidents depuis 1996 (4).
+- Premier Français champion du monde, en 1993 à New York (Mikaël Meloul).
+- Date de création de la WT (28 mai 1973).
+- Première démonstration en France (1968).
+
+Les réponses viennent de fftda.fr, Historique fédéral, et de la publication des 40 ans de World Taekwondo pour le 28 mai 1973. Les questions d'arbitrage des annales (catégories de poids, âge de référence, plastron électronique) ne sont pas ajoutées : je n'ai pas trouvé de source officielle à jour. Sans PDF, la carte ne montre pas de lien « quiz FFTDA ».
+
+**Vérifié hors WordPress** :
+- 729 questions ;
+- les 5 questions sortent sur leur sujet ;
+- AG quorum, antidopage, premier dan, taeguk et harcèlement trouvent leurs questions ;
+- « licorne poomsae » donne le repli, enregistré dans les recherches sans résultat ;
+- DAC et fond d'œil sont inchangés ;
+- l'examen blanc et le tableau de bord fonctionnent ;
+- les identifiants `club_annales#n` sont acceptés par le serveur.
+
+### Les deux dates de création de la FFTDA (même version)
 
 Des fiches trouvées sur Internet donnent le 1er septembre 1995 comme date de création. Les quiz officiels ont en fait deux questions, avec deux dates :
 - « Qu'est-il arrivé le 1er septembre 1995 ? » (historique fédéral, n° 10) : le CNT se transforme en FFTDA ;

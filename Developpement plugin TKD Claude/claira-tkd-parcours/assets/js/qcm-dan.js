@@ -81,8 +81,55 @@
 		// « date de création de la FFTDA » (retour d'examen, 18/11/2026) : création, créée, fondée, fondation ont le même sens.
 		// Lu avant la racine : « fond » seul (« sur le fond ») n'est pas touché.
 		creation: 'creer', creations: 'creer', cree: 'creer', creee: 'creer', crees: 'creer', creees: 'creer', creez: 'creer', creant: 'creer',
-		fonde: 'creer', fondee: 'creer', fondes: 'creer', fondees: 'creer', fondation: 'creer', fonder: 'creer'
+		fonde: 'creer', fondee: 'creer', fondes: 'creer', fondees: 'creer', fondation: 'creer', fonder: 'creer',
+		// Niveau 1 (18/11/2026, relecture des 3 483 mots des quiz) : mêmes sens, autres écritures.
+		antidopage: 'dopage', babies: 'baby',
+		premier: '1er', premiere: '1er', premiers: '1er', premieres: '1er', '1ere': '1er', '1re': '1er',
+		deuxieme: '2e', '2eme': '2e', troisieme: '3e', '3eme': '3e', quatrieme: '4e', '4eme': '4e',
+		cinquieme: '5e', '5eme': '5e', sixieme: '6e', '6eme': '6e',
+		feminine: 'feminin', feminins: 'feminin', feminines: 'feminin', femme: 'feminin', femmes: 'feminin', fille: 'feminin', filles: 'feminin',
+		masculine: 'masculin', masculins: 'masculin', masculines: 'masculin', homme: 'masculin', hommes: 'masculin', garcon: 'masculin', garcons: 'masculin',
+		taeguk: 'taegeuk', taegueug: 'taegeuk', taegeug: 'taegeuk', taegeuks: 'taegeuk',
+		koryeo: 'koryo', kumgang: 'keumgang', chagi: 'chagui',
+		tarif: 'prix', tarifs: 'prix', cout: 'prix', couts: 'prix',
+		payer: 'paiement', paye: 'paiement', payant: 'paiement', payants: 'paiement', paiements: 'paiement',
+		ministre: 'ministere', valable: 'validite', valables: 'validite'
 	};
+
+	// Niveau 2 (18/11/2026) : mots voisins, cherchés en plus du mot tapé mais comptés moins fort (0,6),
+	// pour que les questions qui contiennent le mot exact restent devant. Clé : mot tapé (normalisé) ;
+	// valeur : mots ou expressions (une expression est cherchée telle quelle dans le texte normalisé).
+	var VOISINS_BRUTS = {
+		adherent: [ 'licencie', 'membre', 'pratiquant' ], adherente: [ 'licencie', 'membre', 'pratiquant' ],
+		adherents: [ 'licencie', 'membre', 'pratiquant' ],
+		professeur: [ 'enseignant', 'entraineur', 'educateur', 'coach', 'encadrant' ],
+		prof: [ 'enseignant', 'entraineur', 'educateur', 'coach', 'encadrant' ],
+		moniteur: [ 'enseignant', 'entraineur', 'educateur', 'encadrant' ],
+		instructeur: [ 'enseignant', 'entraineur', 'educateur', 'encadrant' ],
+		veteran: [ 'masters' ], veterans: [ 'masters' ],
+		athlete: [ 'sportif', 'competiteur' ], athletes: [ 'sportif', 'competiteur' ],
+		noire: [ 'dan' ], kup: [ 'keup' ], gup: [ 'keup' ],
+		tournoi: [ 'competition', 'championnat', 'open', 'coupe' ], tournois: [ 'competition', 'championnat', 'open', 'coupe' ],
+		juge: [ 'arbitre' ], juges: [ 'arbitre' ], arbitre: [ 'juge' ],
+		punition: [ 'sanction', 'amende', 'suspension', 'radiation' ], exclusion: [ 'sanction', 'suspension', 'radiation' ],
+		harcelement: [ 'violences' ], abus: [ 'violences' ], agression: [ 'violences' ], maltraitance: [ 'violences' ],
+		age: [ 'ans' ],
+		ag: [ 'assemblee generale' ], cd: [ 'comite directeur' ], cio: [ 'comite international olympique' ],
+		cnosf: [ 'comite national olympique' ], cdt: [ 'comite departemental' ],
+		para: [ 'paralympique', 'handicap' ], handi: [ 'paralympique', 'handicap' ],
+		parataekwondo: [ 'paralympique', 'handicap', 'para' ], handisport: [ 'paralympique', 'handicap', 'para' ]
+	};
+	var VOISINS = null; // Construit au premier usage, une fois racine() définie : clé = racine du mot tapé.
+	function voisins( m ) {
+		if ( ! VOISINS ) {
+			VOISINS = {};
+			Object.keys( VOISINS_BRUTS ).forEach( function ( k ) {
+				var r = racine( k );
+				VOISINS[ r ] = ( VOISINS[ r ] || [] ).concat( VOISINS_BRUTS[ k ] );
+			} );
+		}
+		return VOISINS[ m ] || [];
+	}
 
 	// Sigles à points (« D.A.C. », « C.Q.P. M.A.M. », « D.E.J.E.P.S. ») : écrits ainsi dans les quiz FFTDA,
 	// ils devenaient des lettres isolées et « DAC » ne trouvait rien (retour du 18/11/2026).
@@ -95,6 +142,7 @@
 			.replace( /œ/g, 'oe' ).replace( /æ/g, 'ae' )
 			.replace( /[’'`]/g, ' ' )
 			.replace( /[^a-z0-9]+/g, ' ' )
+			.replace( /\btae (geug|geuk|guk|gueug)\b/g, 'taegeuk' ) // « Tae Geug » écrit en deux mots dans certains quiz
 			.trim();
 	}
 
@@ -135,6 +183,47 @@
 		'quiz_historique_federal_fftda#10': { mots: 'création fondation naissance date FFTDA fédération', note: NOTE_FFTDA },
 		'quiz_statuts_fftda#1': { mots: 'création naissance date', note: NOTE_FFTDA }
 	};
+
+	// Questions du club (18/11/2026) : posées aux annales FFTDA 2e Dan 2022/2023 (« QCM 2e Dan MAJ sept 2023 », énoncés sans réponses)
+	// mais absentes des 32 quiz officiels. Réponses vérifiées sur fftda.fr (Historique fédéral) ou auprès de World Taekwondo.
+	// Même forme que data/qcm-dan.js : [ n°, question, réponses, index de la bonne, source ] ; thème ajouté à la fin (les n° des autres ne bougent pas).
+	var THEME_CLUB = {
+		id: 'club_annales', nom: 'Annales (ajouts du club)', titre: 'Questions des annales absentes des quiz officiels',
+		source: 'Annales FFTDA 2e Dan 2022/2023 ; réponses : fftda.fr — Historique fédéral (https://www.fftda.fr/fr/99-historique-federal.html)', pdf: ''
+	};
+	var QUESTIONS_CLUB = [
+		[ 1, 'Quelle est la date de création de la FFTDA ?',
+			[ 'Le 8 octobre 1994', 'Le 1er septembre 1995', 'Le 21 juin 1996', 'Le 28 mai 1973' ], 1,
+			'fftda.fr/fr/99 – 1995 (annales 2e Dan, n° 2)' ],
+		[ 2, 'Combien de présidents la FFTDA a-t-elle élus depuis 1996, d\'après l\'historique fédéral ?',
+			[ '3', '4 : Paul Viscogliosi, Roger Piarulli, Denis Odjo et Hassane Sadok', '5', '6' ], 1,
+			'fftda.fr/fr/99 – 1996 à 2020 (annales 2e Dan, n° 1), liste vue le 18/11/2026' ],
+		[ 3, 'Qui est le premier Français à remporter un titre de Champion du Monde, en 1993 à New York ?',
+			[ 'Pascal Gentil', 'Mikaël Meloul', 'Myriam Baverel', 'Gwladys Épangue' ], 1,
+			'fftda.fr/fr/99 – 1993, catégorie mi-lourds (annales 2e Dan, n° 4)' ],
+		[ 4, 'À quelle date précise la Fédération Mondiale de Taekwondo (WTF, aujourd\'hui World Taekwondo) a-t-elle été créée ?',
+			[ 'Le 28 mai 1973', 'Le 8 octobre 1973', 'Le 28 mai 1980', 'Le 1er septembre 1972' ], 0,
+			'World Taekwondo, publication des 40 ans (2013) ; fftda.fr/fr/99 donne l\'année 1973 (annales 2e Dan, n° 5)' ],
+		[ 5, 'En quelle année a eu lieu la première démonstration de Taekwondo en France ?',
+			[ '1969', '1968', '1973', '1984' ], 1,
+			'fftda.fr/fr/99 – 1968, Coupe de France de Karaté à Fontainebleau (annales 2e Dan, n° 6)' ]
+	];
+	var NOTES_CLUB = {
+		'club_annales#1': NOTE_FFTDA,
+		'club_annales#2': 'Liste de l\'historique fédéral au 18/11/2026. Denis Odjo, d\'abord président par intérim (4 juillet 2015), est élu le 18 décembre 2016. Vérifiez qu\'aucune élection n\'a eu lieu depuis.',
+		'club_annales#5': 'Ne pas confondre : 1968, démonstration de l\'équipe coréenne à Fontainebleau ; 1969, le Taekwondo est introduit en France par Maître Lee Kwan Young.'
+	};
+	Object.keys( NOTES_CLUB ).forEach( function ( id ) { COMPLEMENTS[ id ] = { note: NOTES_CLUB[ id ] }; } );
+
+	// Ajoute le thème et les questions du club aux données FFTDA (une seule fois).
+	function ajouterClub( donnees ) {
+		if ( donnees.clubAjoute ) { return donnees; }
+		var t = donnees.themes.length;
+		donnees.themes.push( THEME_CLUB );
+		QUESTIONS_CLUB.forEach( function ( q ) { donnees.questions.push( [ t ].concat( q ) ); } );
+		donnees.clubAjoute = true;
+		return donnees;
+	}
 
 	function Moteur( donnees ) {
 		var self = this;
@@ -213,17 +302,41 @@
 					if ( ! vu[ i ] || vu[ i ] < poids ) { vu[ i ] = poids; }
 				} );
 			} );
+			// Niveau 2 : mots voisins (poids 0,6) ; une expression est cherchée dans le texte entier.
+			voisins( m ).forEach( function ( v ) {
+				if ( v.indexOf( ' ' ) !== -1 ) {
+					candidats.forEach( function ( q ) {
+						if ( q.texte.indexOf( v ) !== -1 && ( ! vu[ q.i ] || vu[ q.i ] < 1.8 ) ) { vu[ q.i ] = 1.8; }
+					} );
+					v.split( ' ' ).forEach( function ( w ) { surligner[ racine( w ) ] = true; } );
+					return;
+				}
+				var r = racine( v ), p = self.index[ r ];
+				if ( ! p ) { return; }
+				surligner[ r ] = true;
+				Object.keys( p ).forEach( function ( i ) {
+					if ( ! ok[ i ] ) { return; }
+					var poids = p[ i ] * 0.6;
+					if ( ! vu[ i ] || vu[ i ] < poids ) { vu[ i ] = poids; }
+				} );
+			} );
 			Object.keys( vu ).forEach( function ( i ) { scores[ i ] += vu[ i ]; trouves[ i ] += 1; } );
 		} );
 
 		var phrase = termes.length >= 5;
 		var minimum = opts.mode === 'un' ? 1 : ( phrase ? Math.ceil( termes.length * 0.5 ) : termes.length );
 		var liste = candidats.filter( function ( q ) { return trouves[ q.i ] >= minimum; } );
+		// Niveau 3 : aucune question n'a tous les mots → les plus proches (au moins un mot), si l'appelant le demande.
+		var repli = false;
+		if ( ! liste.length && opts.repli && minimum > 1 ) {
+			liste = candidats.filter( function ( q ) { return trouves[ q.i ] >= 1; } );
+			repli = liste.length > 0;
+		}
 		liste.sort( function ( a, b ) {
 			return ( trouves[ b.i ] - trouves[ a.i ] ) || ( scores[ b.i ] - scores[ a.i ] ) || ( a.i - b.i );
 		} );
-		if ( phrase && liste.length > 15 ) { liste = liste.slice( 0, 15 ); }
-		return { liste: liste, termes: termes, expressions: expressions, surligner: surligner, phrase: phrase };
+		if ( ( phrase || repli ) && liste.length > 15 ) { liste = liste.slice( 0, 15 ); }
+		return { liste: liste, termes: termes, expressions: expressions, surligner: surligner, phrase: phrase, repli: repli };
 	};
 
 	// Texte HTML avec les mots trouvés surlignés.
@@ -263,8 +376,8 @@
 			reponses,
 			q.note ? el( 'p', { class: 'claira-qcm-note', text: '💡 À retenir : ' + q.note } ) : null,
 			el( 'p', { class: 'claira-qcm-source' }, [
-				'Source : ' + q.src + ' — ',
-				el( 'a', { href: th.pdf, target: '_blank', rel: 'noopener', text: 'quiz FFTDA (PDF)' } )
+				'Source : ' + q.src + ( th.pdf ? ' — ' : '' ),
+				th.pdf ? el( 'a', { href: th.pdf, target: '_blank', rel: 'noopener', text: 'quiz FFTDA (PDF)' } ) : null
 			] )
 		] );
 	}
@@ -307,11 +420,11 @@
 				return;
 			}
 			var mode = modeUn.checked ? 'un' : 'tous';
-			var res = moteur.chercher( texte, { mode: mode, theme: theme } );
+			var res = moteur.chercher( texte, { mode: mode, theme: theme, repli: true } );
 			dernier = res;
 			afficher();
-			// Recherche restée sans résultat : signalée (page du site seulement, voir noterSansResultat).
-			if ( ! res.liste.length && texte && options.surVide ) {
+			// Recherche restée sans résultat (même rattrapée par le repli) : signalée (page du site seulement, voir noterSansResultat).
+			if ( ( ! res.liste.length || res.repli ) && texte && options.surVide ) {
 				options.surVide( texte, mode, theme >= 0 ? moteur.themes[ theme ].id : '' );
 			}
 		}
@@ -323,7 +436,9 @@
 			var n = res.liste.length;
 			info.textContent = n === 0
 				? 'Aucune question trouvée. Essayez un autre mot, moins de mots, ou « Au moins un mot ».'
-				: n + ' question' + ( n > 1 ? 's' : '' ) + ( res.phrase ? ' (les plus proches de votre question, par pertinence)' : '' ) + '.';
+				: res.repli
+					? 'Aucune question ne contient tous vos mots ; voici ' + ( n > 1 ? 'les ' + n + ' plus proches.' : 'la plus proche.' )
+					: n + ' question' + ( n > 1 ? 's' : '' ) + ( res.phrase ? ' (les plus proches de votre question, par pertinence)' : '' ) + '.';
 			var max = Math.min( n, 200 );
 			for ( var k = 0; k < max; k++ ) {
 				resultats.appendChild( carteQuestion( moteur, res.liste[ k ], res, options ) );
@@ -955,7 +1070,7 @@
 			racineEl.querySelector( '.claira-qcm-app' ).innerHTML = '<p class="claira-qcm-info">Impossible de charger les questions. Rechargez la page.</p>';
 			return;
 		}
-		var moteur = new Moteur( donnees );
+		var moteur = new Moteur( ajouterClub( donnees ) );
 		if ( cfg.mode === 'admin' ) { tableauDeBord( moteur, racineEl ); return; }
 		boutonRetour( racineEl, cfg );
 		// Site : réservé aux adhérents (contrôle de assets/js/qcm-acces.js, imprimé dans <head>).
