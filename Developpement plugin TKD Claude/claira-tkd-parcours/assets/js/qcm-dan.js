@@ -188,7 +188,9 @@
 	// mais absentes des 32 quiz officiels. Réponses vérifiées sur fftda.fr (Historique fédéral) ou auprès de World Taekwondo.
 	// Même forme que data/qcm-dan.js : [ n°, question, réponses, index de la bonne, source ] ; thème ajouté à la fin (les n° des autres ne bougent pas).
 	var THEME_CLUB = {
-		id: 'club_annales', nom: 'Annales (ajouts du club)', titre: 'Questions des annales absentes des quiz officiels',
+		id: 'club_annales', nom: 'Connaissances complémentaires (non officiel)', titre: 'Questions des annales absentes des quiz officiels',
+		// Non officiel (choix de l'utilisateur, 18/11/2026) : jamais dans un examen blanc, ni tiré au sort, ni sélectionnable.
+		officiel: false,
 		source: 'Annales FFTDA 1er et 2e Dan 2022/2023 ; réponses : fftda.fr — Historique fédéral (https://www.fftda.fr/fr/99-historique-federal.html) et règlements de compétition (https://www.fftda.fr/fr/16-reglement-inscription-derogation.html)', pdf: ''
 	};
 	var QUESTIONS_CLUB = [
@@ -283,8 +285,10 @@
 		this.themes = donnees.themes;
 		this.questions = donnees.questions.map( function ( a, i ) {
 			var th = donnees.themes[ a[ 0 ] ];
-			return { i: i, t: a[ 0 ], n: a[ 1 ], q: a[ 2 ], r: a[ 3 ], ok: a[ 4 ], src: a[ 5 ], id: th.id + '#' + a[ 1 ] };
+			return { i: i, t: a[ 0 ], n: a[ 1 ], q: a[ 2 ], r: a[ 3 ], ok: a[ 4 ], src: a[ 5 ], id: th.id + '#' + a[ 1 ], off: th.officiel !== false };
 		} );
+		// Questions officielles FFTDA seules : celles des examens blancs.
+		this.officielles = this.questions.filter( function ( q ) { return q.off; } );
 		this.parId = {};
 		this.questions.forEach( function ( q ) { self.parId[ q.id ] = q; } );
 
@@ -425,10 +429,11 @@
 			} ) );
 		} );
 		var tete = el( 'div', { class: 'claira-qcm-carte-tete' }, [
-			options.selection ? el( 'label', { class: 'claira-qcm-choix', title: 'Ajouter à la sélection' }, [
+			options.selection && q.off ? el( 'label', { class: 'claira-qcm-choix', title: 'Ajouter à la sélection' }, [
 				el( 'input', { type: 'checkbox', 'data-id': q.id, checked: options.selection.has( q.id ), onchange: function ( e ) { options.onSelect( q.id, e.target.checked ); } } )
 			] ) : null,
-			el( 'span', { class: 'claira-qcm-theme', text: th.nom + ' · n° ' + q.n } )
+			el( 'span', { class: 'claira-qcm-theme', text: th.nom + ' · n° ' + q.n } ),
+			q.off ? null : el( 'span', { class: 'claira-qcm-non-officiel', text: 'Non officiel · hors examen blanc' } )
 		] );
 		return el( 'article', { class: 'claira-qcm-carte' + ( options.selection && options.selection.has( q.id ) ? ' is-choisie' : '' ) }, [
 			tete,
@@ -794,6 +799,7 @@
 		var nbTirage = el( 'input', { type: 'number', min: '1', max: '200', value: '30', class: 'small-text' } );
 		var themesTirage = el( 'div', { class: 'claira-qcm-themes-tirage' } );
 		moteur.themes.forEach( function ( t, k ) {
+			if ( t.officiel === false ) { return; } // pas de tirage parmi les questions non officielles
 			themesTirage.appendChild( el( 'label', {}, [ el( 'input', { type: 'checkbox', value: String( k ), checked: true } ), ' ' + t.nom ] ) );
 		} );
 
@@ -807,7 +813,7 @@
 		} );
 
 		function questionsChoisies() {
-			var l = Array.from( selection ).map( function ( id ) { return moteur.parId[ id ]; } ).filter( Boolean );
+			var l = Array.from( selection ).map( function ( id ) { return moteur.parId[ id ]; } ).filter( function ( q ) { return q && q.off; } );
 			return melangeQ.checked ? melanger( l ) : l;
 		}
 		function exiger() {
@@ -817,7 +823,7 @@
 
 		function tirer() {
 			var ths = Array.prototype.filter.call( themesTirage.querySelectorAll( 'input' ), function ( c ) { return c.checked; } ).map( function ( c ) { return parseInt( c.value, 10 ); } );
-			var pool = moteur.questions.filter( function ( q ) { return ths.indexOf( q.t ) !== -1; } );
+			var pool = moteur.officielles.filter( function ( q ) { return ths.indexOf( q.t ) !== -1; } );
 			var n = Math.max( 1, Math.min( parseInt( nbTirage.value, 10 ) || 30, pool.length ) );
 			if ( ! pool.length ) { window.alert( 'Cochez au moins un thème.' ); return; }
 			if ( selection.size && ! window.confirm( 'Remplacer la sélection actuelle (' + selection.size + ' questions) par ' + n + ' questions tirées au sort ?' ) ) { return; }
@@ -1053,7 +1059,7 @@
 
 		// Examen enregistré (lien ?examen=CODE) : on lance directement l'écran d'accueil de cet examen.
 		if ( cfg.examen ) {
-			var items = cfg.examen.ids.map( function ( id ) { return moteur.parId[ id ]; } ).filter( Boolean );
+			var items = cfg.examen.ids.map( function ( id ) { return moteur.parId[ id ]; } ).filter( function ( q ) { return q && q.off; } );
 			var zoneEx = el( 'div' );
 			var accueil = function () {
 				zoneEx.innerHTML = '';
@@ -1095,11 +1101,11 @@
 				el( 'option', { value: '15', text: '15 questions (5e et 6e Dan)' } )
 			] );
 			p.appendChild( el( 'div', { class: 'claira-qcm-accueil' }, [
-				el( 'p', { text: 'Comme le jour de l’épreuve sur IzziDan : questions tirées au hasard parmi les ' + moteur.questions.length + ' questions officielles, ' + cfg.duree + ' minutes, une seule bonne réponse par question.' } ),
+				el( 'p', { text: 'Comme le jour de l’épreuve sur IzziDan : questions tirées au hasard parmi les ' + moteur.officielles.length + ' questions officielles FFTDA, ' + cfg.duree + ' minutes, une seule bonne réponse par question.' } ),
 				el( 'p', { class: 'claira-qcm-ligne' }, [ nb,
 					el( 'button', { type: 'button', class: 'claira-qcm-btn claira-qcm-btn-principal', text: 'Lancer l’examen blanc', onclick: function () {
 						var n = parseInt( nb.value, 10 );
-						lancerExamen( moteur, p, preparer( melanger( moteur.questions ).slice( 0, n ), true ), cfg.duree, 'Examen blanc — ' + n + ' questions', accueilExamen );
+						lancerExamen( moteur, p, preparer( melanger( moteur.officielles ).slice( 0, n ), true ), cfg.duree, 'Examen blanc — ' + n + ' questions', accueilExamen );
 					} } ) ] )
 			] ) );
 		}

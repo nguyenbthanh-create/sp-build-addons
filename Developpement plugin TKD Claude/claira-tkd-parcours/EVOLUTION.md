@@ -1,6 +1,23 @@
 # Evolution log
 
-## 2026-11-18 — QCM Dan : une question collée mot pour mot passe en tête (v1.14.8)
+## 2026-11-18 — QCM Dan : questions non officielles hors des examens blancs (v1.14.9)
+
+Demande de l'utilisateur : retirer de l'examen blanc tout ce qui n'est pas officiel, et le garder à part comme « connaissances non officielles ».
+
+Changements dans `assets/js/qcm-dan.js` :
+- le thème du club devient « Connaissances complémentaires (non officiel) », avec `officiel: false` ;
+- chaque question porte `q.off` ; `moteur.officielles` contient les 724 questions FFTDA ;
+- l'examen blanc du site tire seulement parmi `moteur.officielles` ;
+- dans le tableau de bord, ce thème n'apparaît plus dans le tirage au sort et ses questions n'ont pas de case à cocher ;
+- une sélection ou un examen enregistré qui contiendrait une question non officielle l'ignore ;
+- dans la recherche et la révision par thème, ces questions restent visibles, avec le badge « Non officiel · hors examen blanc » (`.claira-qcm-non-officiel` dans `assets/css/qcm-dan.css`).
+
+Vérifié hors WordPress :
+- 25 examens blancs de 30 questions (750 questions, 468 différentes) : aucune question non officielle ;
+- l'accueil de l'examen annonce « 724 questions officielles FFTDA » ;
+- tableau de bord : 32 thèmes au tirage, pas de case à cocher sur ces questions.
+
+## 2026-11-18 — QCM Dan : une question collée mot pour mot passe en tête (v1.14.8, livrée avec la 1.14.9)
 
 Question de l'utilisateur : « si je colle une question du QCM officiel, la réponse officielle sort-elle en premier ? »
 

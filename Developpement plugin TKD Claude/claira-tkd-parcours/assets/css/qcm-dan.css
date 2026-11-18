@@ -57,6 +57,7 @@
 .claira-qcm-carte-tete { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
 .claira-qcm-carte-tete .claira-qcm-choix { order: 2; }
 .claira-qcm-theme { font-family: 'Montserrat', sans-serif; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--sp-muted); }
+.claira-qcm-non-officiel { display: inline-block; margin-left: 8px; padding: 1px 7px; border-radius: 10px; background: #fff1e6; color: #a04a00; font-size: .7rem; font-weight: 600; }
 .claira-qcm-question { font-weight: 600; margin: 6px 0 8px; font-size: 1.02em; }
 .claira-qcm-reponses { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .claira-qcm-reponses li { padding: 5px 8px; border-radius: 4px; margin: 0; }
