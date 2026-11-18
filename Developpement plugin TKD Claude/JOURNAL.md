@@ -629,3 +629,26 @@ Détails :
   - l'ouverture d'une carte avec un vrai lien : les mails sont bloqués sur le test (`WPMS_DO_NOT_SEND`), donc aucune clé n'est lisible ;
   - la vue d'un simple membre : il faudrait se connecter avec un autre compte. Les règles sont couvertes par les tests.
 - **Piège** : le navigateur intégré de l'application Claude reçoit un 401 sur dev.tkdclaira.fr (protection par mot de passe) ; passer par Chrome.
+
+**SP Compta 0.3.0 : lignes de budget des projets et porte d'entrée pour TKD Projets — site de test le 18/11/2026 vers 11 h 22** (`dcecae8`). C'est l'étape 3 du plan « Gestion de projets ». Pas en prod.
+- **Contenu** :
+  - nouvelle table `…sp_compta_budget_ligne` (schéma 1.5.0, ajout seul) ;
+  - `ProjetBilan::parCategorie()` : prévu, réalisé et écart par catégorie, dépenses « hors budget » signalées ;
+  - `Integration/ProjetsApi` : seule porte de TKD Projets vers la trésorerie, réservée au bureau ;
+  - onglet Projets : tableau « Budget par catégorie » sur la fiche, budget prévu en lecture seule quand il y a des lignes, lignes supprimées avec le projet.
+
+  Les totaux prévus d'un projet deviennent la somme de ses lignes, donc le rapport AG est inchangé. 8 fichiers envoyés. Les fichiers remplacés étaient bien ceux de la 0.2.0 : la sauvegarde `…_dcecae8/sauvegarde-test-2026-11-18_112230` a été comparée à git.
+- **Vérifié hors WordPress** :
+  - 13 tests purs réussis (bilan par catégorie, validation des lignes, et les 5 tests existants de `ProjetBilanTest`), avec un petit lanceur, faute de WordPress de test ;
+  - PHPStan sans erreur ;
+  - PHP_CodeSniffer : rien de nouveau. `ProjetScreen.php` avait déjà 23 erreurs et 12 avertissements avant la modification.
+  - Les tests qui touchent la base (dépôt, API, écran) sont écrits mais **non exécutés**. Les mêmes cas ont été vérifiés en direct, ci-dessous.
+- **Essai en direct sur le test** : une extension d'essai temporaire (`mu-plugins/zz-essai-projets-api.php`) a appelé `ProjetsApi`, puis a été **supprimée** (route en 404 ensuite).
+  - Création d'un projet dans la saison 2026-2027.
+  - 3 lignes enregistrées (la ligne vide est ignorée), totaux 370,50 € / 80 €.
+  - Avec deux dépenses d'essai : catégorie 60 à 250 € prévus pour 230 € réalisés, catégorie 62 « hors budget » à 15 €.
+  - Une ligne « recette » en catégorie 60 est refusée, et les lignes existantes restent intactes.
+  - Fiche et formulaire de l'onglet Projets conformes (budget en lecture seule).
+  - Données d'essai supprimées.
+  - Pages Dépenses, Recettes, Projets, Solde, Rapport, Paramètres et TKD Projets sans erreur PHP.
+- **Suite (étape 4)** : onglet Budget dans TKD Projets (bureau seulement) et dépense validée par le président. Celui-ci doit être coché dans « Accès bureau ».

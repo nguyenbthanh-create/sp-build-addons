@@ -6,7 +6,7 @@ Pistes connues, datées. Plan complet : `RefontePlugin\tkd-projets-ANALYSE.md` (
 
 1. ~~Correctif urgent de la 1.6.0~~ : inutile, la 1.6.0 n'était que sur le site de test, avec des données factices.
 2. **2.0.0 : réécriture**. Droits par projet, équipes, types Gala / Fêtes / Compétition avec tâches modèles, correctifs de sécurité. Faite le 18/11/2026.
-3. **SP Compta** :
+3. ~~**SP Compta**~~ : fait le 18/11/2026 (SP Compta 0.3.0, `dcecae8`). La porte d'entrée est `SpCompta\Integration\ProjetsApi`, documentée dans son `.md`. Ce qui était prévu :
    - une « porte d'entrée » documentée pour TKD Projets (créer ou mettre à jour le projet compta, lire le bilan et les mouvements) ;
    - des **lignes de budget** par catégorie (nouvelle version de la base 1.5.0, ajout seul).
 
